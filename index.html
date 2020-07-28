@@ -29,7 +29,47 @@
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
     </section>
     <section class="body">
-      <div v-if="navId === 1">菜谱</div>
+      <div v-if="navId === 1">
+        <el-table
+          :data="recipes_page"
+          style="width: 100%"
+          max-height="500">
+          <el-table-column fixed prop="galleryId" label="编号" width="55" v-if="false"></el-table-column>
+          <el-table-column fixed prop="name" label="菜谱名"></el-table-column>
+          <el-table-column prop="rarity_show" label="星"></el-table-column>
+          <el-table-column prop="stirfry" label="炒"></el-table-column>
+          <el-table-column prop="boil" label="煮"></el-table-column>
+          <el-table-column prop="knife" label="切"></el-table-column>
+          <el-table-column prop="fry" label="炸"></el-table-column>
+          <el-table-column prop="bake" label="烤"></el-table-column>
+          <el-table-column prop="steam" label="蒸"></el-table-column>
+          <el-table-column prop="steam" label="材料"></el-table-column>
+          <el-table-column prop="steam" label="单价"></el-table-column>
+          <el-table-column prop="steam" label="单时间"></el-table-column>
+          <el-table-column prop="steam" label="一组"></el-table-column>
+          <el-table-column prop="steam" label="总价"></el-table-column>
+          <el-table-column prop="steam" label="总时间"></el-table-column>
+          <el-table-column prop="steam" label="金币效率"></el-table-column>
+          <el-table-column prop="steam" label="总耗材效率"></el-table-column>
+          <el-table-column prop="steam" label="来源"></el-table-column>
+          <el-table-column prop="steam" label="解锁"></el-table-column>
+          <el-table-column prop="steam" label="合成"></el-table-column>
+          <el-table-column prop="steam" label="贵客"></el-table-column>
+          <el-table-column prop="steam" label="升阶贵客"></el-table-column>
+          <el-table-column prop="steam" label="神级符文"></el-table-column>
+          <el-table-column prop="steam" label="品阶"></el-table-column>
+        </el-table>
+        <el-pagination
+          background
+          small
+          :page-size="recipesPageSize"
+          :current-page.sync="recipesCurPage"
+          @current-change="handleCurrentChange"
+          :pager-count="5"
+          layout="total, prev, pager, next"
+          :total="recipes.length">
+        </el-pagination>
+      </div>
       <div v-if="navId === 2">厨师</div>
       <div v-if="navId === 3">厨具</div>
       <div v-if="navId === 4">装修</div>
@@ -44,43 +84,5 @@
 <script src="./js/jquery-2.1.4.min.js"></script>
 <script src="./js/vue.min.js"></script>
 <script src="https://unpkg.com/element-ui@2.13.2/lib/index.js"></script>
-<script>
-  $(function() {
-    var app = new Vue({
-      el: '#main',
-      data: {
-        leftBar: false,
-        nav: [
-          { id: 1, name: '菜谱', icon: 'el-icon-food' },
-          { id: 2, name: '厨师', icon: 'el-icon-user' },
-          { id: 3, name: '厨具', icon: 'el-icon-knife-fork' },
-          { id: 4, name: '装修', icon: 'el-icon-refrigerator' },
-          { id: 5, name: '采集', icon: 'el-icon-chicken' },
-          { id: 6, name: '任务', icon: 'el-icon-document' },
-          { id: 7, name: '计算器', icon: 'el-icon-set-up' },
-          { id: 8, name: '个人', icon: 'el-icon-user' },
-          { id: 9, name: '说明', icon: 'el-icon-info' },
-        ],
-        navId: 1
-      },
-      mounted() {
-        this.loadData();
-      },
-      methods: {
-        loadData() {
-          $.ajax({
-            url: './data/data.min.json'
-          }).then(rst => {
-            console.log(rst);
-          });
-        },
-        checkNav(id) {
-          this.navId = id;
-          this.leftBar = false;
-        }
-      },
-      watch: {}
-    });
-  });
-</script>
+<script src="./js/index.js"></script>
 </html>
