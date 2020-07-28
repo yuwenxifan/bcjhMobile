@@ -1,0 +1,149 @@
+/* 初始化css */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+hr,
+p,
+blockquote,
+dl,
+dt,
+dd,
+ul,
+ol,
+li,
+pre,
+form,
+fieldset,
+legend,
+button,
+input,
+textarea,
+th,
+td {
+  margin: 0;
+  padding: 0;
+}
+body,
+button,
+input,
+select,
+textarea {
+  font: 12px/1.5tahoma, arial, \5b8b\4f53;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-size: 100%;
+}
+address,
+cite,
+dfn,
+em,
+var {
+  font-style: normal;
+}
+code,
+kbd,
+pre,
+samp {
+  font-family: couriernew, courier, monospace;
+}
+small {
+  font-size: 12px;
+}
+ul,
+ol {
+  list-style: none;
+}
+a {
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+sup {
+  vertical-align: text-top;
+}
+sub {
+  vertical-align: text-bottom;
+}
+legend {
+  color: #000;
+}
+fieldset,
+img {
+  border: 0;
+}
+button,
+input,
+select,
+textarea {
+  font-size: 100%;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+.header {
+  height: 50px;
+  background: #607d8b;
+  color: #fff;
+  padding: 0 18px;
+}
+section.header {
+  line-height: 50px;
+}
+
+.icon-btn {
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.left-bar .header {
+  height: 128px;
+  padding: 5px 16px;
+}
+.left-bar .title {
+  position: absolute;
+  right: 16px;
+  top: 30px;
+  font-size: 18px;
+}
+.left-bar .sub-title {
+  position: absolute;
+  right: 16px;
+  top: 75px;
+  font-size: 15px;
+}
+.left-bar .img-header {
+  width: 93px;
+}
+
+.left-bar .body {
+  width: 100%;
+  color: #526874;
+}
+.left-bar .body .nav {
+  height: 48px;
+  line-height: 48px;
+  padding-left: 70px;
+  font-size: 14px;
+  position: relative;
+}
+.nav:hover, .nav.active {
+  background-color: rgba(96, 125, 139, 0.2);
+}
+.nav i {
+  font-size: 24px;
+  position: absolute;
+  left: 23px;
+  top: 11px;
+}

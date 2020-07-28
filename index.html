@@ -5,20 +5,64 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图鉴</title>
   <link rel="icon" href="./favicon.ico">
-  <link rel="stylesheet" href="./css/ele.css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui@2.13.2/lib/theme-chalk/index.css">
+  <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
   <div id="main">
+    <aside>
+      <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="65%" :with-header="false">
+        <div class="header">
+          <img class="img-header" src="./images/saltFish.png" alt="咸公主">
+          <div class="title">爆炒江湖图鉴</div>
+          <div class="sub-title">by 小鱼</div>
+        </div>
+        <div class="body">
+          <div class="nav" v-for="item in nav" :class="item.id === navId ? 'active' : '' " @click="checkNav(item.id)">
+            <i :class="item.icon"></i>
+            {{item.name}}
+          </div>
+        </div>
+      </el-drawer>
+    </aside>
+    <section class="header">
+      <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
+    </section>
+    <section class="body">
+      <div v-if="navId === 1">菜谱</div>
+      <div v-if="navId === 2">厨师</div>
+      <div v-if="navId === 3">厨具</div>
+      <div v-if="navId === 4">装修</div>
+      <div v-if="navId === 5">采集</div>
+      <div v-if="navId === 6">任务</div>
+      <div v-if="navId === 7">计算器</div>
+      <div v-if="navId === 8">个人</div>
+      <div v-if="navId === 9">说明</div>
+    </section>
   </div>
 </body>
 <script src="./js/jquery-2.1.4.min.js"></script>
 <script src="./js/vue.min.js"></script>
-<script src="./js/ele.js"></script>
+<script src="https://unpkg.com/element-ui@2.13.2/lib/index.js"></script>
 <script>
   $(function() {
     var app = new Vue({
       el: '#main',
-      data: {},
+      data: {
+        leftBar: false,
+        nav: [
+          { id: 1, name: '菜谱', icon: 'el-icon-food' },
+          { id: 2, name: '厨师', icon: 'el-icon-user' },
+          { id: 3, name: '厨具', icon: 'el-icon-knife-fork' },
+          { id: 4, name: '装修', icon: 'el-icon-refrigerator' },
+          { id: 5, name: '采集', icon: 'el-icon-chicken' },
+          { id: 6, name: '任务', icon: 'el-icon-document' },
+          { id: 7, name: '计算器', icon: 'el-icon-set-up' },
+          { id: 8, name: '个人', icon: 'el-icon-user' },
+          { id: 9, name: '说明', icon: 'el-icon-info' },
+        ],
+        navId: 1
+      },
       mounted() {
         this.loadData();
       },
@@ -29,6 +73,10 @@
           }).then(rst => {
             console.log(rst);
           });
+        },
+        checkNav(id) {
+          this.navId = id;
+          this.leftBar = false;
         }
       },
       watch: {}
