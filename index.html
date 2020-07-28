@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>图鉴</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="stylesheet" href="./css/ele.css">
+</head>
+<body>
+  <div id="main">
+  </div>
+</body>
+<script src="./js/jquery-2.1.4.min.js"></script>
+<script src="./js/vue.min.js"></script>
+<script src="./js/ele.js"></script>
+<script>
+  $(function() {
+    var app = new Vue({
+      el: '#main',
+      data: {},
+      mounted() {
+        this.loadData();
+      },
+      methods: {
+        loadData() {
+          $.ajax({
+            url: './data/data.min.json'
+          }).then(rst => {
+            console.log(rst);
+          });
+        }
+      },
+      watch: {}
+    });
+  });
+</script>
+</html>
