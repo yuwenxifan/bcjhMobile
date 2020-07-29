@@ -11,11 +11,11 @@
 <body>
   <div id="main">
     <aside>
-      <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="65%" :with-header="false">
+      <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
           <img class="img-header" src="./images/saltFish.png" alt="咸公主">
           <div class="title">爆炒江湖图鉴</div>
-          <div class="sub-title">by 小鱼</div>
+          <div class="sub-title">by 小鱼、L</div>
         </div>
         <div class="body">
           <div class="nav" v-for="item in nav" :class="item.id === navId ? 'active' : '' " @click="checkNav(item.id)">
@@ -24,57 +24,129 @@
           </div>
         </div>
       </el-drawer>
+      <el-drawer class="right-bar" :visible.sync="rightBar" size="280px" :with-header="false">
+        这是筛选的抽屉
+        <footer>
+          <button class="btn btn-primary" @click="rightBar = false">确定</button>
+          <button class="btn btn-reset" @click="reset">重置</button>
+        </footer>
+      </el-drawer>
+      <div v-if="navId < 6 && !hideSuspend" class="suspend icon-btn" @click="rightBar = true">
+        <i class="el-icon-search"></i>
+      </div>
+      <el-dialog
+        top="200px"
+        :show-close="false"
+        :visible.sync="settingVisible"
+        width="200px">
+        <span>
+          搜索按钮固定在顶栏
+          <el-switch
+            style="display: block"
+            v-model="hideSuspend"
+            active-color="#82a1b0"
+            inactive-color="#bbb">
+          </el-switch>
+        </span>
+      </el-dialog>
     </aside>
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
+      <span class="right">
+        <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
+        <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+      </span>
     </section>
     <section class="body">
       <div v-if="navId === 1">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="菜名 材料 贵客 符文 来源" v-model="repKeyword">
+          </el-input>
+        </div>
         <el-table
-          :data="recipes_page"
+          :data="recipesPage"
           style="width: 100%"
-          max-height="500">
-          <el-table-column fixed prop="galleryId" label="编号" width="55" v-if="false"></el-table-column>
-          <el-table-column fixed prop="name" label="菜谱名"></el-table-column>
-          <el-table-column prop="rarity_show" label="星"></el-table-column>
-          <el-table-column prop="stirfry" label="炒"></el-table-column>
-          <el-table-column prop="boil" label="煮"></el-table-column>
-          <el-table-column prop="knife" label="切"></el-table-column>
-          <el-table-column prop="fry" label="炸"></el-table-column>
-          <el-table-column prop="bake" label="烤"></el-table-column>
-          <el-table-column prop="steam" label="蒸"></el-table-column>
-          <el-table-column prop="steam" label="材料"></el-table-column>
-          <el-table-column prop="steam" label="单价"></el-table-column>
-          <el-table-column prop="steam" label="单时间"></el-table-column>
-          <el-table-column prop="steam" label="一组"></el-table-column>
-          <el-table-column prop="steam" label="总价"></el-table-column>
-          <el-table-column prop="steam" label="总时间"></el-table-column>
-          <el-table-column prop="steam" label="金币效率"></el-table-column>
-          <el-table-column prop="steam" label="总耗材效率"></el-table-column>
-          <el-table-column prop="steam" label="来源"></el-table-column>
-          <el-table-column prop="steam" label="解锁"></el-table-column>
-          <el-table-column prop="steam" label="合成"></el-table-column>
-          <el-table-column prop="steam" label="贵客"></el-table-column>
-          <el-table-column prop="steam" label="升阶贵客"></el-table-column>
-          <el-table-column prop="steam" label="神级符文"></el-table-column>
-          <el-table-column prop="steam" label="品阶"></el-table-column>
+          ref='recipesTable'
+          @sort-change="handleRepSort"
+          :height="tableHeight">
+          <el-table-column fixed sortable="custom" prop="galleryId" label="编号" width="63" v-if="repCol.id"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="菜谱名"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="repCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="knife" label="切" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="fry" label="炸" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="bake" label="烤" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="steam" label="蒸" min-width="52" v-if="repCol.skills"></el-table-column>
+          <el-table-column prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
+          <el-table-column sortable="custom" prop="price" min-width="68" label="单价" v-if="repCol.price"></el-table-column>
+          <el-table-column sortable="custom" prop="time_show" label="单时间" v-if="repCol.time"></el-table-column>
+          <el-table-column sortable="custom" prop="limit" label="一组" v-if="repCol.limit"></el-table-column>
+          <el-table-column sortable="custom" prop="total_price" label="总价" v-if="repCol.total_price"></el-table-column>
+          <el-table-column sortable="custom" prop="total_time_show" label="总时间" v-if="repCol.total_time_show"></el-table-column>
+          <el-table-column sortable="custom" prop="gold_eff" label="金币/小时" min-width="100" v-if="repCol.gold_eff"></el-table-column>
+          <el-table-column sortable="custom" prop="material_eff" label="总耗材效率" v-if="repCol.material_eff"></el-table-column>
+          <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="repCol.origin"></el-table-column>
+          <el-table-column sortable="custom" prop="unlock" label="解锁" v-if="repCol.unlock"></el-table-column>
+          <el-table-column prop="01" label="贵客" v-if="repCol.hh"></el-table-column>
+          <el-table-column prop="01" label="升阶贵客" v-if="repCol.hh"></el-table-column>
+          <el-table-column prop="01" label="神级符文" v-if="repCol.hh"></el-table-column>
         </el-table>
-        <el-pagination
-          background
-          small
-          :page-size="recipesPageSize"
-          :current-page.sync="recipesCurPage"
-          @current-change="handleCurrentChange"
-          :pager-count="5"
-          layout="total, prev, pager, next"
-          :total="recipes.length">
-        </el-pagination>
+        <div class="pagination">
+          <el-pagination
+            background
+            small
+            :page-size="recipesPageSize"
+            :current-page.sync="recipesCurPage"
+            @current-change="handleCurrentChange"
+            :pager-count="5"
+            layout="total, prev, pager, next"
+            :total="recipes.length">
+          </el-pagination>
+        </div>
       </div>
       <div v-if="navId === 2">厨师</div>
       <div v-if="navId === 3">厨具</div>
       <div v-if="navId === 4">装修</div>
       <div v-if="navId === 5">采集</div>
-      <div v-if="navId === 6">任务</div>
+      <div v-if="navId === 6">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="编号 任务 奖励" v-model="questsKeyword" class="input-with-select">
+            <el-select slot="prepend" v-model="questsType" placeholder="请选择任务类型" size="small">
+              <el-option
+                v-for="item in questsTypes"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
+          </el-input>
+        </div>
+        <el-table
+          :data="questsPage"
+          style="width: 100%"
+          :height="tableHeight"
+          @sort-change="handleQuestsSort"
+          ref="questsTable"
+          >
+          <el-table-column prop="questId" label="No." width="63" sortable='custom'></el-table-column>
+          <el-table-column prop="preId" label="前置" width="50" v-if="questsType === 2"></el-table-column>
+          <el-table-column prop="goal" label="任务"></el-table-column>
+          <el-table-column prop="rewards_show" label="奖励" width="110"></el-table-column>
+        </el-table>
+      <div class="pagination">
+        <el-pagination
+          background
+          small
+          :page-size="questsPageSize"
+          :current-page.sync="questsCurPage"
+          @current-change="handleCurrentChange"
+          :pager-count="5"
+          layout="total, prev, pager, next"
+          :total="questsType === 1 ? questsMain.length : questsRegional.length">
+        </el-pagination>
+      </div>
+      </div>
       <div v-if="navId === 7">计算器</div>
       <div v-if="navId === 8">个人</div>
       <div v-if="navId === 9">说明</div>

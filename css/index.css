@@ -101,10 +101,23 @@ table {
 section.header {
   line-height: 50px;
 }
+section.header .right {
+  float: right;
+}
+
+.el-dialog__header {
+  padding: 0;
+}
+.el-dialog {
+  text-align: center;
+}
 
 .icon-btn {
   font-size: 20px;
   cursor: pointer;
+}
+.el-drawer__container:focus {
+  outline: none;
 }
 .el-drawer:focus {
   outline: none;
@@ -150,4 +163,85 @@ section.header {
   position: absolute;
   left: 23px;
   top: 11px;
+}
+
+.pagination {
+  margin-top: 6px;
+  float: right;
+}
+
+.el-table th {
+  background-color: #f5f7fa;
+}
+
+.el-table .cell {
+  white-space: pre-line;
+  padding-right: 3px !important;
+}
+
+.el-table td {
+  padding: 8px 0;
+  font-size: 13px;
+}
+
+.suspend {
+  position: absolute;
+  right: 20px;
+  bottom: 60px;
+  height: 40px;
+  width: 40px;
+  border-radius: 40px;
+  box-shadow: 1px 1px 5px rgba(96, 125, 139, 0.7);
+  background-color: #607d8b;
+  line-height: 40px;
+  color: #fff;
+  text-align: center;
+  z-index: 999;
+}
+
+.right-bar footer {
+  position: absolute;
+  bottom: 0;
+  padding: 20px 15px;
+}
+
+.btn {
+  padding: 3px 12px;
+  background: #fff;
+  border: 1px solid #dcdfe6;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+.btn:focus {
+  outline: none;
+}
+.btn-primary {
+  background-color: #607d8b;
+  border: 1px solid #607d8b;
+  color: #fff;
+}
+.btn-reset {
+  background-color: #b78e5f;
+  border: 1px solid #b78e5f;
+  color: #fff;
+}
+.el-input__inner {
+  border-color: transparent;
+  /* background-color: #f5f7fa; */
+}
+.el-input__inner:focus {
+  border-color: transparent;
+}
+.el-input-group__prepend {
+  border-color: transparent;
+  border-right: 0.5px solid #dcdfe6;
+}
+.el-select .el-input {
+  width: 100px;
+}
+.el-select .el-input__inner {
+  padding-left: 8px;
+}
+.input-with-select .el-input-group__prepend {
+  background-color: #fff;
 }
