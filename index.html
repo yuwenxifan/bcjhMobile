@@ -45,7 +45,7 @@
             style="display: block"
             v-model="hideSuspend"
             active-color="#82a1b0"
-            inactive-color="#bbb">
+            inactive-color="#ddd">
           </el-switch>
         </span>
       </el-dialog>
@@ -69,8 +69,8 @@
           ref='recipesTable'
           @sort-change="handleRepSort"
           :height="tableHeight">
-          <el-table-column fixed sortable="custom" prop="galleryId" label="编号" width="63" v-if="repCol.id"></el-table-column>
-          <el-table-column fixed sortable="custom" prop="name" label="菜谱名"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="repCol.id"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="79"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="repCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="repCol.skills"></el-table-column>
@@ -80,17 +80,22 @@
           <el-table-column sortable="custom" prop="steam" label="蒸" min-width="52" v-if="repCol.skills"></el-table-column>
           <el-table-column prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
           <el-table-column sortable="custom" prop="price" min-width="68" label="单价" v-if="repCol.price"></el-table-column>
-          <el-table-column sortable="custom" prop="time_show" label="单时间" v-if="repCol.time"></el-table-column>
-          <el-table-column sortable="custom" prop="limit" label="一组" v-if="repCol.limit"></el-table-column>
-          <el-table-column sortable="custom" prop="total_price" label="总价" v-if="repCol.total_price"></el-table-column>
-          <el-table-column sortable="custom" prop="total_time_show" label="总时间" v-if="repCol.total_time_show"></el-table-column>
+          <el-table-column prop="exPrice" min-width="50" label="熟练加价" v-if="repCol.exPrice"></el-table-column>
+          <el-table-column sortable="custom" prop="time_show" min-width="79" label="单时间" v-if="repCol.time"></el-table-column>
+          <el-table-column sortable="custom" prop="limit" min-width="65" label="一组" v-if="repCol.limit"></el-table-column>
+          <el-table-column sortable="custom" prop="total_price" min-width="65" label="总价" v-if="repCol.total_price"></el-table-column>
+          <el-table-column sortable="custom" prop="total_time_show" min-width="100" label="总时间" v-if="repCol.total_time_show"></el-table-column>
           <el-table-column sortable="custom" prop="gold_eff" label="金币/小时" min-width="100" v-if="repCol.gold_eff"></el-table-column>
-          <el-table-column sortable="custom" prop="material_eff" label="总耗材效率" v-if="repCol.material_eff"></el-table-column>
+          <el-table-column sortable="custom" prop="material_eff" label="耗材/小时" min-width="100" v-if="repCol.material_eff"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="repCol.origin"></el-table-column>
-          <el-table-column sortable="custom" prop="unlock" label="解锁" v-if="repCol.unlock"></el-table-column>
+          <el-table-column sortable="custom" prop="unlock" label="可解锁" v-if="repCol.unlock"></el-table-column>
+          <el-table-column prop="01" label="可合成" v-if="repCol.hh"></el-table-column>
           <el-table-column prop="01" label="贵客" v-if="repCol.hh"></el-table-column>
           <el-table-column prop="01" label="升阶贵客" v-if="repCol.hh"></el-table-column>
           <el-table-column prop="01" label="神级符文" v-if="repCol.hh"></el-table-column>
+          <el-table-column prop="01" label="品阶" v-if="repCol.hh"></el-table-column>
+          <el-table-column prop="01" label="熟练" v-if="repCol.hh"></el-table-column>
+          <el-table-column prop="01" label="已有" v-if="repCol.hh"></el-table-column>
         </el-table>
         <div class="pagination">
           <el-pagination

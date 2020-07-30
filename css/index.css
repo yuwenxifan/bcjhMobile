@@ -177,6 +177,7 @@ section.header .right {
 .el-table .cell {
   white-space: pre-line;
   padding-right: 3px !important;
+  line-height: 18px;
 }
 
 .el-table td {
@@ -192,7 +193,7 @@ section.header .right {
   width: 40px;
   border-radius: 40px;
   box-shadow: 1px 1px 5px rgba(96, 125, 139, 0.7);
-  background-color: #607d8b;
+  background-color: #82a1b0;
   line-height: 40px;
   color: #fff;
   text-align: center;
@@ -216,13 +217,13 @@ section.header .right {
   outline: none;
 }
 .btn-primary {
-  background-color: #607d8b;
-  border: 1px solid #607d8b;
+  background-color: #82a1b0;
+  border: 1px solid #82a1b0;
   color: #fff;
 }
 .btn-reset {
-  background-color: #b78e5f;
-  border: 1px solid #b78e5f;
+  background-color: #cc9f6c;
+  border: 1px solid #cc9f6c;
   color: #fff;
 }
 .el-input__inner {

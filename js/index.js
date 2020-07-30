@@ -23,12 +23,19 @@ $(function() {
       recipes: [],
       recipesPage: [],
       repCol: {
+        id: false,
         rarity: false,
         skills: false,
         price: true,
+        exPrice: false,
         time: true,
+        limit: false,
+        total_price: false,
+        total_time_show: false,
         gold_eff: true,
+        material_eff: false,
         origin: true,
+        unlock: false,
       },
       repKeyword: '',
       recipesCurPage: 1,
@@ -58,44 +65,59 @@ $(function() {
         }).then(rst => {
           console.log(rst);
           this.data = rst;
-          this.initRep();
+          this.initData();
         });
       },
       checkNav(id) {
         this.navId = id;
         this.leftBar = false;
       },
-      initRep() {
-        this.recipes = [];
-        for (const item of this.data.recipes) {
+      initData() {
+        this.data.recipes = this.data.recipes.map(item => {
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
           for (let i of skill_arr) {
             item[i] = item[i] || null;
           }
+          let materials_cnt = 0;
           item.materials_show = item.materials.map(m => {
             const name = this.data.materials.find(i => {
               return i.materialId == m.material;
             }).name;
+            materials_cnt += m.quantity;
             return `${name}*${m.quantity}`;
           }).join(' ');
-          const materials_search = item.materials.map(m => {
+          item.materials_search = item.materials.map(m => {
             const name = this.data.materials.find(i => {
               return i.materialId == m.material;
             }).name;
             return name;
           }).join(' ');
           item.origin = item.origin.replace('<br>', '\n');
-          item.time_show = (item.time >= 60 ? `${~~(item.time / 60)}分` : '') + (item.time % 60 !== 0 ? `${item.time % 60}秒` : '');
+          item.time_show = this.formatTime(item.time);
           item.gold_eff = Math.round(3600 / item.time * item.price);
+          item.total_price = item.price * item.limit;
+          item.total_time = item.time * item.limit;
+          item.total_time_show = this.formatTime(item.total_time);
+          item.material_eff = ~~(3600 / item.time * materials_cnt);
+          return item;
+        });
+        this.initRep();
+      },
+      initRep() {
+        this.recipes = [];
+        for (const item of this.data.recipes) {
           const s_name = item.name.indexOf(this.repKeyword) > -1;
           const s_origin = item.origin.indexOf(this.repKeyword) > -1;
-          const s_material = materials_search.indexOf(this.repKeyword) > -1;
+          const s_material = item.materials_search.indexOf(this.repKeyword) > -1;
           if (s_name || s_origin || s_material) {
             this.recipes.push(item);
           }
         }
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+      },
+      formatTime(sec) {
+        return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
       },
       handleCurrentChange(val) {
         if (this.navId === 1) {
@@ -113,7 +135,8 @@ $(function() {
       handleRepSort(sort) {
         const map = {
           time_show: 'time',
-          rarity_show: 'rarity'
+          rarity_show: 'rarity',
+          total_time_show: 'total_time'
         };
         if (!sort.order) {
           this.initRep();
