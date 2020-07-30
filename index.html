@@ -25,7 +25,22 @@
         </div>
       </el-drawer>
       <el-drawer class="right-bar" :visible.sync="rightBar" size="280px" :with-header="false">
-        这是筛选的抽屉
+        <div v-if="navId === 1">
+          <div class="box">
+            <div class="box-title">展示列</div>
+            <div class="hr"></div>
+            <span
+              v-for="(val, key) in repColName"
+              class="checkbox"
+              :class="repCol[key] ? 'active' : ''"
+              @click="checkCol(key)"
+            >{{val}}</span>
+          </div>
+          <div class="box">
+            <div class="box-title">筛选</div>
+            <div class="hr"></div>
+          </div>
+        </div>
         <footer>
           <button class="btn btn-primary" @click="rightBar = false">确定</button>
           <button class="btn btn-reset" @click="reset">重置</button>
@@ -40,7 +55,7 @@
         :visible.sync="settingVisible"
         width="200px">
         <span>
-          搜索按钮固定在顶栏
+          筛选按钮固定在顶栏
           <el-switch
             style="display: block"
             v-model="hideSuspend"
@@ -70,7 +85,7 @@
           @sort-change="handleRepSort"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="repCol.id"></el-table-column>
-          <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="79"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="repCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="repCol.skills"></el-table-column>
@@ -81,7 +96,7 @@
           <el-table-column prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
           <el-table-column sortable="custom" prop="price" min-width="68" label="单价" v-if="repCol.price"></el-table-column>
           <el-table-column prop="exPrice" min-width="50" label="熟练加价" v-if="repCol.exPrice"></el-table-column>
-          <el-table-column sortable="custom" prop="time_show" min-width="79" label="单时间" v-if="repCol.time"></el-table-column>
+          <el-table-column sortable="custom" prop="time_show" min-width="80" label="单时间" v-if="repCol.time"></el-table-column>
           <el-table-column sortable="custom" prop="limit" min-width="65" label="一组" v-if="repCol.limit"></el-table-column>
           <el-table-column sortable="custom" prop="total_price" min-width="65" label="总价" v-if="repCol.total_price"></el-table-column>
           <el-table-column sortable="custom" prop="total_time_show" min-width="100" label="总时间" v-if="repCol.total_time_show"></el-table-column>
@@ -89,13 +104,10 @@
           <el-table-column sortable="custom" prop="material_eff" label="耗材/小时" min-width="100" v-if="repCol.material_eff"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="repCol.origin"></el-table-column>
           <el-table-column sortable="custom" prop="unlock" label="可解锁" v-if="repCol.unlock"></el-table-column>
-          <el-table-column prop="01" label="可合成" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="贵客" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="升阶贵客" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="神级符文" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="品阶" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="熟练" v-if="repCol.hh"></el-table-column>
-          <el-table-column prop="01" label="已有" v-if="repCol.hh"></el-table-column>
+          <el-table-column sortable="custom" prop="combo" min-width="80" label="可合成" v-if="repCol.combo"></el-table-column>
+          <el-table-column sortable="custom" prop="normal_guests" min-width="125" label="贵客" v-if="repCol.guests"></el-table-column>
+          <el-table-column prop="degree_guests" label="升阶贵客" min-width="110" v-if="repCol.degree_guests"></el-table-column>
+          <el-table-column prop="gift" label="神级符文" min-width="85" v-if="repCol.gift"></el-table-column>
         </el-table>
         <div class="pagination">
           <el-pagination

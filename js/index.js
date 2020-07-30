@@ -36,6 +36,30 @@ $(function() {
         material_eff: false,
         origin: true,
         unlock: false,
+        combo: false,
+        guests: false,
+        degree_guests: false,
+        gift: false,
+      },
+      repColName: {
+        id: '编号',
+        rarity: '星级',
+        skills: '技法',
+        materials: '材料',
+        price: '单价',
+        exPrice: '熟练加价',
+        time: '单时间',
+        limit: '一组',
+        total_price: '总价',
+        total_time_show: '总时间',
+        gold_eff: '金币效率',
+        material_eff: '总耗材效率',
+        origin: '来源',
+        unlock: '解锁',
+        combo: '合成',
+        guests: '贵客',
+        degree_guests: '升阶贵客',
+        gift: '神级符文',
       },
       repKeyword: '',
       recipesCurPage: 1,
@@ -63,7 +87,6 @@ $(function() {
         $.ajax({
           url: './data/data.min.json'
         }).then(rst => {
-          console.log(rst);
           this.data = rst;
           this.initData();
         });
@@ -73,6 +96,7 @@ $(function() {
         this.leftBar = false;
       },
       initData() {
+        const combo_recipes = this.data.recipes.slice(-8);
         this.data.recipes = this.data.recipes.map(item => {
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
@@ -100,6 +124,28 @@ $(function() {
           item.total_time = item.time * item.limit;
           item.total_time_show = this.formatTime(item.total_time);
           item.material_eff = ~~(3600 / item.time * materials_cnt);
+          item.combo = [];
+          for (const i of this.data.combos) {
+            if (i.recipes.indexOf(item.recipeId) > -1) {
+              const combo = combo_recipes.find(r => {
+                return r.recipeId === i.recipeId;
+              });
+              item.combo.push(combo.name);
+            }
+          }
+          item.combo = item.combo.join('\n');
+          item.degree_guests = item.guests.map((g, i) => {
+            return `${'优特神'.slice(i, i + 1)}-${g.guest}`;
+          }).join('\n');
+          const guests = [];
+          for (const g of this.data.guests) {
+            const rep = g.gifts.map(r => r.recipe);
+            const index = rep.indexOf(item.name);
+            if (index > -1) {
+              guests.push(`${g.name}-${g.gifts[index].antique}`);
+            }
+          }
+          item.normal_guests = guests.join('\n');
           return item;
         });
         this.initRep();
@@ -110,7 +156,8 @@ $(function() {
           const s_name = item.name.indexOf(this.repKeyword) > -1;
           const s_origin = item.origin.indexOf(this.repKeyword) > -1;
           const s_material = item.materials_search.indexOf(this.repKeyword) > -1;
-          if (s_name || s_origin || s_material) {
+          const s_guest = item.normal_guests.indexOf(this.repKeyword) > -1;
+          if (s_name || s_origin || s_material || s_guest) {
             this.recipes.push(item);
           }
         }
@@ -198,11 +245,35 @@ $(function() {
           this.$refs.questsTable.clearSort();
         });
       },
+      checkCol(key) {
+        const result = [];
+        for (const k in this.repCol) {
+          if (this.repCol[k] && k !== 'id') {
+            result.push(k);
+          }
+        }
+        if (this.repCol[key] && result.length <= 1 && key !== 'id') {
+          this.$message.warning({
+            showClose: true,
+            message: '请至少选择一个除编号外的显示列'
+          });
+          return;
+        }
+        this.repCol[key] = !this.repCol[key];
+      },
       reset() {
         //
       }
     },
     watch: {
+      repCol: {
+        deep: true,
+        handler() {
+          this.$nextTick(()=>{
+            this.$refs.recipesTable.doLayout();
+          });
+        }
+      },
       repKeyword() {
         this.initRep();
       },

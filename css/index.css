@@ -246,3 +246,36 @@ section.header .right {
 .input-with-select .el-input-group__prepend {
   background-color: #fff;
 }
+
+.box {
+  padding: 5px 10px;
+  margin-top: 20px;
+}
+
+.box-title {
+  margin-left: 3px;
+  padding-left: 10px;
+  height: 20px;
+  line-height: 20px;
+  color: #526874;
+  border-left: 3px #82a1b0 solid;
+}
+
+.box .hr {
+  border-top: 1px #dcdfe6 solid;
+  margin: 8px 0 5px 3px;
+}
+
+.checkbox {
+  display: inline-block;
+  font-size: 14px;
+  padding: 3px 12px;
+  margin: 5px 3px;
+  border: 1px solid #dcdfe6;
+  border-radius: 3px;
+}
+.checkbox.active {
+  color: #fff;
+  background: #82a1b0;
+  border-color: #82a1b0;
+}
