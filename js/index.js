@@ -26,6 +26,7 @@ $(function() {
         id: false,
         rarity: false,
         skills: false,
+        materials: false,
         price: true,
         exPrice: false,
         time: true,
@@ -245,22 +246,6 @@ $(function() {
           this.$refs.questsTable.clearSort();
         });
       },
-      checkCol(key) {
-        const result = [];
-        for (const k in this.repCol) {
-          if (this.repCol[k] && k !== 'id') {
-            result.push(k);
-          }
-        }
-        if (this.repCol[key] && result.length <= 1 && key !== 'id') {
-          this.$message.warning({
-            showClose: true,
-            message: '请至少选择一个除编号外的显示列'
-          });
-          return;
-        }
-        this.repCol[key] = !this.repCol[key];
-      },
       reset() {
         //
       }
@@ -284,7 +269,6 @@ $(function() {
         this.initQuests();
       },
       navId(val) {
-        console.log(val);
         if (val === 1) {
           this.initRep();
           this.$nextTick(()=>{
