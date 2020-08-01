@@ -89,6 +89,7 @@ $(function() {
         combo: false,
         price: '',
       },
+      originRepFilter: {},
       material_type: [
         {
           origin: ['菜棚', '菜地', '森林'],
@@ -139,6 +140,7 @@ $(function() {
     },
     mounted() {
       this.loadData();
+      this.originRepFilter = JSON.parse(JSON.stringify(this.repFilter));
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -436,34 +438,7 @@ $(function() {
       },
       reset() {
         if (this.navId === 1) {
-          this.repFilter = {
-            rarity: {
-              1: true,
-              2: true,
-              3: true,
-              4: true,
-              5: true
-            },
-            skill: {
-              stirfry: { name: '炒', flag: true },
-              boil: { name: '煮', flag: true },
-              knife: { name: '切', flag: true },
-              fry: { name: '炸', flag: true },
-              bake: { name: '烤', flag: true },
-              steam: { name: '蒸', flag: true },
-            },
-            material: {
-              vegetable: { name: '菜', flag: true },
-              meat: { name: '肉', flag: true },
-              creation: { name: '面', flag: true },
-              fish: { name: '鱼', flag: true },
-            },
-            material_type: false,
-            guest: false,
-            combo: false,
-          };
-          this.skill_radio = false;
-          this.skill_type = false;
+          this.repFilter = JSON.parse(JSON.stringify(this.originRepFilter));
         }
       }
     },
