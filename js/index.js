@@ -129,6 +129,7 @@ $(function() {
       questsPageSize: 20,
     },
     mounted() {
+      $('#main').height(window.innerHeight);
       this.loadData();
     },
     methods: {

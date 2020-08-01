@@ -341,8 +341,8 @@ section.header .right {
   padding: 0px 7px;
 }
 .box .el-input--small .el-input__inner {
-  height: 27px;
-  line-height: 27px;
+  height: 28px;
+  line-height: 28px;
 }
 .box .el-input__inner:focus {
   border: 1px solid #dcdfe6;
