@@ -127,10 +127,27 @@ $(function() {
       questsRegional: [],
       questsCurPage: 1,
       questsPageSize: 20,
+      isOriginHei: true,
+      screenHeight:
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.body.clientHeight,
+      originHeight:
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.body.clientHeight,
     },
     mounted() {
-      $('#main').height(window.innerHeight);
       this.loadData();
+      const that = this;
+      window.onresize = function() {
+        return (function() {
+          that.screenHeight =
+            window.innerHeight ||
+            document.documentElement.clientHeight ||
+            document.body.clientHeight;
+        })();
+      };
     },
     methods: {
       loadData() {
@@ -451,6 +468,13 @@ $(function() {
       }
     },
     watch: {
+      screenHeight(val) {
+        if (this.originHeight - val > 150) {
+          this.isOriginHei = false;
+        } else {
+          this.isOriginHei = true;
+        }
+      },
       repCol: {
         deep: true,
         handler() {

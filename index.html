@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ch">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -108,13 +108,13 @@
               </div>
             </div>
           </div>
-          <footer>
+          <footer v-show="isOriginHei">
             <button class="btn btn-primary" @click="rightBar = false">确定</button>
             <button class="btn btn-reset" @click="reset">重置</button>
           </footer>
         </div>
       </el-drawer>
-      <div v-if="navId < 6 && !hideSuspend" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="navId < 6 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
