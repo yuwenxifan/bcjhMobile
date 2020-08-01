@@ -87,6 +87,7 @@ $(function() {
         material_type: false,
         guest: false,
         combo: false,
+        price: '',
       },
       material_type: [
         {
@@ -242,7 +243,8 @@ $(function() {
           }
           const f_guest = !this.repFilter.guest || item.normal_guests;
           const f_combo = !this.repFilter.combo || item.combo;
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo) {
+          const f_price = item.price > this.repFilter.price;
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price) {
             this.recipes.push(item);
           }
         }
@@ -407,40 +409,44 @@ $(function() {
               skill[key].flag = false;
             }
             this.repFilter.skill = skill;
+          } else {
+            this.initRep();
           }
         } else {
           this.initRep();
         }
       },
       reset() {
-        this.repFilter = {
-          rarity: {
-            1: true,
-            2: true,
-            3: true,
-            4: true,
-            5: true
-          },
-          skill: {
-            stirfry: { name: '炒', flag: true },
-            boil: { name: '煮', flag: true },
-            knife: { name: '切', flag: true },
-            fry: { name: '炸', flag: true },
-            bake: { name: '烤', flag: true },
-            steam: { name: '蒸', flag: true },
-          },
-          material: {
-            vegetable: { name: '菜', flag: true },
-            meat: { name: '肉', flag: true },
-            creation: { name: '面', flag: true },
-            fish: { name: '鱼', flag: true },
-          },
-          material_type: false,
-          guest: false,
-          combo: false,
-        };
-        this.skill_radio = false;
-        this.skill_type = false;
+        if (this.navId === 1) {
+          this.repFilter = {
+            rarity: {
+              1: true,
+              2: true,
+              3: true,
+              4: true,
+              5: true
+            },
+            skill: {
+              stirfry: { name: '炒', flag: true },
+              boil: { name: '煮', flag: true },
+              knife: { name: '切', flag: true },
+              fry: { name: '炸', flag: true },
+              bake: { name: '烤', flag: true },
+              steam: { name: '蒸', flag: true },
+            },
+            material: {
+              vegetable: { name: '菜', flag: true },
+              meat: { name: '肉', flag: true },
+              creation: { name: '面', flag: true },
+              fish: { name: '鱼', flag: true },
+            },
+            material_type: false,
+            guest: false,
+            combo: false,
+          };
+          this.skill_radio = false;
+          this.skill_type = false;
+        }
       }
     },
     watch: {

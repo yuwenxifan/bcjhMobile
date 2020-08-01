@@ -14,7 +14,7 @@
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
           <img class="img-header" src="./images/saltFish.png" alt="咸公主">
-          <div class="title">爆炒江湖图鉴</div>
+          <div class="title">白菜菊花图鉴</div>
           <div class="sub-title">by 小鱼、L</div>
         </div>
         <div class="body">
@@ -24,7 +24,7 @@
           </div>
         </div>
       </el-drawer>
-      <el-drawer class="right-bar" :visible.sync="rightBar" size="280px" :with-header="false">
+      <el-drawer class="right-bar" :visible.sync="rightBar" size="295px" :with-header="false">
         <div class="right-bar-body">
           <div v-if="navId === 1">
             <div class="box">
@@ -100,6 +100,11 @@
                   :class="repFilter.combo ? 'active' : ''"
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
+              </div>
+              <div class="checkbox-contain">
+                <el-input v-model="repFilter.price" size='small' width="100px">
+                  <template slot="prepend">单价大于</template>
+                </el-input>
               </div>
             </div>
           </div>

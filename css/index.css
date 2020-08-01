@@ -203,7 +203,7 @@ section.header .right {
 .right-bar footer {
   position: absolute;
   bottom: 0;
-  padding: 20px 15px;
+  padding: 0px 0px 20px 15px;
 }
 
 .btn {
@@ -258,9 +258,13 @@ section.header .right {
   background-color: #fff;
 }
 
+.el-drawer__body {
+  overflow: auto;
+}
+
 .right-bar-body {
   padding-top: 10px;
-  padding-bottom: 78px;
+  padding-bottom: 350px;
 }
 
 .box {
@@ -291,12 +295,13 @@ section.header .right {
   margin: 5px 3px;
   border: 1px solid #dcdfe6;
   background-color: #fff;
-  border-radius: 3px;
+  border-radius: 3px; 
   color: #606266;
 }
 .checkbox.active {
   border-color: #a3bac5;
   color: #82a1b0;
+  font-weight: 500;
 }
 
 .checkbox-contain {
@@ -318,8 +323,27 @@ section.header .right {
 .el-switch__label {
   margin-left: 5px;
   color: #606266;
+  font-weight: 400;
 }
 
 .el-switch__label.el-switch__label--right.is-active {
   color: #82a1b0;
+}
+
+.box .el-input {
+  width: 113px;
+  margin: 3px 2px;
+}
+.box .el-input-group__prepend {
+  padding: 0 7px;
+}
+.box .el-input__inner {
+  padding: 0px 7px;
+}
+.box .el-input--small .el-input__inner {
+  height: 27px;
+  line-height: 27px;
+}
+.box .el-input__inner:focus {
+  border: 1px solid #dcdfe6;
 }
