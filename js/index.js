@@ -62,7 +62,54 @@ $(function() {
         degree_guests: '升阶贵客',
         gift: '神级符文',
       },
+      repFilter: {
+        rarity: {
+          1: true,
+          2: true,
+          3: true,
+          4: true,
+          5: true
+        },
+        skill: {
+          stirfry: { name: '炒', flag: true },
+          boil: { name: '煮', flag: true },
+          knife: { name: '切', flag: true },
+          fry: { name: '炸', flag: true },
+          bake: { name: '烤', flag: true },
+          steam: { name: '蒸', flag: true },
+        },
+        material: {
+          vegetable: { name: '菜', flag: true },
+          meat: { name: '肉', flag: true },
+          creation: { name: '面', flag: true },
+          fish: { name: '鱼', flag: true },
+        },
+        material_type: false,
+        guest: false,
+        combo: false,
+      },
+      material_type: [
+        {
+          origin: ['菜棚', '菜地', '森林'],
+          type: 'vegetable'
+        },
+        {
+          origin: ['鸡舍', '猪圈', '牧场'],
+          type: 'meat'
+        },
+        {
+          origin: ['作坊'],
+          type: 'creation'
+        },
+        {
+          origin: ['池塘'],
+          type: 'fish'
+        },
+      ],
+      skill_radio: false,
+      skill_type: false,
       repKeyword: '',
+      guestKeyword: '',
       recipesCurPage: 1,
       recipesPageSize: 20,
       questsType: 1,
@@ -118,6 +165,16 @@ $(function() {
             }).name;
             return name;
           }).join(' ');
+          item.materials_type = item.materials.map(m => {
+            const origin = this.data.materials.find(i => {
+              return i.materialId == m.material;
+            }).origin;
+            const m_type = this.material_type.find(t => {
+              return t.origin.indexOf(origin) > -1;
+            }).type;
+            return m_type;
+          });
+          item.materials_type = Array.from(new Set(item.materials_type));
           item.origin = item.origin.replace('<br>', '\n');
           item.time_show = this.formatTime(item.time);
           item.gold_eff = Math.round(3600 / item.time * item.price);
@@ -158,11 +215,43 @@ $(function() {
           const s_origin = item.origin.indexOf(this.repKeyword) > -1;
           const s_material = item.materials_search.indexOf(this.repKeyword) > -1;
           const s_guest = item.normal_guests.indexOf(this.repKeyword) > -1;
-          if (s_name || s_origin || s_material || s_guest) {
+          const search = s_name || s_origin || s_material || s_guest;
+          const g_name = item.degree_guests.indexOf(this.guestKeyword) > -1;
+          const g_gift = item.gift.indexOf(this.guestKeyword) > -1;
+          const guest = g_name || g_gift;
+          const f_rarity = this.repFilter.rarity[item.rarity];
+          let f_skill = this.skill_type;
+          for (const key in this.repFilter.skill) {
+            if (this.repFilter.skill[key].flag) {
+              if (this.skill_type) {
+                f_skill = f_skill && Boolean(item[key]);
+              } else {
+                f_skill = f_skill || Boolean(item[key]);
+              }
+            }
+          }
+          let f_material = this.repFilter.material_type;
+          for (const key in this.repFilter.material) {
+            if (this.repFilter.material[key].flag) {
+              if (this.repFilter.material_type) {
+                f_material = f_material && (item.materials_type.indexOf(key) > -1);
+              } else {
+                f_material = f_material || (item.materials_type.indexOf(key) > -1);
+              }
+            }
+          }
+          const f_guest = !this.repFilter.guest || item.normal_guests;
+          const f_combo = !this.repFilter.combo || item.combo;
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo) {
             this.recipes.push(item);
           }
         }
+        this.recipesCurPage = 1;
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+        this.$nextTick(() => {
+          this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
+          this.$refs.recipesTable.clearSort();
+        });
       },
       formatTime(sec) {
         return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
@@ -246,8 +335,112 @@ $(function() {
           this.$refs.questsTable.clearSort();
         });
       },
+      selectAll(obj, k) {
+        let flag = false;
+        if (obj === 'repFilter.skill') {
+          this.skill_radio = false;
+          this.skill_type = false;
+          const skill = JSON.parse(JSON.stringify(this.repFilter.skill));
+          for (const key in skill) {
+            if (!skill[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in skill) {
+            skill[key].flag = flag;
+          }
+          this.repFilter.skill = skill;
+        } else {
+          for (const key in this[obj]) {
+            if (!this[obj][key]) {
+              flag = true;
+            }
+          }
+          for (const key in this[obj]) {
+            this[obj][key] = flag;
+          }
+        }
+      },
+      checkSkill(key) {
+        if (this.skill_radio) {
+          const skill = JSON.parse(JSON.stringify(this.repFilter.skill));
+          for (const k in skill) {
+            if (k === key) {
+              skill[k].flag = !skill[k].flag;
+            } else {
+              skill[k].flag = false;
+            }
+          }
+          this.repFilter.skill = skill;
+        } else {
+          this.repFilter.skill[key].flag = !this.repFilter.skill[key].flag;
+        }
+      },
+      changeSkillRadio(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.repFilter.skill));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.repFilter.skill = skill;
+          }
+        }
+      },
+      changeSkillType(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.repFilter.skill));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 2) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.repFilter.skill = skill;
+          }
+        } else {
+          this.initRep();
+        }
+      },
       reset() {
-        //
+        this.repFilter = {
+          rarity: {
+            1: true,
+            2: true,
+            3: true,
+            4: true,
+            5: true
+          },
+          skill: {
+            stirfry: { name: '炒', flag: true },
+            boil: { name: '煮', flag: true },
+            knife: { name: '切', flag: true },
+            fry: { name: '炸', flag: true },
+            bake: { name: '烤', flag: true },
+            steam: { name: '蒸', flag: true },
+          },
+          material: {
+            vegetable: { name: '菜', flag: true },
+            meat: { name: '肉', flag: true },
+            creation: { name: '面', flag: true },
+            fish: { name: '鱼', flag: true },
+          },
+          material_type: false,
+          guest: false,
+          combo: false,
+        };
+        this.skill_radio = false;
+        this.skill_type = false;
       }
     },
     watch: {
@@ -259,7 +452,19 @@ $(function() {
           });
         }
       },
+      repFilter: {
+        deep: true,
+        handler() {
+          this.initRep();
+          this.$nextTick(()=>{
+            this.$refs.recipesTable.doLayout();
+          });
+        }
+      },
       repKeyword() {
+        this.initRep();
+      },
+      guestKeyword() {
         this.initRep();
       },
       questsType() {

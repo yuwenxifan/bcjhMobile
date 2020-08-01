@@ -226,33 +226,51 @@ section.header .right {
   border: 1px solid #cc9f6c;
   color: #fff;
 }
-.el-input__inner {
-  border-color: transparent;
-  /* background-color: #f5f7fa; */
+.search-box .el-input__prefix {
+  left: 2px;
 }
-.el-input__inner:focus {
+.search-box .el-input--prefix .el-input__inner {
+  padding-left: 26px;
+  padding-right: 10px;
+}
+.search-box .el-input__inner {
+  border-color: transparent;
+  border-radius: 0;
+}
+
+.search-box .el-input__inner:focus {
   border-color: transparent;
 }
-.el-input-group__prepend {
-  border-color: transparent;
-  border-right: 0.5px solid #dcdfe6;
+.search-box .left .el-input__inner {
+  border-right: 1px solid #dcdfe6;
 }
-.el-select .el-input {
+.search-box .el-input-group__prepend {
+  border-color: transparent;
+  border-right: 1px solid #dcdfe6;
+}
+.search-box .el-select .el-input {
   width: 100px;
 }
-.el-select .el-input__inner {
+.search-box .el-select .el-input__inner {
   padding-left: 8px;
 }
-.input-with-select .el-input-group__prepend {
+.search-box .input-with-select .el-input-group__prepend {
   background-color: #fff;
+}
+
+.right-bar-body {
+  padding-top: 10px;
+  padding-bottom: 78px;
 }
 
 .box {
   padding: 5px 10px;
-  margin-top: 20px;
+  margin-top: 10px;
+  font-size: 0px;
 }
 
 .box-title {
+  font-size: 15px;
   margin-left: 3px;
   padding-left: 10px;
   height: 20px;
@@ -272,11 +290,36 @@ section.header .right {
   padding: 3px 11px;
   margin: 5px 3px;
   border: 1px solid #dcdfe6;
+  background-color: #fff;
   border-radius: 3px;
   color: #606266;
 }
 .checkbox.active {
-  color: #fff;
-  background: #82a1b0;
-  border-color: #82a1b0;
+  border-color: #a3bac5;
+  color: #82a1b0;
+}
+
+.checkbox-contain {
+  display: inline-block;
+  padding: 0px 2px;
+  border: 0.5px solid #dcdfe6;
+  background-color: #f5f7fa;
+  border-radius: 3px;
+  margin-bottom: 6px;
+  margin-right: 6px;
+}
+.checkbox-contain .checkbox {
+  margin: 4px 2px;
+}
+.box .el-switch {
+  transform: translateY(-5px);
+  margin: 0 5px;
+}
+.el-switch__label {
+  margin-left: 5px;
+  color: #606266;
+}
+
+.el-switch__label.el-switch__label--right.is-active {
+  color: #82a1b0;
 }

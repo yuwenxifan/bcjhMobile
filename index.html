@@ -25,26 +25,89 @@
         </div>
       </el-drawer>
       <el-drawer class="right-bar" :visible.sync="rightBar" size="280px" :with-header="false">
-        <div v-if="navId === 1">
-          <div class="box">
-            <div class="box-title">展示列</div>
-            <div class="hr"></div>
-            <span
-              v-for="(val, key) in repColName"
-              class="checkbox"
-              :class="repCol[key] ? 'active' : ''"
-              @click="repCol[key] = !repCol[key]"
-            >{{val}}</span>
+        <div class="right-bar-body">
+          <div v-if="navId === 1">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('repCol')">全选</span>
+              <span
+                v-for="(val, key) in repColName"
+                class="checkbox"
+                :class="repCol[key] ? 'active' : ''"
+                @click="repCol[key] = !repCol[key]"
+              >{{val}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">筛选</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in repFilter.rarity"
+                  :class="val ? 'active' : ''"
+                  @click="repFilter.rarity[key] = !val"
+                >{{key}}星</span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in repFilter.skill"
+                  :class="val.flag ? 'active' : ''"
+                  @click="checkSkill(key)"
+                >{{val.name}}</span>
+                <br/>
+                <span class="checkbox" @click="selectAll('repFilter.skill')">全选</span>
+                <el-switch
+                  v-model="skill_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeSkillRadio"
+                  inactive-color="#ddd">
+                </el-switch>
+                <el-switch
+                  v-model="skill_type"
+                  active-color="#82a1b0"
+                  active-text="且"
+                  @change="changeSkillType"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in repFilter.material"
+                  :class="val.flag ? 'active' : ''"
+                  @click="repFilter.material[key].flag = !val.flag"
+                >{{val.name}}</span>
+                <el-switch
+                  v-model="repFilter.material_type"
+                  active-color="#82a1b0"
+                  active-text="且"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  :class="repFilter.guest ? 'active' : ''"
+                  @click="repFilter.guest = !repFilter.guest"
+                >贵客</span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  :class="repFilter.combo ? 'active' : ''"
+                  @click="repFilter.combo = !repFilter.combo"
+                >可合成</span>
+              </div>
+            </div>
           </div>
-          <div class="box">
-            <div class="box-title">筛选</div>
-            <div class="hr"></div>
-          </div>
+          <footer>
+            <button class="btn btn-primary" @click="rightBar = false">确定</button>
+            <button class="btn btn-reset" @click="reset">重置</button>
+          </footer>
         </div>
-        <footer>
-          <button class="btn btn-primary" @click="rightBar = false">确定</button>
-          <button class="btn btn-reset" @click="reset">重置</button>
-        </footer>
       </el-drawer>
       <div v-if="navId < 6 && !hideSuspend" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
@@ -75,8 +138,16 @@
     <section class="body">
       <div v-if="navId === 1">
         <div class="search-box">
-          <el-input size="small" prefix-icon="el-icon-search" placeholder="菜名 材料 贵客 符文 来源" v-model="repKeyword">
-          </el-input>
+          <el-row>
+            <el-col :span="13">
+              <el-input class="left" size="small" prefix-icon="el-icon-search" placeholder="菜名 材料 贵客 符文 来源" v-model="repKeyword">
+              </el-input>
+            </el-col>
+            <el-col :span="11">
+              <el-input size="small" prefix-icon="el-icon-search" placeholder="升阶贵客 神级符文" v-model="guestKeyword">
+              </el-input>
+            </el-col>
+          </el-row>
         </div>
         <el-table
           :data="recipesPage"
