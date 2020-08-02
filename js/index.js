@@ -6,6 +6,7 @@ $(function() {
       rightBar: false,
       hideSuspend: false,
       settingVisible: false,
+      reg: new RegExp( '<br>' , "g" ),
       nav: [
         { id: 1, name: '菜谱', icon: 'el-icon-food' },
         { id: 2, name: '厨师', icon: 'el-icon-user' },
@@ -17,7 +18,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 3,
       tableHeight: window.innerHeight - 122,
       data: [],
       recipes: [],
@@ -164,6 +165,31 @@ $(function() {
       originChefFilter: {},
       chefsCurPage: 1,
       chefsPageSize: 20,
+      equips: [],
+      equipsPage: [],
+      equipCol: {
+        id: false,
+        rarity: true,
+        skill: true,
+        origin: true
+      },
+      equipColName: {
+        id: '编号',
+        rarity: '星',
+        skill: '技能',
+        origin: '来源'
+      },
+      equipFilter: {
+        equipKeyword: '',
+        rarity: {
+          1: true,
+          2: true,
+          3: true
+        },
+      },
+      originEquipFilter: {},
+      equipsCurPage: 1,
+      equipsPageSize: 20,
       questsType: 1,
       questsTypes: [{
         value: 1,
@@ -190,8 +216,10 @@ $(function() {
     },
     mounted() {
       this.loadData();
-      this.originRepFilter = JSON.parse(JSON.stringify(this.repFilter));
-      this.originChefFilter = JSON.parse(JSON.stringify(this.chefFilter));
+      const arr = ['Rep', 'Chef', 'Equip'];
+      for (const key of arr) {
+        this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
+      }
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -247,7 +275,7 @@ $(function() {
             return m_type;
           });
           item.materials_type = Array.from(new Set(item.materials_type));
-          item.origin = item.origin.replace('<br>', '\n');
+          item.origin = item.origin.replace(this.reg, '\n');
           item.time_show = this.formatTime(item.time);
           item.gold_eff = Math.round(3600 / item.time * item.price);
           item.total_price = item.price * item.limit;
@@ -289,7 +317,7 @@ $(function() {
           });
           item.skill = skill.desc;
           item.sex = item.tags ? (item.tags[0] == 1 ? '男' : '女') : '';
-          item.origin = item.origin.replace('<br>', '\n');
+          item.origin = item.origin.replace(this.reg, '\n');
           item.ultimateGoal = item.ultimateGoal.join('\n');
           const ultimateSkill = this.data.skills.find(s => {
             return s.skillId === item.ultimateSkill;
@@ -297,10 +325,21 @@ $(function() {
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
           return item;
         });
+        this.data.equips = this.data.equips.map(item => {
+          item.rarity_show = '★★★'.slice(0, item.rarity);
+          const skill = this.data.skills.filter(s => {
+            return item.skill.indexOf(s.skillId) > -1;
+          });
+          item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
+          item.origin = item.origin.replace(this.reg, '\n');
+          return item;
+        });
         if (this.navId === 1) {
           this.initRep();
         } else if (this.navId === 2) {
           this.initChef();
+        } else if (this.navId === 3) {
+          this.initEquip();
         }
       },
       initRep() {
@@ -379,6 +418,25 @@ $(function() {
           this.$refs.chefsTable.clearSort();
         });
       },
+      initEquip() {
+        this.equips = [];
+        for (const item of this.data.equips) {
+          const s_name = item.name.indexOf(this.equipFilter.equipKeyword) > -1;
+          const s_skill = item.skill.indexOf(this.equipFilter.equipKeyword) > -1;
+          const s_origin = item.origin.indexOf(this.equipFilter.equipKeyword) > -1;
+          const search = s_name || s_skill || s_origin;
+          const f_rarity = this.equipFilter.rarity[item.rarity];
+          if (search && f_rarity) {
+            this.equips.push(item);
+          }
+        }
+        this.equipsCurPage = 1;
+        this.equipsPage = this.equips.slice(0, this.equipsPageSize);
+        this.$nextTick(() => {
+          this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
+          this.$refs.equipsTable.clearSort();
+        });
+      },
       formatTime(sec) {
         return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
       },
@@ -386,6 +444,7 @@ $(function() {
         const map = {
           1: 'recipes',
           2: 'chefs',
+          3: 'equips'
         }
         const nav = this.navId;
         if (nav === 6) {
@@ -425,6 +484,18 @@ $(function() {
         this.chefsCurPage = 1;
         this.chefs.sort(this.customSort(sort));
         this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
+      },
+      handleEquipSort(sort) {
+        const map = {
+          rarity_show: 'rarity',
+        };
+        if (!sort.order) {
+          this.initEquip();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.equipsCurPage = 1;
+        this.equips.sort(this.customSort(sort));
+        this.equipsPage = this.equips.slice(0, this.equipsPageSize);
       },
       clearFilterSkills() {
         this.chefFilter.skills = JSON.parse(JSON.stringify(this.originChefFilter.skills))
@@ -563,14 +634,18 @@ $(function() {
         }
       },
       reset() {
+        const map = {
+          2: 'Chef',
+          3: 'Equip'
+        };
         if (this.navId === 1) {
           this.repFilter = JSON.parse(JSON.stringify(this.originRepFilter));
           this.skill_radio = false;
           this.skill_type = false;
           this.repKeyword = '';
           this.guestKeyword = '';
-        } else if (this.navId === 2) {
-          this.chefFilter = JSON.parse(JSON.stringify(this.originChefFilter));
+        } else {
+          this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
         }
       }
     },
@@ -613,6 +688,23 @@ $(function() {
           this.initChef();
           this.$nextTick(()=>{
             this.$refs.chefsTable.doLayout();
+          });
+        }
+      },
+      equipCol: {
+        deep: true,
+        handler() {
+          this.$nextTick(()=>{
+            this.$refs.equipsTable.doLayout();
+          });
+        }
+      },
+      equipFilter: {
+        deep: true,
+        handler() {
+          this.initEquip();
+          this.$nextTick(()=>{
+            this.$refs.equipsTable.doLayout();
           });
         }
       },
