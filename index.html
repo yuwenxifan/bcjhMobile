@@ -135,7 +135,10 @@
                 >{{key}}星</span>
               </div>
               <div class="checkbox-contain">
-                <div class="prepend-input" v-for="(val, key) in chefFilter.skills">
+                <!-- 不知道为什么抽屉的第一个input会自动获取焦点，奇奇怪怪的 -->
+                <!-- 我在这里放一个看不见的input，不能是text类型否则手机会呼起软键盘 -->
+                <input class="hidden" type="checkbox">
+                <div class="prepend-input" v-for="(val, key) in chefFilter.skills" :key="key">
                   <div class="input-box">
                     <div class="prepend">{{val.name}}</div>
                     <input v-model="chefFilter.skills[key].val" />

@@ -569,6 +569,8 @@ $(function() {
           this.skill_type = false;
           this.repKeyword = '';
           this.guestKeyword = '';
+        } else if (this.navId === 2) {
+          this.chefFilter = JSON.parse(JSON.stringify(this.originChefFilter));
         }
       }
     },

@@ -344,8 +344,10 @@ section.header .right {
   display: flex;
 }
 .prepend-input .prepend {
-  display: inline;
-  padding: 3px 9px;
+  display: inline-block;
+  padding: 0px 9px;
+  height: 23.34px;
+  line-height: 23.34px;
   border: 1px solid #dcdfe6;
   border-right: 0;
   border-radius: 4px;
@@ -355,8 +357,8 @@ section.header .right {
 .prepend-input input {
   display: inline-block;
   width: 30px;
-  height: 24px;
-  line-height: 24px;
+  height: 23.34px;
+  line-height: 23.34px;
   border: none;
   padding: 0px 5px;
   border: 1px solid #DCDFE6;
@@ -374,4 +376,8 @@ input:focus {
   right: 3px;
   top: 0px;
   padding: 11px 8px;
+}
+input.hidden {
+  width: 0px;
+  height: 0px;
 }
