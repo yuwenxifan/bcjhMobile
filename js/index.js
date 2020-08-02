@@ -636,6 +636,15 @@ $(function() {
             this.$refs.recipesTable.bodyWrapper.scrollLeft = 0;
             this.$refs.recipesTable.doLayout();
           });
+        } else if (val == 2) {
+          if (this.chefs.length == 0) {
+            this.initChef();
+          }
+          this.$nextTick(()=>{
+            this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
+            this.$refs.chefsTable.bodyWrapper.scrollLeft = 0;
+            this.$refs.chefsTable.doLayout();
+          });
         } else if (val === 6) {
           if (this.questsMain.length == 0) {
             this.initQuests();
