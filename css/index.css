@@ -1,4 +1,7 @@
 /* 初始化css */
+body {
+  -webkit-tap-highlight-color: transparent;
+}
 body,
 h1,
 h2,
@@ -268,7 +271,7 @@ section.header .right {
 }
 
 .box {
-  padding: 5px 10px;
+  padding: 5px 4px 5px 10px;
   margin-top: 10px;
   font-size: 0px;
 }
@@ -290,6 +293,7 @@ section.header .right {
 
 .checkbox {
   display: inline-block;
+  cursor: pointer;
   font-size: 13px;
   padding: 3px 11px;
   margin: 5px 3px;
@@ -305,6 +309,7 @@ section.header .right {
 }
 
 .checkbox-contain {
+  position: relative;
   display: inline-block;
   padding: 0px 2px;
   border: 0.5px solid #dcdfe6;
@@ -329,21 +334,44 @@ section.header .right {
 .el-switch__label.el-switch__label--right.is-active {
   color: #82a1b0;
 }
-
-.box .el-input {
-  width: 113px;
-  margin: 3px 2px;
+.prepend-input {
+  font-size: 13px;
+  display: inline-block;
+  margin: 4px 2px;
+  color: #606266;
 }
-.box .el-input-group__prepend {
-  padding: 0 7px;
+.prepend-input .input-box {
+  display: flex;
 }
-.box .el-input__inner {
-  padding: 0px 7px;
-}
-.box .el-input--small .el-input__inner {
-  height: 28px;
-  line-height: 28px;
-}
-.box .el-input__inner:focus {
+.prepend-input .prepend {
+  display: inline;
+  padding: 3px 9px;
   border: 1px solid #dcdfe6;
+  border-right: 0;
+  border-radius: 4px;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.prepend-input input {
+  display: inline-block;
+  width: 30px;
+  height: 24px;
+  line-height: 24px;
+  border: none;
+  padding: 0px 5px;
+  border: 1px solid #DCDFE6;
+  border-radius: 4px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  color: #606266;
+}
+input:focus {
+  outline: none;
+  border: 1px solid #DCDFE6 ;
+}
+.checkbox.clear {
+  position: absolute;
+  right: 3px;
+  top: 0px;
+  padding: 11px 8px;
 }

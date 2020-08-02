@@ -17,7 +17,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 2,
       tableHeight: window.innerHeight - 122,
       data: [],
       recipes: [],
@@ -114,6 +114,56 @@ $(function() {
       guestKeyword: '',
       recipesCurPage: 1,
       recipesPageSize: 20,
+      chefs: [],
+      chefsPage: [],
+      chefCol: {
+        id: false,
+        rarity: false,
+        skills: true,
+        skill: true,
+        gather: false,
+        sex: false,
+        origin: true,
+        ultimateGoal: false,
+        ultimateSkill: false
+      },
+      chefColName: {
+        id: '编号',
+        rarity: '星',
+        skills: '技法',
+        skill: '技能',
+        gather: '采集',
+        sex: '性别',
+        origin: '来源',
+        ultimateGoal: '修炼任务',
+        ultimateSkill: '修炼技能'
+      },
+      chefFilter: {
+        chefKeyword: '',
+        rarity: {
+          1: true,
+          2: true,
+          3: true,
+          4: true,
+          5: true
+        },
+        skills: {
+          stirfry: { name: '炒', val: '' },
+          boil: { name: '煮', val: '' },
+          knife: { name: '切', val: '' },
+          fry: { name: '炸', val: '' },
+          bake: { name: '烤', val: '' },
+          steam: { name: '蒸', val: '' },
+        },
+        sex: {
+          male: { name: '男', flag: true },
+          female: { name: '女', flag: true },
+          other: { name: '未知', flag: true }
+        }
+      },
+      originChefFilter: {},
+      chefsCurPage: 1,
+      chefsPageSize: 20,
       questsType: 1,
       questsTypes: [{
         value: 1,
@@ -141,6 +191,7 @@ $(function() {
     mounted() {
       this.loadData();
       this.originRepFilter = JSON.parse(JSON.stringify(this.repFilter));
+      this.originChefFilter = JSON.parse(JSON.stringify(this.chefFilter));
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -227,7 +278,30 @@ $(function() {
           item.normal_guests = guests.join('\n');
           return item;
         });
-        this.initRep();
+        this.data.chefs = this.data.chefs.map(item => {
+          item.rarity_show = '★★★★★'.slice(0, item.rarity);
+          const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam', 'meat', 'veg', 'fish', 'creation'];
+          for (let i of skill_arr) {
+            item[i] = item[i] || null;
+          }
+          const skill = this.data.skills.find(s => {
+            return s.skillId === item.skill;
+          });
+          item.skill = skill.desc;
+          item.sex = item.tags ? (item.tags[0] == 1 ? '男' : '女') : '';
+          item.origin = item.origin.replace('<br>', '\n');
+          item.ultimateGoal = item.ultimateGoal.join('\n');
+          const ultimateSkill = this.data.skills.find(s => {
+            return s.skillId === item.ultimateSkill;
+          });
+          item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
+          return item;
+        });
+        if (this.navId === 1) {
+          this.initRep();
+        } else if (this.navId === 2) {
+          this.initChef();
+        }
       },
       initRep() {
         this.recipes = [];
@@ -275,20 +349,55 @@ $(function() {
           this.$refs.recipesTable.clearSort();
         });
       },
+      initChef() {
+        this.chefs = [];
+        for (const item of this.data.chefs) {
+          const s_name = item.name.indexOf(this.chefFilter.chefKeyword) > -1;
+          const s_skill = item.skill.indexOf(this.chefFilter.chefKeyword) > -1;
+          const s_origin = item.origin.indexOf(this.chefFilter.chefKeyword) > -1;
+          const search = s_name || s_skill || s_origin;
+          const f_rarity = this.chefFilter.rarity[item.rarity];
+          let f_skills = true;
+          for (key in this.chefFilter.skills) {
+            f_skills = f_skills && (item[key] >= this.chefFilter.skills[key].val);
+          }
+          const sex_check = [];
+          for (key in this.chefFilter.sex) {
+            if (this.chefFilter.sex[key].flag) {
+              sex_check.push(this.chefFilter.sex[key].name);
+            }
+          }
+          const f_sex = sex_check.indexOf(item.sex || '未知') > -1;
+          if (search && f_rarity && f_skills && f_sex) {
+            this.chefs.push(item);
+          }
+        }
+        this.chefsCurPage = 1;
+        this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
+        this.$nextTick(() => {
+          this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
+          this.$refs.chefsTable.clearSort();
+        });
+      },
       formatTime(sec) {
         return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
       },
       handleCurrentChange(val) {
-        if (this.navId === 1) {
-          this.recipesCurPage = val;
-          const size = this.recipesPageSize;
-          this.recipesPage = this.recipes.slice((val - 1) * size, val * size);
-        } else if (this.navId === 6) {
+        const map = {
+          1: 'recipes',
+          2: 'chefs',
+        }
+        const nav = this.navId;
+        if (nav === 6) {
           this.questsCurPage = val;
           const size = this.questsPageSize;
           const quests = this.questsType === 1 ? this.questsMain : this.questsRegional;
           this.questsPage = quests.slice((val - 1) * size, val * size);
           this.$refs.questsTable.bodyWrapper.scrollTop = 0;
+        } else {
+          this[map[nav] + 'CurPage'] = val;
+          const size = this[map[nav] + 'PageSize'];
+          this[map[nav] + 'Page'] = this[map[nav]].slice((val - 1) * size, val * size);
         }
       },
       handleRepSort(sort) {
@@ -304,6 +413,21 @@ $(function() {
         this.recipesCurPage = 1;
         this.recipes.sort(this.customSort(sort));
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+      },
+      handleChefSort(sort) {
+        const map = {
+          rarity_show: 'rarity',
+        };
+        if (!sort.order) {
+          this.initChef();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.chefsCurPage = 1;
+        this.chefs.sort(this.customSort(sort));
+        this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
+      },
+      clearFilterSkills() {
+        this.chefFilter.skills = JSON.parse(JSON.stringify(this.originChefFilter.skills))
       },
       handleQuestsSort(sort) {
         if (!sort.order) {
@@ -357,7 +481,7 @@ $(function() {
           this.$refs.questsTable.clearSort();
         });
       },
-      selectAll(obj, k) {
+      selectAll(obj) {
         let flag = false;
         if (obj === 'repFilter.skill') {
           this.skill_radio = false;
@@ -378,9 +502,11 @@ $(function() {
               flag = true;
             }
           }
+          let object = {};
           for (const key in this[obj]) {
-            this[obj][key] = flag;
+            object[key] = flag;
           }
+          this[obj] = JSON.parse(JSON.stringify(object));
         }
       },
       checkSkill(key) {
@@ -439,6 +565,10 @@ $(function() {
       reset() {
         if (this.navId === 1) {
           this.repFilter = JSON.parse(JSON.stringify(this.originRepFilter));
+          this.skill_radio = false;
+          this.skill_type = false;
+          this.repKeyword = '';
+          this.guestKeyword = '';
         }
       }
     },
@@ -467,6 +597,23 @@ $(function() {
           });
         }
       },
+      chefCol: {
+        deep: true,
+        handler() {
+          this.$nextTick(()=>{
+            this.$refs.chefsTable.doLayout();
+          });
+        }
+      },
+      chefFilter: {
+        deep: true,
+        handler() {
+          this.initChef();
+          this.$nextTick(()=>{
+            this.$refs.chefsTable.doLayout();
+          });
+        }
+      },
       repKeyword() {
         this.initRep();
       },
@@ -481,14 +628,18 @@ $(function() {
       },
       navId(val) {
         if (val === 1) {
-          this.initRep();
+          if (this.recipes.length == 0) {
+            this.initRep();
+          }
           this.$nextTick(()=>{
             this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
             this.$refs.recipesTable.bodyWrapper.scrollLeft = 0;
             this.$refs.recipesTable.doLayout();
           });
         } else if (val === 6) {
-          this.initQuests();
+          if (this.questsMain.length == 0) {
+            this.initQuests();
+          }
         }
       }
     }

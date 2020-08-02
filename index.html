@@ -68,7 +68,7 @@
                 <el-switch
                   v-model="skill_type"
                   active-color="#82a1b0"
-                  active-text="且"
+                  active-text="同时"
                   @change="changeSkillType"
                   inactive-color="#ddd">
                 </el-switch>
@@ -83,7 +83,7 @@
                 <el-switch
                   v-model="repFilter.material_type"
                   active-color="#82a1b0"
-                  active-text="且"
+                  active-text="同时"
                   inactive-color="#ddd">
                 </el-switch>
               </div>
@@ -102,15 +102,62 @@
                 >可合成</span>
               </div>
               <div class="checkbox-contain">
-                <el-input v-model="repFilter.price" size='small' width="100px">
-                  <template slot="prepend">单价大于</template>
-                </el-input>
+                <div class="prepend-input">
+                  <div class="input-box">
+                    <div class="prepend">单价大于</div>
+                    <input v-model="repFilter.price" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="navId === 2">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('chefCol')">全选</span>
+              <span
+                v-for="(val, key) in chefColName"
+                class="checkbox"
+                :class="chefCol[key] ? 'active' : ''"
+                @click="chefCol[key] = !chefCol[key]"
+              >{{val}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">筛选</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in chefFilter.rarity"
+                  :class="val ? 'active' : ''"
+                  @click="chefFilter.rarity[key] = !val"
+                >{{key}}星</span>
+              </div>
+              <div class="checkbox-contain">
+                <div class="prepend-input" v-for="(val, key) in chefFilter.skills">
+                  <div class="input-box">
+                    <div class="prepend">{{val.name}}</div>
+                    <input v-model="chefFilter.skills[key].val" />
+                  </div>
+                </div>
+                <span class="checkbox clear" @click="clearFilterSkills">
+                  清<br/>空
+                </span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in chefFilter.sex"
+                  :class="val.flag ? 'active' : ''"
+                  @click="chefFilter.sex[key].flag = !val.flag"
+                >{{val.name}}</span>
               </div>
             </div>
           </div>
           <footer v-show="isOriginHei">
             <button class="btn btn-primary" @click="rightBar = false">确定</button>
-            <button class="btn btn-reset" @click="reset">重置</button>
+            <button class="btn btn-reset" @click="reset">清空过滤</button>
           </footer>
         </div>
       </el-drawer>
@@ -141,7 +188,7 @@
       </span>
     </section>
     <section class="body">
-      <div v-if="navId === 1">
+      <div v-show="navId === 1">
         <div class="search-box">
           <el-row>
             <el-col :span="13">
@@ -199,11 +246,54 @@
           </el-pagination>
         </div>
       </div>
-      <div v-if="navId === 2">厨师</div>
-      <div v-if="navId === 3">厨具</div>
-      <div v-if="navId === 4">装修</div>
-      <div v-if="navId === 5">采集</div>
-      <div v-if="navId === 6">
+      <div v-show="navId === 2">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 技能 来源" v-model="chefFilter.chefKeyword">
+          </el-input>
+        </div>
+        <el-table
+          :data="chefsPage"
+          style="width: 100%"
+          ref='chefsTable'
+          @sort-change="handleChefSort"
+          :height="tableHeight">
+          <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="chefCol.id"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="名字" width="67"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="chefCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="knife" label="切" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="fry" label="炸" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="bake" label="烤" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="steam" label="蒸" min-width="52" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="skill" label="技能" min-width="130" v-if="chefCol.skill"></el-table-column>
+          <el-table-column sortable="custom" prop="meat" label="肉" min-width="52" v-if="chefCol.gather"></el-table-column>
+          <el-table-column sortable="custom" prop="creation" label="面" min-width="52" v-if="chefCol.gather"></el-table-column>
+          <el-table-column sortable="custom" prop="veg" label="菜" min-width="52" v-if="chefCol.gather"></el-table-column>
+          <el-table-column sortable="custom" prop="fish" label="鱼" min-width="52" v-if="chefCol.gather"></el-table-column>
+          <el-table-column sortable="custom" prop="sex" min-width="68" label="性别" v-if="chefCol.sex"></el-table-column>
+          <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="chefCol.origin"></el-table-column>
+          <el-table-column sortable="custom" prop="ultimateGoal" label="修炼任务" min-width="150" v-if="chefCol.ultimateGoal"></el-table-column>
+          <el-table-column sortable="custom" prop="ultimateSkillShow" label="修炼技能" min-width="130" v-if="chefCol.ultimateSkill"></el-table-column>
+          <el-table-column label="" min-width="1"></el-table-column>
+        </el-table>
+        <div class="pagination">
+          <el-pagination
+            background
+            small
+            :page-size="chefsPageSize"
+            :current-page.sync="chefsCurPage"
+            @current-change="handleCurrentChange"
+            :pager-count="5"
+            layout="total, prev, pager, next"
+            :total="chefs.length">
+          </el-pagination>
+        </div>
+      </div>
+      <div v-show="navId === 3">厨具</div>
+      <div v-show="navId === 4">装修</div>
+      <div v-show="navId === 5">采集</div>
+      <div v-show="navId === 6">
         <div class="search-box">
           <el-input size="small" prefix-icon="el-icon-search" placeholder="编号 任务 奖励" v-model="questsKeyword" class="input-with-select">
             <el-select slot="prepend" v-model="questsType" placeholder="请选择任务类型" size="small">
@@ -241,9 +331,9 @@
         </el-pagination>
       </div>
       </div>
-      <div v-if="navId === 7">计算器</div>
-      <div v-if="navId === 8">个人</div>
-      <div v-if="navId === 9">说明</div>
+      <div v-show="navId === 7">计算器</div>
+      <div v-show="navId === 8">个人</div>
+      <div v-show="navId === 9">说明</div>
     </section>
   </div>
 </body>
