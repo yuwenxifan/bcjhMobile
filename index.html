@@ -181,6 +181,37 @@
                   @click="equipFilter.rarity[key] = !val"
                 >{{key}}星</span>
               </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in equipFilter.skillType"
+                  :class="val.flag ? 'active' : ''"
+                  @click="checkSkillType(key)"
+                >{{val.name}}</span>
+                <span class="checkbox" @click="selectAll('equipFilter.skillType')">全选</span>
+                <div style="margin-top: 10px;">
+                  <el-switch
+                    v-model="equip_radio"
+                    active-color="#82a1b0"
+                    active-text="单选"
+                    @change="changeEquipRadio"
+                    inactive-color="#ddd">
+                  </el-switch>
+                  <el-switch
+                    v-model="equip_concurrent"
+                    active-color="#82a1b0"
+                    active-text="同时"
+                    @change="changeEquipConcurrent"
+                    inactive-color="#ddd">
+                  </el-switch>
+                  <el-switch
+                    v-model="equipFilter.buff"
+                    active-color="#82a1b0"
+                    active-text="增益"
+                    inactive-color="#ddd">
+                  </el-switch>
+                </div>
+              </div>
             </div>
           </div>
           <footer v-show="isOriginHei">
@@ -238,7 +269,7 @@
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="repCol.id"></el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="80"></el-table-column>
-          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="repCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="75" v-if="repCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="knife" label="切" min-width="52" v-if="repCol.skills"></el-table-column>
@@ -289,7 +320,7 @@
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="chefCol.id"></el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="67"></el-table-column>
-          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="chefCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="75" v-if="chefCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="52" v-if="chefCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="boil" label="煮" min-width="52" v-if="chefCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="knife" label="切" min-width="52" v-if="chefCol.skills"></el-table-column>
@@ -334,8 +365,8 @@
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="63" v-if="equipCol.id"></el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
-          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="72" v-if="equipCol.rarity"></el-table-column>
-          <el-table-column sortable="custom" prop="skill" label="技能" min-width="130" v-if="equipCol.skill"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="55" v-if="equipCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="skill" label="技能" min-width="155" v-if="equipCol.skill"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="equipCol.origin"></el-table-column>
           <el-table-column label="" min-width="1"></el-table-column>
         </el-table>

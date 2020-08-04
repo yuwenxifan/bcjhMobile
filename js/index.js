@@ -186,7 +186,39 @@ $(function() {
           2: true,
           3: true
         },
+        skillType: {
+          UseStirfry: { name: '炒售价', flag: true },
+          UseBoil: { name: '煮售价', flag: true },
+          UseKnife: { name: '切售价', flag: true },
+          UseFry: { name: '炸售价', flag: true },
+          UseBake: { name: '烤售价', flag: true },
+          UseSteam: { name: '蒸售价', flag: true },
+          Stirfry: { name: '炒技法', flag: true },
+          Boil: { name: '煮技法', flag: true },
+          Knife: { name: '切技法', flag: true },
+          Fry: { name: '炸技法', flag: true },
+          Bake: { name: '烤技法', flag: true },
+          Steam: { name: '蒸技法', flag: true },
+          UseMeat: { name: '肉售价', flag: true },
+          UseCreation: { name: '面售价', flag: true },
+          UseVegetable: { name: '菜售价', flag: true },
+          UseFish: { name: '鱼售价', flag: true },
+          Meat: { name: '肉采集', flag: true },
+          Creation: { name: '面采集', flag: true },
+          Vegetable: { name: '菜采集', flag: true },
+          Fish: { name: '鱼采集', flag: true },
+          Gold_Gain: { name: '金币获得', flag: true },
+          GuestDropCount: { name: '稀有客人', flag: true },
+          OpenTime: { name: '开业时间', flag: true },
+          Material_Gain: { name: '素材获得', flag: true },
+          AllSkill: { name: '全技法', flag: true },
+          AllMap: { name: '全采集', flag: true },
+          // 防止以后出一个技法加其他所有技法减的厨具被认定为全技法，全技法/全采集用技能描述去匹配
+        },
+        buff: false
       },
+      equip_concurrent: false,
+      equip_radio: false,
       originEquipFilter: {},
       equipsCurPage: 1,
       equipsPageSize: 20,
@@ -331,6 +363,17 @@ $(function() {
             return item.skill.indexOf(s.skillId) > -1;
           });
           item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
+          let skillType = {};
+          for (const s of skill) {
+            for (const i of s.effect) {
+              if (i.type == 'OpenTime') {
+                skillType[i.type] = i.value < 0 ? 'buff' : 'debuff';
+              } else {
+                skillType[i.type] = i.value > 0 ? 'buff' : 'debuff';
+              }
+            }
+          }
+          item.skill_type = skillType;
           item.origin = item.origin.replace(this.reg, '\n');
           return item;
         });
@@ -345,13 +388,13 @@ $(function() {
       initRep() {
         this.recipes = [];
         for (const item of this.data.recipes) {
-          const s_name = item.name.indexOf(this.repKeyword) > -1;
-          const s_origin = item.origin.indexOf(this.repKeyword) > -1;
-          const s_material = item.materials_search.indexOf(this.repKeyword) > -1;
-          const s_guest = item.normal_guests.indexOf(this.repKeyword) > -1;
+          const s_name = this.checkKeyword(this.repKeyword, item.name);
+          const s_origin = this.checkKeyword(this.repKeyword, item.origin);
+          const s_material = this.checkKeyword(this.repKeyword, item.materials_search);
+          const s_guest = this.checkKeyword(this.repKeyword, item.normal_guests);
           const search = s_name || s_origin || s_material || s_guest;
-          const g_name = item.degree_guests.indexOf(this.guestKeyword) > -1;
-          const g_gift = item.gift.indexOf(this.guestKeyword) > -1;
+          const g_name = this.checkKeyword(this.guestKeyword, item.degree_guests);
+          const g_gift = this.checkKeyword(this.guestKeyword, item.gift);
           const guest = g_name || g_gift;
           const f_rarity = this.repFilter.rarity[item.rarity];
           let f_skill = this.skill_type;
@@ -391,9 +434,9 @@ $(function() {
       initChef() {
         this.chefs = [];
         for (const item of this.data.chefs) {
-          const s_name = item.name.indexOf(this.chefFilter.chefKeyword) > -1;
-          const s_skill = item.skill.indexOf(this.chefFilter.chefKeyword) > -1;
-          const s_origin = item.origin.indexOf(this.chefFilter.chefKeyword) > -1;
+          const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
+          const s_skill = this.checkKeyword(this.chefFilter.chefKeyword, item.skill);
+          const s_origin = this.checkKeyword(this.chefFilter.chefKeyword, item.origin);
           const search = s_name || s_skill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
           let f_skills = true;
@@ -421,12 +464,28 @@ $(function() {
       initEquip() {
         this.equips = [];
         for (const item of this.data.equips) {
-          const s_name = item.name.indexOf(this.equipFilter.equipKeyword) > -1;
-          const s_skill = item.skill.indexOf(this.equipFilter.equipKeyword) > -1;
-          const s_origin = item.origin.indexOf(this.equipFilter.equipKeyword) > -1;
+          const s_name = this.checkKeyword(this.equipFilter.equipKeyword, item.name);
+          const s_skill = this.checkKeyword(this.equipFilter.equipKeyword, item.skill);
+          const s_origin = this.checkKeyword(this.equipFilter.equipKeyword, item.origin);
           const search = s_name || s_skill || s_origin;
           const f_rarity = this.equipFilter.rarity[item.rarity];
-          if (search && f_rarity) {
+          let f_skill = this.equip_concurrent;
+          for (const key in this.equipFilter.skillType) {
+            if (this.equipFilter.skillType[key].flag) {
+              if (this.equip_concurrent) {
+                f_skill = f_skill && this.checkEquipSkillType(key, {
+                  obj: item.skill_type,
+                  desc: item.skill
+                });
+              } else {
+                f_skill = f_skill || this.checkEquipSkillType(key, {
+                  obj: item.skill_type,
+                  desc: item.skill
+                });
+              }
+            }
+          }
+          if (search && f_rarity && f_skill) {
             this.equips.push(item);
           }
         }
@@ -436,6 +495,27 @@ $(function() {
           this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
           this.$refs.equipsTable.clearSort();
         });
+      },
+      checkEquipSkillType(key, { obj, desc }) {
+        if (key === 'AllSkill') {
+          return desc.indexOf('全技法') > -1;
+        } else if (key === 'AllMap') {
+          return desc.indexOf('全采集') > -1;
+        } else {
+          return this.equipFilter.buff ? obj[key] === 'buff' : Boolean(obj[key]);
+        }
+      },
+      checkKeyword(keyword, str) {
+        if (!keyword) {
+          return true;
+        }
+        const arr = keyword.split(' ');
+        for (let k of arr) {
+          if (k && str.indexOf(k) > -1) {
+            return true;
+          }
+        }
+        return false;
       },
       formatTime(sec) {
         return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
@@ -567,6 +647,19 @@ $(function() {
             skill[key].flag = flag;
           }
           this.repFilter.skill = skill;
+        } else if (obj === 'equipFilter.skillType') {
+          this.equip_radio = false;
+          this.equip_concurrent = false;
+          const skillType = JSON.parse(JSON.stringify(this.equipFilter.skillType));
+          for (const key in skillType) {
+            if (!skillType[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in skillType) {
+            skillType[key].flag = flag;
+          }
+          this.equipFilter.skillType = skillType;
         } else {
           for (const key in this[obj]) {
             if (!this[obj][key]) {
@@ -593,6 +686,21 @@ $(function() {
           this.repFilter.skill = skill;
         } else {
           this.repFilter.skill[key].flag = !this.repFilter.skill[key].flag;
+        }
+      },
+      checkSkillType(key) {
+        if (this.equip_radio) {
+          const skill = JSON.parse(JSON.stringify(this.equipFilter.skillType));
+          for (const k in skill) {
+            if (k === key) {
+              skill[k].flag = !skill[k].flag;
+            } else {
+              skill[k].flag = false;
+            }
+          }
+          this.equipFilter.skillType = skill;
+        } else {
+          this.equipFilter.skillType[key].flag = !this.equipFilter.skillType[key].flag;
         }
       },
       changeSkillRadio(val) {
@@ -633,6 +741,44 @@ $(function() {
           this.initRep();
         }
       },
+      changeEquipRadio(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.equipFilter.skillType));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.equipFilter.skillType = skill;
+          }
+        }
+      },
+      changeEquipConcurrent(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.equipFilter.skillType));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 2) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.equipFilter.skillType = skill;
+          } else {
+            this.initEquip();
+          }
+        } else {
+          this.initEquip();
+        }
+      },
       reset() {
         const map = {
           2: 'Chef',
@@ -645,6 +791,8 @@ $(function() {
           this.repKeyword = '';
           this.guestKeyword = '';
         } else {
+          this.equip_radio = false;
+          this.equip_concurrent = false;
           this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
         }
       }
