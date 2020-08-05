@@ -208,7 +208,7 @@ $(function() {
           Vegetable: { name: '菜采集', flag: true },
           Fish: { name: '鱼采集', flag: true },
           Gold_Gain: { name: '金币获得', flag: true },
-          GuestDropCount: { name: '稀有客人', flag: true },
+          GuestApearRate: { name: '稀有客人', flag: true },
           OpenTime: { name: '开业时间', flag: true },
           Material_Gain: { name: '素材获得', flag: true },
           AllSkill: { name: '全技法', flag: true },
@@ -498,9 +498,9 @@ $(function() {
       },
       checkEquipSkillType(key, { obj, desc }) {
         if (key === 'AllSkill') {
-          return desc.indexOf('全技法') > -1;
+          return this.equipFilter.buff ? desc.indexOf('全技法+') > -1 : desc.indexOf('全技法') > -1;
         } else if (key === 'AllMap') {
-          return desc.indexOf('全采集') > -1;
+          return this.equipFilter.buff ? desc.indexOf('全采集+') > -1 : desc.indexOf('全采集') > -1;
         } else {
           return this.equipFilter.buff ? obj[key] === 'buff' : Boolean(obj[key]);
         }
