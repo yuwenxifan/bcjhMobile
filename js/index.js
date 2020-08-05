@@ -18,7 +18,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 3,
+      navId: 4,
       tableHeight: window.innerHeight - 122,
       data: [],
       recipes: [],
@@ -222,6 +222,35 @@ $(function() {
       originEquipFilter: {},
       equipsCurPage: 1,
       equipsPageSize: 20,
+      decorations: [],
+      decorationsPage: [],
+      decorationCol: {
+        id: false,
+        gold: true,
+        tipMin: false,
+        tipMax: false,
+        tipTime: false,
+        effMin: false,
+        effMax: false,
+        effAvg: true,
+        position: false,
+        suit: true,
+        suitGold: true,
+        origin: true,
+      },
+      decorationColName: {
+        id: '编号',
+        rarity: '星',
+        skill: '技能',
+        origin: '来源'
+      },
+      decorationFilter: {
+        decorationKeyword: '',
+      },
+      decoration_radio: false,
+      originEquipFilter: {},
+      decorationsCurPage: 1,
+      decorationsPageSize: 20,
       questsType: 1,
       questsTypes: [{
         value: 1,
@@ -276,6 +305,7 @@ $(function() {
         this.leftBar = false;
       },
       initData() {
+        const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.slice(-8);
         this.data.recipes = this.data.recipes.map(item => {
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
@@ -377,12 +407,28 @@ $(function() {
           item.origin = item.origin.replace(this.reg, '\n');
           return item;
         });
+        this.data.decorations = this.data.decorations.map(item => {
+          item.gold_show = item.gold ? `${Math.round(item.gold * s * 100) / s}%` : null;
+          item.tipMin = item.tipMin || '';
+          item.tipMax = item.tipMax || '';
+          const dSecond = 86400;
+          const day = item.tipTime > dSecond ? `${Math.floor(item.tipTime / dSecond)}天` : '';
+          const hour = (item.tipTime % dSecond) ? `${Math.floor(item.tipTime % dSecond / 3600)}小时` : '';
+          item.tipTime_show = day + hour;
+          item.effMin = item.tipMin ? parseFloat((item.tipMin / (item.tipTime / dSecond)).toFixed(1)) : null;
+          item.effMax = item.tipMax ? parseFloat((item.tipMax / (item.tipTime / dSecond)).toFixed(1)) : null;
+          item.effAvg = Math.floor(((item.effMin + item.effMax) * 10 / 2)) / 10 || null;
+          item.suitGold_show = item.suitGold ? `${Math.round(item.suitGold * s * 100) / s}%` : null;
+          return item;
+        });
         if (this.navId === 1) {
           this.initRep();
         } else if (this.navId === 2) {
           this.initChef();
         } else if (this.navId === 3) {
           this.initEquip();
+        } else if (this.navId === 4) {
+          this.initDecoration();
         }
       },
       initRep() {
@@ -496,6 +542,18 @@ $(function() {
           this.$refs.equipsTable.clearSort();
         });
       },
+      initDecoration() {
+        this.decorations = [];
+        for (item of this.data.decorations) {
+          this.decorations.push(item);
+        }
+        this.decorationsCurPage = 1;
+        this.decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
+        this.$nextTick(() => {
+          this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
+          this.$refs.decorationsTable.clearSort();
+        });
+      },
       checkEquipSkillType(key, { obj, desc }) {
         if (key === 'AllSkill') {
           return this.equipFilter.buff ? desc.indexOf('全技法+') > -1 : desc.indexOf('全技法') > -1;
@@ -524,7 +582,8 @@ $(function() {
         const map = {
           1: 'recipes',
           2: 'chefs',
-          3: 'equips'
+          3: 'equips',
+          4: 'decorations'
         }
         const nav = this.navId;
         if (nav === 6) {
@@ -576,6 +635,20 @@ $(function() {
         this.equipsCurPage = 1;
         this.equips.sort(this.customSort(sort));
         this.equipsPage = this.equips.slice(0, this.equipsPageSize);
+      },
+      handleDecorationSort(sort) {
+        const map = {
+          gold_show: 'gold',
+          tipTime_show: 'tipTime',
+          suitGold_show: 'suitGold',
+        };
+        if (!sort.order) {
+          this.initDecoration();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.decorationsCurPage = 1;
+        this.decorations.sort(this.customSort(sort));
+        this.decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
       },
       clearFilterSkills() {
         this.chefFilter.skills = JSON.parse(JSON.stringify(this.originChefFilter.skills))
@@ -886,6 +959,15 @@ $(function() {
             this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
             this.$refs.chefsTable.bodyWrapper.scrollLeft = 0;
             this.$refs.chefsTable.doLayout();
+          });
+        } else if (val == 3) {
+          if (this.equips.length == 0) {
+            this.initEquip();
+          }
+          this.$nextTick(()=>{
+            this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
+            this.$refs.equipsTable.bodyWrapper.scrollLeft = 0;
+            this.$refs.equipsTable.doLayout();
           });
         } else if (val === 6) {
           if (this.questsMain.length == 0) {

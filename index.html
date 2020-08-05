@@ -383,7 +383,47 @@
           </el-pagination>
         </div>
       </div>
-      <div v-show="navId === 4">装修</div>
+      <div v-show="navId === 4">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 套装 来源" v-model="decorationFilter.decorationKeyword">
+          </el-input>
+        </div>
+        <el-table
+          :data="decorationsPage"
+          style="width: 100%"
+          ref='decorationsTable'
+          class="sort"
+          @sort-change="handleDecorationSort"
+          :default-sort = "{prop: 'effAvg', order: 'descending'}"
+          :height="tableHeight">
+          <el-table-column fixed sortable="custom" prop="id" label="No." width="63" v-if="decorationCol.id"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
+          <el-table-column sortable="custom" prop="gold_show" label="收入加成" min-width="100" v-if="decorationCol.gold"></el-table-column>
+          <el-table-column sortable="custom" prop="tipMin" label="最小玉璧" min-width="100" v-if="decorationCol.tipMin"></el-table-column>
+          <el-table-column sortable="custom" prop="tipMax" label="最大玉璧" min-width="100" v-if="decorationCol.tipMax"></el-table-column>
+          <el-table-column sortable="custom" prop="tipTime_show" label="冷却时间" min-width="100" v-if="decorationCol.tipTime"></el-table-column>
+          <el-table-column sortable="custom" prop="effMin" label="最小玉璧/天" min-width="115" v-if="decorationCol.effMin"></el-table-column>
+          <el-table-column sortable="custom" prop="effMax" label="最大玉璧/天" min-width="115" v-if="decorationCol.effMax"></el-table-column>
+          <el-table-column sortable="custom" prop="effAvg" label="平均玉璧/天" min-width="115" v-if="decorationCol.effAvg"></el-table-column>
+          <el-table-column sortable="custom" prop="position" label="位置" min-width="100" v-if="decorationCol.position"></el-table-column>
+          <el-table-column sortable="custom" prop="suit" label="套装" min-width="100" v-if="decorationCol.suit"></el-table-column>
+          <el-table-column sortable="custom" prop="suitGold_show" label="套装加成" min-width="100" v-if="decorationCol.suitGold"></el-table-column>
+          <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="decorationCol.origin"></el-table-column>
+          <el-table-column label="" min-width="1"></el-table-column>
+        </el-table>
+        <div class="pagination">
+          <el-pagination
+            background
+            small
+            :page-size="decorationsPageSize"
+            :current-page.sync="decorationsCurPage"
+            @current-change="handleCurrentChange"
+            :pager-count="5"
+            layout="total, prev, pager, next"
+            :total="decorations.length">
+          </el-pagination>
+        </div>
+      </div>
       <div v-show="navId === 5">采集</div>
       <div v-show="navId === 6">
         <div class="search-box">
