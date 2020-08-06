@@ -176,10 +176,13 @@ section.header .right {
 .el-table th {
   background-color: #f5f7fa;
 }
-
-.el-table.sort th .cell {
-  height: 34px;
-  line-height: 34px;
+.el-table th .el-checkbox {
+  display: none;
+}
+.el-table th .caret-wrapper {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-15px);
 }
 
 .el-table .cell {
@@ -304,7 +307,7 @@ section.header .right {
   margin: 5px 3px;
   border: 1px solid #dcdfe6;
   background-color: #fff;
-  border-radius: 3px; 
+  border-radius: 3px;
   color: #606266;
 }
 .checkbox.active {
