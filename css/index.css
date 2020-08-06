@@ -176,13 +176,17 @@ section.header .right {
 .el-table th {
   background-color: #f5f7fa;
 }
+.el-table th .cell {
+  height: 28px;
+  line-height: 28px;
+}
 .el-table th .el-checkbox {
   display: none;
 }
 .el-table th .caret-wrapper {
   position: absolute;
   top: 50%;
-  transform: translateY(-15px);
+  transform: translateY(-16px);
 }
 
 .el-table .cell {
