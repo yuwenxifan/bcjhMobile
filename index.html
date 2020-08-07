@@ -237,22 +237,48 @@
                   @click="checkPosition(i)"
                 >{{item.name}}</span>
                 <el-switch
-                    v-model="decoration_radio"
-                    active-color="#82a1b0"
-                    active-text="单选"
-                    @change="changeDecorationRadio"
-                    inactive-color="#ddd">
-                  </el-switch>
+                  v-model="decoration_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeDecorationRadio"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+            </div>
+          </div>
+          <div v-if="navId === 5">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('mapCol')">全选</span>
+              <span
+                v-for="(val, key) in mapCol"
+                class="checkbox"
+                :class="val ? 'active' : ''"
+                @click="mapCol[key] = !val"
+              >{{mapLabel[key]}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">过滤</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <input class="hidden" type="checkbox">
+                <div class="prepend-input large">
+                  <div class="input-box">
+                    <div class="prepend">采集点数</div>
+                    <input v-model="mapFilter.cnt" placeholder="不限" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
           <footer v-show="isOriginHei">
             <button class="btn btn-primary" @click="rightBar = false">确定</button>
-            <button class="btn btn-reset" @click="reset">清空过滤</button>
+            <button class="btn btn-reset" @click="reset" v-if="navId != 5">清空过滤</button>
           </footer>
         </div>
       </el-drawer>
-      <div v-if="navId < 5 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="navId < 6 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -275,7 +301,7 @@
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
       <span class="right">
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
-        <i v-if="hideSuspend && navId < 5" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
       </span>
     </section>
     <section class="body">
@@ -455,27 +481,44 @@
       </div>
       <div v-show="navId === 5">
         <div class="search-box">
-          <el-select v-model="mapType" size="small">
-            <el-option
-              v-for="(item, index) in mapTypes"
-              :key="index"
-              :label="item"
-              :value="item">
-            </el-option>
-          </el-select>
+          <el-row>
+            <el-col :span="6">
+              <el-select v-model="mapType" size="small" class="left">
+                <el-option
+                  v-for="(item, index) in mapTypes"
+                  :key="index"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="10">
+              <el-input placeholder="技能加成(%)" v-model="mapFilter.skill" size="small" class="left">
+              </el-input>
+            </el-col>
+            <el-col :span="8">
+              <el-switch
+                v-model="mapFilter.season"
+                active-color="#82a1b0"
+                active-text="季节加成"
+                inactive-color="#ddd">
+              </el-switch>
+            </el-col>
+          </el-row>
         </div>
         <el-table
-          :data="questsPage"
+          class="sum"
+          :data="mapsPage"
           style="width: 100%"
-          ref="questsTable"
+          ref="mapsTable"
           >
-          <el-table-column fixed prop="questId" min-width='64' label="食材"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="点数"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="1小时"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="2小时"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="6小时"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="11小时"></el-table-column>
-          <el-table-column prop="preId" min-width='64' label="22小时"></el-table-column>
+          <el-table-column fixed prop="name" width='55' label="食材"></el-table-column>
+          <el-table-column prop="skill" min-width='50' label="点数"></el-table-column>
+          <el-table-column align="center" prop="0" min-width='78' v-if="mapCol[0]" :label="`${mapLabel[0]}`"></el-table-column>
+          <el-table-column align="center" prop="1" min-width='78' v-if="mapCol[1]" :label="`${mapLabel[1]}`"></el-table-column>
+          <el-table-column align="center" prop="2" min-width='85' v-if="mapCol[2]" :label="`${mapLabel[2]}`"></el-table-column>
+          <el-table-column align="center" prop="3" min-width='95' v-if="mapCol[3]" :label="`${mapLabel[3]}`"></el-table-column>
+          <el-table-column align="center" prop="4" min-width='95' v-if="mapCol[4]" :label="`${mapLabel[4]}`"></el-table-column>
         </el-table>
       </div>
       <div v-show="navId === 6">

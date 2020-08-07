@@ -252,12 +252,14 @@ section.header .right {
   border-color: transparent;
   border-radius: 0;
 }
-
 .search-box .el-input__inner:focus {
-  border-color: transparent;
+  border-color: transparent !important;
 }
 .search-box .left .el-input__inner {
-  border-right: 1px solid #dcdfe6;
+  border-right: 1px solid #dcdfe6 !important;
+}
+.search-box .left .el-input__inner:focus {
+  border-right: 1px solid #dcdfe6 !important;
 }
 .search-box .el-input-group__prepend {
   border-color: transparent;
@@ -379,6 +381,13 @@ section.header .right {
   border-bottom-left-radius: 0;
   color: #606266;
 }
+.prepend-input.large input {
+  width: 40px;
+  padding: 0px 10px;
+}
+.prepend-input.large input::placeholder {
+  color: #c0c4cc;
+}
 input:focus {
   outline: none;
   border: 1px solid #DCDFE6 ;
@@ -392,4 +401,25 @@ input:focus {
 input.hidden {
   width: 0px;
   height: 0px;
+}
+
+.el-table.sum tbody .el-table__row:last-child {
+  background-color: #f5f7fa;
+}
+
+.el-table.sum tbody .el-table__row:last-child .cell {
+  line-height: 24px;
+  color: #526874;
+}
+.search-box .el-switch__label span {
+  font-size: 13px;
+}
+.search-box .el-select.left {
+  width: 100%;
+}
+.search-box .el-select.left .el-input {
+  width: 100%;
+}
+.search-box .el-switch {
+  transform: translate(5px, 4px);
 }

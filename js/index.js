@@ -18,7 +18,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 4,
+      navId: 1,
       tableHeight: window.innerHeight - 122,
       data: [],
       sort: {
@@ -291,6 +291,20 @@ $(function() {
       mapTypes: [],
       mapType: '牧场',
       maps: [],
+      mapsPage: [],
+      mapLabel: [],
+      mapCol: {
+        0: false,
+        1: false,
+        2: false,
+        3: true,
+        4: true,
+      },
+      mapFilter: {
+        season: false,
+        cnt: '',
+        skill: ''
+      },
       questsType: 1,
       questsTypes: [{
         value: 1,
@@ -462,29 +476,6 @@ $(function() {
           return item;
         });
         this.mapTypes = this.data.maps.map(item => item.name);
-        this.maps = this.data.maps.map(item => {
-          const label = item.time.map(t => {
-            return this.formatTime(t);
-          });
-          const sum = { name: '总计' };
-          const materials = item.materials.map(m => {
-            return {
-              name: m.name,
-              skill: m.skill,
-              0: `${m.quantity[0][0]}~${m.quantity[0][1]}`,
-              1: `${m.quantity[1][0]}~${m.quantity[1][1]}`,
-              2: `${m.quantity[2][0]}~${m.quantity[2][1]}`,
-              3: `${m.quantity[3][0]}~${m.quantity[3][1]}`,
-              4: `${m.quantity[4][0]}~${m.quantity[4][1]}`
-            };
-          });
-          return {
-            name: item.name,
-            label,
-            materials
-          }
-        });
-        console.log(this.maps);
         if (this.navId === 1) {
           this.initRep();
         } else if (this.navId === 2) {
@@ -493,6 +484,8 @@ $(function() {
           this.initEquip();
         } else if (this.navId === 4) {
           this.initDecoration();
+        } else if (this.navId === 5) {
+          this.initMap();
         }
       },
       initRep() {
@@ -634,6 +627,74 @@ $(function() {
           this.decorationsCurPage = 1;
           this.decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
         }
+        this.$nextTick(() => {
+          this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
+        });
+      },
+      initMap() {
+        function percent(val, per) {
+          return Math.ceil((val * (100 + Number(per)) / 100))
+        }
+        this.maps = this.data.maps.map(item => {
+          const label = item.time.map(t => {
+            return this.formatTime(t);
+          });
+          const sum = {
+            0: [0, 0],
+            1: [0, 0],
+            2: [0, 0],
+            3: [0, 0],
+            4: [0, 0],
+          };
+          const materials = item.materials.map(m => {
+            const avg = [];
+            const ext = {};
+            for (const i of [0, 1, 2, 3, 4]) {
+              let min = m.quantity[i][0];
+              let max = m.quantity[i][1];
+              if (this.mapFilter.skill && !isNaN(Number(this.mapFilter.skill))) {
+                min = percent(min, this.mapFilter.skill);
+                max = percent(max, this.mapFilter.skill);
+              }
+              if (this.mapFilter.season) {
+                min = min + m.season[i];
+                max = max + m.season[i];
+              }
+              if (this.mapFilter.cnt != '' && this.mapFilter.cnt < m.skill) {
+                min = 0;
+                max = 0;
+              }
+              sum[i][0] += min;
+              sum[i][1] += max;
+              ext[i] = min ? `${min} ~ ${max}` : '0';
+              avg.push(Math.round((min + max) / 2 * 36000 / item.time[i]) / 10);
+            }
+            return {
+              name: m.name,
+              skill: m.skill,
+              ...ext,
+              avg
+            };
+          });
+          const sum_show = {
+            name: '总计',
+            skill: null,
+          };
+          for (let key in sum) {
+            sum_show[key] = sum[key][1] ? `${sum[key][0]} ~ ${sum[key][1]}` : 0;
+          }
+          materials.push(sum_show);
+          return {
+            name: item.name,
+            label,
+            materials,
+          }
+        });
+        const map = this.maps.find(m => {
+          return m.name === this.mapType;
+        });
+        this.mapLabel = map.label;
+        this.mapsPage = map.materials;
         this.$nextTick(() => {
           this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
         });
@@ -1061,6 +1122,18 @@ $(function() {
           });
         }
       },
+      mapFilter: {
+        deep: true,
+        handler() {
+          this.initMap();
+          this.$nextTick(()=>{
+            this.$refs.mapsTable.doLayout();
+          });
+        }
+      },
+      mapType() {
+        this.initMap();
+      },
       repKeyword() {
         this.initRep();
       },
@@ -1110,6 +1183,10 @@ $(function() {
             this.$refs.decorationsTable.bodyWrapper.scrollLeft = 0;
             this.$refs.decorationsTable.doLayout();
           });
+        } else if (val === 5) {
+          if (this.maps.length === 0) {
+            this.initMap();
+          }
         } else if (val === 6) {
           if (this.questsMain.length == 0) {
             this.initQuests();
