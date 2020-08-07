@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>图鉴</title>
+  <title>白菜菊花</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="stylesheet" href="./ele/index.css">
   <link rel="stylesheet" href="./css/index.css">
@@ -214,13 +214,45 @@
               </div>
             </div>
           </div>
+          <div v-if="navId === 4">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('decorationCol')">全选</span>
+              <span
+                v-for="(val, key) in decorationColName"
+                class="checkbox"
+                :class="decorationCol[key] ? 'active' : ''"
+                @click="decorationCol[key] = !decorationCol[key]"
+              >{{val}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">筛选</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span
+                  v-for="(item, i) in decorationFilter.position"
+                  class="checkbox"
+                  :class="item.flag ? 'active' : ''"
+                  @click="checkPosition(i)"
+                >{{item.name}}</span>
+                <el-switch
+                    v-model="decoration_radio"
+                    active-color="#82a1b0"
+                    active-text="单选"
+                    @change="changeDecorationRadio"
+                    inactive-color="#ddd">
+                  </el-switch>
+              </div>
+            </div>
+          </div>
           <footer v-show="isOriginHei">
             <button class="btn btn-primary" @click="rightBar = false">确定</button>
             <button class="btn btn-reset" @click="reset">清空过滤</button>
           </footer>
         </div>
       </el-drawer>
-      <div v-if="navId < 6 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="navId < 5 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -243,7 +275,7 @@
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
       <span class="right">
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
-        <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && navId < 5" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
       </span>
     </section>
     <section class="body">
@@ -382,7 +414,7 @@
       </div>
       <div v-show="navId === 4">
         <div class="search-box">
-          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 套装 来源" v-model="decorationFilter.decorationKeyword">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 套装 来源" v-model="decorationFilter.keyword">
           </el-input>
         </div>
         <el-table
@@ -421,7 +453,31 @@
           </el-pagination>
         </div>
       </div>
-      <div v-show="navId === 5">采集</div>
+      <div v-show="navId === 5">
+        <div class="search-box">
+          <el-select v-model="mapType" size="small">
+            <el-option
+              v-for="(item, index) in mapTypes"
+              :key="index"
+              :label="item"
+              :value="item">
+            </el-option>
+          </el-select>
+        </div>
+        <el-table
+          :data="questsPage"
+          style="width: 100%"
+          ref="questsTable"
+          >
+          <el-table-column fixed prop="questId" min-width='64' label="食材"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="点数"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="1小时"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="2小时"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="6小时"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="11小时"></el-table-column>
+          <el-table-column prop="preId" min-width='64' label="22小时"></el-table-column>
+        </el-table>
+      </div>
       <div v-show="navId === 6">
         <div class="search-box">
           <el-input size="small" prefix-icon="el-icon-search" placeholder="编号 任务 奖励" v-model="questsKeyword" class="input-with-select">

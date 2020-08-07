@@ -249,18 +249,48 @@ $(function() {
         origin: true,
       },
       decorationColName: {
-        id: '编号',
-        rarity: '星',
-        skill: '技能',
-        origin: '来源'
+        checkbox: "选择",
+        id: "编号",
+        gold: "收入加成",
+        tipMin: "最小玉璧",
+        tipMax: "最大玉璧",
+        tipTime: "冷却时间",
+        effMin: "最小玉璧/天",
+        effMax: "最大玉璧/天",
+        effAvg: "平均玉璧/天",
+        position: "位置",
+        suit: "套装",
+        suitGold: "套装加成",
+        origin: "来源",
       },
       decorationFilter: {
-        decorationKeyword: '',
+        keyword: '',
+        position: [
+          { name: '1大桌', flag: true },
+          { name: '1小桌', flag: true },
+          { name: '2大桌', flag: true },
+          { name: '2小桌', flag: true },
+          { name: '3大桌', flag: true },
+          { name: '3小桌', flag: true },
+          { name: '1窗', flag: true },
+          { name: '1装饰', flag: true },
+          { name: '1门', flag: true },
+          { name: '1灯', flag: true },
+          { name: '2装饰', flag: true },
+          { name: '2门', flag: true },
+          { name: '2窗', flag: true },
+          { name: '2屏风', flag: true },
+          { name: '3灯', flag: true },
+          { name: '3包间', flag: true },
+        ]
       },
       decoration_radio: false,
       originEquipFilter: {},
       decorationsCurPage: 1,
       decorationsPageSize: 20,
+      mapTypes: [],
+      mapType: '牧场',
+      maps: [],
       questsType: 1,
       questsTypes: [{
         value: 1,
@@ -431,6 +461,30 @@ $(function() {
           item.suitGold_show = item.suitGold ? `${Math.round(item.suitGold * s * 100) / s}%` : null;
           return item;
         });
+        this.mapTypes = this.data.maps.map(item => item.name);
+        this.maps = this.data.maps.map(item => {
+          const label = item.time.map(t => {
+            return this.formatTime(t);
+          });
+          const sum = { name: '总计' };
+          const materials = item.materials.map(m => {
+            return {
+              name: m.name,
+              skill: m.skill,
+              0: `${m.quantity[0][0]}~${m.quantity[0][1]}`,
+              1: `${m.quantity[1][0]}~${m.quantity[1][1]}`,
+              2: `${m.quantity[2][0]}~${m.quantity[2][1]}`,
+              3: `${m.quantity[3][0]}~${m.quantity[3][1]}`,
+              4: `${m.quantity[4][0]}~${m.quantity[4][1]}`
+            };
+          });
+          return {
+            name: item.name,
+            label,
+            materials
+          }
+        });
+        console.log(this.maps);
         if (this.navId === 1) {
           this.initRep();
         } else if (this.navId === 2) {
@@ -563,8 +617,16 @@ $(function() {
       },
       initDecoration() {
         this.decorations = [];
+        const position_arr = this.decorationFilter.position.filter(p => { return p.flag }).map(p => p.name);
         for (item of this.data.decorations) {
-          this.decorations.push(item);
+          const s_name = this.checkKeyword(this.decorationFilter.keyword, item.name);
+          const s_suit = this.checkKeyword(this.decorationFilter.keyword, item.suit);
+          const s_origin = this.checkKeyword(this.decorationFilter.keyword, item.origin);
+          const search = s_name || s_suit || s_origin;
+          const f_postion = position_arr.indexOf(item.position) > -1;
+          if (search && f_postion) {
+            this.decorations.push(item);
+          }
         }
         if (this.sort.decoration.order) {
           this.handleDecorationSort(this.sort.decoration);
@@ -878,23 +940,57 @@ $(function() {
           this.initEquip();
         }
       },
+      changeDecorationRadio(val) {
+        if (val) {
+          const position = JSON.parse(JSON.stringify(this.decorationFilter.position));
+          let cnt = 0;
+          for (const key in position) {
+            if (position[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in position) {
+              position[key].flag = false;
+            }
+            this.decorationFilter.position = position;
+          }
+        }
+      },
+      checkPosition(i) {
+        if (this.decoration_radio) {
+          const position = JSON.parse(JSON.stringify(this.decorationFilter.position));
+          for (let j = 0; j < position.length; j++) {
+            if (i === j) {
+              position[j].flag = !position[j].flag;
+            } else {
+              position[j].flag = false;
+            }
+          }
+          this.decorationFilter.position = position;
+        } else {
+          this.decorationFilter.position[i].flag = !this.decorationFilter.position[i].flag;
+        }
+      },
       reset() {
         const map = {
+          1: 'Rep',
           2: 'Chef',
           3: 'Equip',
           4: 'Decoration'
         };
         if (this.navId === 1) {
-          this.repFilter = JSON.parse(JSON.stringify(this.originRepFilter));
           this.skill_radio = false;
           this.skill_type = false;
           this.repKeyword = '';
           this.guestKeyword = '';
-        } else {
+        } else if (this.navId === 3) {
           this.equip_radio = false;
           this.equip_concurrent = false;
-          this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
+        } else if (this.navId === 4) {
+          this.decoration_radio = false;
         }
+        this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
       }
     },
     watch: {
@@ -953,6 +1049,15 @@ $(function() {
           this.initEquip();
           this.$nextTick(()=>{
             this.$refs.equipsTable.doLayout();
+          });
+        }
+      },
+      decorationFilter: {
+        deep: true,
+        handler() {
+          this.initDecoration();
+          this.$nextTick(()=>{
+            this.$refs.decorationsTable.doLayout();
           });
         }
       },
