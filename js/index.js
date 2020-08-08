@@ -20,6 +20,8 @@ $(function() {
       ],
       navId: 1,
       tableHeight: window.innerHeight - 122,
+      chartHeight: window.innerHeight - 390,
+      chartWidth: window.innerWidth,
       data: [],
       sort: {
         rep: {},
@@ -698,6 +700,72 @@ $(function() {
         this.$nextTick(() => {
           this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
         });
+        const legends = [];
+        let series = map.materials.map(item => {
+          if (item.name !== '总计') {
+            legends.push(item.name);
+          }
+          return {
+            name: item.name,
+            data: item.avg,
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+          };
+        });
+        series = series.slice(0, series.length - 1);
+        if (series.length === 5) {
+          series.push({
+            name: '占位',
+            data: [],
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+          })
+        }
+        const chartOption = {
+          title: {
+            text: '每小时平均采集量',
+            textStyle: {
+              fontSize: 16
+            },
+          },
+          tooltip: {
+            trigger: 'axis',
+            axisPointer: {
+              type: 'cross',
+              label: {
+                backgroundColor: '#6a7985'
+              }
+            }
+          },
+          legend: {
+            top: 22,
+            data: legends
+          },
+          grid: {
+            left: '3%',
+            right: '7%',
+            bottom: '3%',
+            top: 68,
+            containLabel: true
+          },
+          xAxis: [
+            {
+              type: 'category',
+              boundaryGap: false,
+              data: map.label
+            }
+          ],
+          yAxis: [
+            {
+              type: 'value'
+            }
+          ],
+          series
+        };
+        const myChart = echarts.init(document.getElementById('chart'));
+        myChart.setOption(chartOption);
       },
       checkEquipSkillType(key, { obj, desc }) {
         if (key === 'AllSkill') {

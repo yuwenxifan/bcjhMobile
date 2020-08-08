@@ -520,6 +520,7 @@
           <el-table-column align="center" prop="3" min-width='95' v-if="mapCol[3]" :label="`${mapLabel[3]}`"></el-table-column>
           <el-table-column align="center" prop="4" min-width='95' v-if="mapCol[4]" :label="`${mapLabel[4]}`"></el-table-column>
         </el-table>
+        <div id="chart" :style="`width: ${chartWidth}px; height: ${chartHeight}px;`"></div>
       </div>
       <div v-show="navId === 6">
         <div class="search-box">
@@ -567,6 +568,7 @@
 </body>
 <script src="./js/jquery-2.1.4.min.js"></script>
 <script src="./js/vue.min.js"></script>
+<script src="./js/echarts.min.js"></script>
 <script src="./ele/index.js"></script>
 <script src="./js/index.js"></script>
 </html>
