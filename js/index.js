@@ -270,19 +270,19 @@ $(function() {
         position: [
           { name: '1大桌', flag: true },
           { name: '1小桌', flag: true },
-          { name: '2大桌', flag: true },
-          { name: '2小桌', flag: true },
-          { name: '3大桌', flag: true },
-          { name: '3小桌', flag: true },
-          { name: '1窗', flag: true },
-          { name: '1装饰', flag: true },
           { name: '1门', flag: true },
           { name: '1灯', flag: true },
-          { name: '2装饰', flag: true },
+          { name: '1窗', flag: true },
+          { name: '2大桌', flag: true },
+          { name: '2小桌', flag: true },
           { name: '2门', flag: true },
           { name: '2窗', flag: true },
-          { name: '2屏风', flag: true },
           { name: '3灯', flag: true },
+          { name: '3大桌', flag: true },
+          { name: '3小桌', flag: true },
+          { name: '1装饰', flag: true },
+          { name: '2装饰', flag: true },
+          { name: '2屏风', flag: true },
           { name: '3包间', flag: true },
         ]
       },
@@ -290,6 +290,10 @@ $(function() {
       originEquipFilter: {},
       decorationsCurPage: 1,
       decorationsPageSize: 20,
+      decoSelect: [],
+      decoSelectId: [],
+      decoBuff: '',
+      suits: [],
       mapTypes: [],
       mapType: '牧场',
       maps: [],
@@ -463,6 +467,7 @@ $(function() {
           item.origin = item.origin.replace(this.reg, '\n');
           return item;
         });
+        let suits = [];
         this.data.decorations = this.data.decorations.map(item => {
           item.gold_show = item.gold ? `${Math.round(item.gold * s * 100) / s}%` : null;
           item.tipMin = item.tipMin || '';
@@ -475,8 +480,12 @@ $(function() {
           item.effMax = item.tipMax ? parseFloat((item.tipMax / (item.tipTime / dSecond)).toFixed(1)) : null;
           item.effAvg = Math.floor(((item.effMin + item.effMax) * 10 / 2)) / 10 || null;
           item.suitGold_show = item.suitGold ? `${Math.round(item.suitGold * s * 100) / s}%` : null;
+          if (item.suit) {
+            suits.push(item.suit);
+          }
           return item;
         });
+        this.suits = Array.from(new Set(suits));
         this.mapTypes = this.data.maps.map(item => item.name);
         if (this.navId === 1) {
           this.initRep();
@@ -627,7 +636,13 @@ $(function() {
           this.handleDecorationSort(this.sort.decoration);
         } else {
           this.decorationsCurPage = 1;
-          this.decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
+          const decorationsPage = this.decorations.slice(0, this.decorationsPageSize)
+          this.decorationsPage = decorationsPage.map(d => {
+            return {
+              ...d,
+              checked: this.decoSelectId.indexOf(d.id) > -1,
+            };
+          });
         }
         this.$nextTick(() => {
           this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
@@ -805,6 +820,16 @@ $(function() {
           const quests = this.questsType === 1 ? this.questsMain : this.questsRegional;
           this.questsPage = quests.slice((val - 1) * size, val * size);
           this.$refs.questsTable.bodyWrapper.scrollTop = 0;
+        } else if (nav === 4) {
+          this[map[nav] + 'CurPage'] = val;
+          const size = this[map[nav] + 'PageSize'];
+          const page = this[map[nav]].slice((val - 1) * size, val * size);
+          this[map[nav] + 'Page'] = page.map(item => {
+            return {
+              ...item,
+              checked: this.decoSelectId.indexOf(item.id) > -1
+            };
+          });
         } else {
           this[map[nav] + 'CurPage'] = val;
           const size = this[map[nav] + 'PageSize'];
@@ -862,10 +887,92 @@ $(function() {
         if (!sort.order) {
           this.initDecoration();
         }
-        sort.prop = map[sort.prop] || sort.prop;
-        this.decorationsCurPage = 1;
-        this.decorations.sort(this.customSort(sort));
-        this.decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
+        if (sort.prop == 'checkbox') {
+          console.log()
+          this.decorations.sort((r1, r2) => {
+            if (this.decoSelectId.indexOf(r1.id) > -1 && this.decoSelectId.indexOf(r2.id) < 0) {
+              return sort.order == 'descending' ? -1 : 1;
+            } else if (this.decoSelectId.indexOf(r2.id) > -1 && this.decoSelectId.indexOf(r1.id) < 0) {
+              return sort.order == 'descending' ? 1 : -1;
+            } else {
+              return 0;
+            }
+          });
+        } else {
+          sort.prop = map[sort.prop] || sort.prop;
+          this.decorationsCurPage = 1;
+          this.decorations.sort(this.customSort(sort));
+        }
+        const decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
+        this.decorationsPage = decorationsPage.map(r => {
+          return {
+            ...r,
+            checked: this.decoSelectId.indexOf(r.id) > -1
+          };
+        });
+      },
+      handleSelectionChange(val, row) {
+        let newSelect = [];
+        if (val) {
+          newSelect = this.decoSelect.filter(r => {
+            return r.position !== row.position;
+          });
+          newSelect.push(row);
+        } else {
+          newSelect = this.decoSelect.filter(r => {
+            return r.id !== row.id;
+          });
+        }
+        this.decoSelect = newSelect;
+        this.decoSelectId = newSelect.map(r => r.id);
+        this.decorationsPage = this.decorationsPage.map(d => {
+          return {
+            ...d,
+            checked: this.decoSelectId.indexOf(d.id) > -1,
+          };
+        });
+        let avg = 0;
+        let gold = 0;
+        newSelect.forEach(r => {
+          gold += r.gold;
+          avg += r.effAvg;
+        });
+        avg = Math.round(avg * 10) / 10;
+        let suit = newSelect.map(r => r.suit);
+        suit = Array.from(new Set(suit));
+        for (const s of suit) {
+          let suitGold = 0;
+          const notIn = this.data.decorations.filter(item => {
+            if (!suitGold && item.suit == s) {
+              suitGold = item.suitGold;
+            }
+            return item.suit == s && this.decoSelectId.indexOf(item.id) < 0;
+          });
+          if (notIn.length == 0) {
+            gold += suitGold;
+          }
+        }
+        gold = Math.round(gold * 1000) / 10 + '%';
+        this.decoBuff = `平均玉璧/天: ${avg} 收入加成: ${gold}`;
+      },
+      empty() {
+        this.decoSelect = [];
+        this.decoSelectId = [];
+        this.handleSelectionChange(false, {});
+        this.$refs.decorationsTable.clearSort();
+      },
+      selectSuit(val) {
+        console.log(val);
+        this.decoSelect = [];
+        this.decoSelectId = [];
+        this.data.decorations.forEach(r => {
+          if (r.suit == val) {
+            this.decoSelect.push(r);
+            this.decoSelectId.push(r.id);
+          }
+        });
+        this.handleSelectionChange(false, {});
+        this.$refs.decorationsTable.sort('checkbox', 'descending');
       },
       clearFilterSkills() {
         this.chefFilter.skills = JSON.parse(JSON.stringify(this.originChefFilter.skills))
@@ -950,6 +1057,18 @@ $(function() {
             skillType[key].flag = flag;
           }
           this.equipFilter.skillType = skillType;
+        } else if (obj === 'decorationFilter.position') {
+          this.decoration_radio = false;
+          const position = JSON.parse(JSON.stringify(this.decorationFilter.position));
+          for (const key in position) {
+            if (!position[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in position) {
+            position[key].flag = flag;
+          }
+          this.decorationFilter.position = position;
         } else {
           for (const key in this[obj]) {
             if (!this[obj][key]) {

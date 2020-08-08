@@ -236,6 +236,7 @@
                   :class="item.flag ? 'active' : ''"
                   @click="checkPosition(i)"
                 >{{item.name}}</span>
+                <span class="checkbox" @click="selectAll('decorationFilter.position')">全选</span>
                 <el-switch
                   v-model="decoration_radio"
                   active-color="#82a1b0"
@@ -299,6 +300,7 @@
     </aside>
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
+      <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <span class="right">
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
         <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
@@ -440,7 +442,26 @@
       </div>
       <div v-show="navId === 4">
         <div class="search-box">
-          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 套装 来源" v-model="decorationFilter.keyword">
+          <el-row>
+            <el-col :span="4">
+              <span class="button" @click="empty">
+                清空<i class="el-icon-delete el-icon--right"></i>
+              </span>
+            </el-col>
+            <el-col :span="8">
+              <el-select placeholder="选择套装" @change="selectSuit" size="small" class="left right">
+                <el-option
+                  v-for="(item, i) in suits"
+                  :key="i"
+                  :label="item"
+                  :value="item">
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="12">
+              <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 套装 来源" v-model="decorationFilter.keyword">
+            </el-col>
+          </el-row>
           </el-input>
         </div>
         <el-table
@@ -448,9 +469,14 @@
           style="width: 100%"
           ref='decorationsTable'
           @sort-change="handleDecorationSort"
-          :default-sort = "{prop: 'effAvg', order: 'descending'}"
+          :default-sort = "{ prop: 'effAvg', order: 'descending' }"
+          @selection-change="handleSelectionChange"
           :height="tableHeight">
-          <el-table-column fixed type="selection" width="35" v-if="decorationCol.checkbox"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="checkbox" width="35" v-if="decorationCol.checkbox">
+            <template slot-scope="scope">
+              <el-checkbox v-model="scope.row.checked" @change="handleSelectionChange($event, scope.row)"></el-checkbox>
+            </template>
+          </el-table-column>
           <el-table-column fixed sortable="custom" prop="id" label="No." width="55" v-if="decorationCol.id"></el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="gold_show" label="加成" min-width="64" v-if="decorationCol.gold"></el-table-column>

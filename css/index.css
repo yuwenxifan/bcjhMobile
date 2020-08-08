@@ -96,6 +96,7 @@ table {
 }
 
 .header {
+  position: relative;
   height: 50px;
   background: #607d8b;
   color: #fff;
@@ -261,6 +262,12 @@ section.header .right {
 .search-box .left .el-input__inner:focus {
   border-right: 1px solid #dcdfe6 !important;
 }
+.search-box .right .el-input__inner {
+  border-left: 1px solid #dcdfe6 !important;
+}
+.search-box .right .el-input__inner:focus {
+  border-left: 1px solid #dcdfe6 !important;
+}
 .search-box .el-input-group__prepend {
   border-color: transparent;
   border-right: 1px solid #dcdfe6;
@@ -422,4 +429,38 @@ input.hidden {
 }
 .search-box .el-switch {
   transform: translate(5px, 4px);
+}
+.el-checkbox__inner:hover, .el-checkbox__input.is-focus .el-checkbox__inner {
+  border-color: #dcdfe6;
+}
+.el-checkbox__input.is-checked .el-checkbox__inner {
+  border-color: #409EFF;
+}
+.el-checkbox__inner {
+  transition: backgroud-color 0s;
+}
+.el-checkbox__inner::after {
+  transition: transform 0s;
+}
+.header .notice {
+  position: absolute;
+  top: 0px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  display: inline-block;
+  white-space:nowrap;
+}
+.search-box .button {
+  font-size: 13px;
+  display: inline-block;
+  line-height: 32px;
+  height: 32px;
+  width: 100%;
+  text-align: center;
+  cursor: pointer;
+  color: #82a1b0;
+}
+.search-box .button:active {
+  background-color: rgba(130, 161, 176, 0.1);
 }
