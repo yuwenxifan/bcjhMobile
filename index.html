@@ -25,8 +25,8 @@
         </div>
       </el-drawer>
       <el-drawer class="right-bar" :visible.sync="rightBar" size="295px" :with-header="false">
-        <div class="right-bar-body">
-          <div v-if="navId === 1">
+        <div class="right-bar-body" :class="navId == 1 ? 'scroll' : ''">
+          <div v-show="navId === 1">
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -37,6 +37,18 @@
                 :class="repCol[key] ? 'active' : ''"
                 @click="repCol[key] = !repCol[key]"
               >{{val}}</span>
+              <span class="select-box" style="width: 130px; position: relative; z-index: 1002;">
+                <muti-select
+                  :option="chefs_list"
+                  placeholder="选择厨师"
+                  v-model="repChef"
+                ></muti-select>
+              </span>
+              <span
+                class="checkbox"
+                :class="repSkillGap ? 'active' : ''"
+                @click="repSkillGap = !repSkillGap"
+              >神级能力差</span>
             </div>
             <div class="box">
               <div class="box-title">筛选</div>
@@ -87,16 +99,22 @@
                   inactive-color="#ddd">
                 </el-switch>
               </div>
-              <div class="checkbox-contain" style="transform: translateY(-1px);">
+              <div class="checkbox-contain">
                 <span class="select-box">
-                  <muti-select :option="materials_list" placeholder="耗材效率"></muti-select>
+                  <muti-select
+                    ref="materialEff"
+                    :option="materials_list"
+                    placeholder="耗材效率"
+                    v-model="repFilter.materialEff"
+                    @focus="scroll(280)"
+                  ></muti-select>
                 </span>
               </div>
               <div class="checkbox-contain">
                 <div class="prepend-input">
                   <div class="input-box">
                     <div class="prepend">单价大于</div>
-                    <input v-model="repFilter.price" />
+                    <input v-model="repFilter.price" @focus="scroll(220)" />
                   </div>
                 </div>
               </div>
@@ -116,7 +134,20 @@
               </div>
             </div>
           </div>
-          <div v-if="navId === 2">
+          <div v-show="navId === 2">
+            <div class="box">
+              <div class="box-title">修炼</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span class="select-box" style="width: 190px; position: relative; z-index: 1002;">
+                  <muti-select
+                    :option="partial_skill_list"
+                    placeholder="额外使用上场类技能"
+                    v-model="repFilter.materialEff"
+                  ></muti-select>
+                </span>
+              </div>
+            </div>
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -127,6 +158,18 @@
                 :class="chefCol[key] ? 'active' : ''"
                 @click="chefCol[key] = !chefCol[key]"
               >{{val}}</span>
+              <span class="select-box" style="width: 150px;">
+                <muti-select
+                  :option="reps_list"
+                  placeholder="选择菜谱"
+                  v-model="repFilter.materialEff"
+                ></muti-select>
+              </span>
+              <span
+                class="checkbox"
+                :class="chefSkillGap ? 'active' : ''"
+                @click="chefSkillGap = !chefSkillGap"
+              >神级能力差</span>
             </div>
             <div class="box">
               <div class="box-title">筛选</div>
@@ -163,7 +206,7 @@
               </div>
             </div>
           </div>
-          <div v-if="navId === 3">
+          <div v-show="navId === 3">
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -219,7 +262,7 @@
               </div>
             </div>
           </div>
-          <div v-if="navId === 4">
+          <div v-show="navId === 4">
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -252,7 +295,7 @@
               </div>
             </div>
           </div>
-          <div v-if="navId === 5">
+          <div v-show="navId === 5">
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -355,6 +398,7 @@
           <el-table-column sortable="custom" prop="normal_guests" min-width="125" label="贵客" v-if="repCol.guests"></el-table-column>
           <el-table-column sortable="custom" prop="degree_guests" label="升阶贵客" min-width="110" v-if="repCol.degree_guests"></el-table-column>
           <el-table-column sortable="custom" prop="gift" label="神级符文" min-width="92" v-if="repCol.gift"></el-table-column>
+          <el-table-column sortable="custom" v-for="(item, i) in repFilter.materialEff.name" :prop="'materialEff_' + repFilter.materialEff.id[i]" :label="item" min-width="92"></el-table-column>
           <el-table-column label="" min-width="1"></el-table-column>
         </el-table>
         <div class="pagination">

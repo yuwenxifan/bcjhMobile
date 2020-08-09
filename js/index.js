@@ -11,7 +11,7 @@ $(function() {
       <div class="arrow" v-show="show"></div>
       <div class="dropdown-box" v-show="show">
         <div class="controll-box">
-          <input v-model="keyword" placeholder="查找"/>
+          <input v-model="keyword" placeholder="查找" @focus="handlerFocus"/>
           <span class="btn" @click="clear">清空</span>
         </div>
         <ul class="dropdown-list">
@@ -19,7 +19,10 @@ $(function() {
             v-for="item in f_option"
             @click="checkOption(item.id, item.name)"
             :class="value.indexOf(item.id) > -1 ? 'active' : ''"
-          >{{item.name}}<li>
+          >
+            {{item.name}}
+            <span class="sub-name" v-if="item.subName">{{item.subName}}</span>
+          <li>
         </ul>
         <p class="empty" v-show="f_option.length == 0">无匹配数据</p>
       </div>
@@ -53,7 +56,6 @@ $(function() {
           this.value.push(val);
           this.names.push(name);
         }
-        console.log(this.names);
       },
       clear() {
         this.value = [];
@@ -63,25 +65,35 @@ $(function() {
         if (!this.$refs.mutiSelect.contains(e.target)) {
           this.show = false;
         }
+      },
+      handlerFocus() {
+        const that = this;
+        window.removeEventListener('click', this.clickOther);
+        this.$emit('focus');
+        setTimeout(() => {
+          window.addEventListener("click", that.clickOther);
+        }, 200);
       }
     },
     watch: {
       option: {
         deep: true,
         handler(val) {
-          console.log(val)
           this.initOption();
         }
       },
       value: {
         deep: true,
         handler(val) {
-          this.$emit('input', val);
+          this.$emit('input', {
+            id: val,
+            name: this.names
+          });
         }
       },
       keyword(val) {
         this.f_option = this.option.filter(item => {
-          return item.name.indexOf(val) > -1;
+          return item.name.indexOf(val) > -1 || (item.subName && item.subName.indexOf(val) > -1);
         });
       },
       show(val) {
@@ -118,6 +130,9 @@ $(function() {
       chartWidth: window.innerWidth,
       data: [],
       materials_list: [],
+      chefs_list: [],
+      partial_skill_list: [],
+      reps_list: [],
       sort: {
         rep: {},
         chef: {},
@@ -195,6 +210,7 @@ $(function() {
         guest: false,
         combo: false,
         price: '',
+        materialEff: {}
       },
       originRepFilter: {},
       material_type: [
@@ -219,6 +235,8 @@ $(function() {
       skill_type: false,
       repKeyword: '',
       guestKeyword: '',
+      repChef: {},
+      repSkillGap: false,
       recipesCurPage: 1,
       recipesPageSize: 20,
       chefs: [],
@@ -268,6 +286,7 @@ $(function() {
           other: { name: '未知', flag: true }
         }
       },
+      chefSkillGap: false,
       originChefFilter: {},
       chefsCurPage: 1,
       chefsPageSize: 20,
@@ -466,6 +485,18 @@ $(function() {
             name: item.name
           }
         });
+        this.chefs_list = this.data.chefs.map(item => {
+          return {
+            id: item.chefId,
+            name: item.name
+          }
+        });
+        this.reps_list = this.data.recipes.map(item => {
+          return {
+            id: item.recipeId,
+            name: item.name
+          }
+        });
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.slice(-8);
         this.data.recipes = this.data.recipes.map(item => {
@@ -546,6 +577,8 @@ $(function() {
             return s.skillId === item.ultimateSkill;
           });
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
+          item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
+          item.ultimateSkillId = ultimateSkill ? ultimateSkill.skillId : '';
           return item;
         });
         this.data.equips = this.data.equips.map(item => {
@@ -588,6 +621,17 @@ $(function() {
         });
         this.suits = Array.from(new Set(suits));
         this.mapTypes = this.data.maps.map(item => item.name);
+        const partial_skill = [];
+        this.data.chefs.forEach(item => {
+          if (item.ultimateSkillCondition == 'Partial') {
+            partial_skill.push({
+              id: item.ultimateSkillId,
+              name: item.name,
+              subName: item.ultimateSkillShow
+            });
+          }
+        });
+        this.partial_skill_list = partial_skill;
         if (this.navId === 1) {
           this.initRep();
         } else if (this.navId === 2) {
@@ -635,10 +679,28 @@ $(function() {
           const f_guest = !this.repFilter.guest || item.normal_guests;
           const f_combo = !this.repFilter.combo || item.combo;
           const f_price = item.price > this.repFilter.price;
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price) {
-            this.recipes.push(item);
+          let f_material_eff = true;
+          const ext = {};
+          const materialEff = this.repFilter.materialEff;
+          if (materialEff.id && materialEff.id.length > 0) {
+            f_material_eff = false;
+            materialEff.id.forEach(id => {
+              let material = item.materials.find(m => {
+                return m.material == id;
+              });
+              ext[`materialEff_${id}`] = material ? Math.floor(material.quantity * 3600 / item.time) : null;
+              f_material_eff = f_material_eff || Boolean(material);
+            });
+          }
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff) {
+            this.recipes.push({
+              ...item,
+              ...ext
+            });
           }
         }
+        console.log(this.recipes[0])
+        console.log(this.sort.rep);
         if (this.sort.rep.order) {
           this.handleRepSort(this.sort.rep);
         } else {
@@ -989,7 +1051,6 @@ $(function() {
           this.initDecoration();
         }
         if (sort.prop == 'checkbox') {
-          console.log()
           this.decorations.sort((r1, r2) => {
             if (this.decoSelectId.indexOf(r1.id) > -1 && this.decoSelectId.indexOf(r2.id) < 0) {
               return sort.order == 'descending' ? -1 : 1;
@@ -1069,7 +1130,6 @@ $(function() {
         this.$refs.decorationsTable.clearSort();
       },
       selectSuit(val) {
-        console.log(val);
         this.decoSelect = [];
         this.decoSelectId = [];
         this.data.decorations.forEach(r => {
@@ -1334,18 +1394,24 @@ $(function() {
           3: 'Equip',
           4: 'Decoration'
         };
+        this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
         if (this.navId === 1) {
           this.skill_radio = false;
           this.skill_type = false;
           this.repKeyword = '';
           this.guestKeyword = '';
+          this.$refs.materialEff.clear();
         } else if (this.navId === 3) {
           this.equip_radio = false;
           this.equip_concurrent = false;
         } else if (this.navId === 4) {
           this.decoration_radio = false;
         }
-        this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
+      },
+      scroll(val) {
+        if ($('.el-drawer__body').scrollTop() < val) {
+          $('.el-drawer__body').scrollTop(val);
+        }
       }
     },
     watch: {
