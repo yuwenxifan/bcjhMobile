@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="./css/index.css">
 </head>
 <body>
-  <div id="main">
+  <div id="main" v-cloak>
     <aside>
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
@@ -87,6 +87,19 @@
                   inactive-color="#ddd">
                 </el-switch>
               </div>
+              <div class="checkbox-contain" style="transform: translateY(-1px);">
+                <span class="select-box">
+                  <muti-select :option="materials_list" placeholder="耗材效率"></muti-select>
+                </span>
+              </div>
+              <div class="checkbox-contain">
+                <div class="prepend-input">
+                  <div class="input-box">
+                    <div class="prepend">单价大于</div>
+                    <input v-model="repFilter.price" />
+                  </div>
+                </div>
+              </div>
               <div class="checkbox-contain">
                 <span
                   class="checkbox"
@@ -100,14 +113,6 @@
                   :class="repFilter.combo ? 'active' : ''"
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
-              </div>
-              <div class="checkbox-contain">
-                <div class="prepend-input">
-                  <div class="input-box">
-                    <div class="prepend">单价大于</div>
-                    <input v-model="repFilter.price" />
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -134,7 +139,7 @@
                   @click="chefFilter.rarity[key] = !val"
                 >{{key}}星</span>
               </div>
-              <div class="checkbox-contain">
+              <div class="checkbox-contain" style="position: relative;">
                 <!-- 不知道为什么抽屉的第一个input会自动获取焦点，奇奇怪怪的 -->
                 <!-- 我在这里放一个看不见的input，不能是text类型否则手机会呼起软键盘 -->
                 <input class="hidden" type="checkbox">
@@ -470,6 +475,8 @@
           ref='decorationsTable'
           @sort-change="handleDecorationSort"
           :default-sort = "{ prop: 'effAvg', order: 'descending' }"
+          highlight-current-row
+          @current-change = "checkRow"
           @selection-change="handleSelectionChange"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="checkbox" width="35" v-if="decorationCol.checkbox">

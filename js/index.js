@@ -1,4 +1,98 @@
 $(function() {
+  Vue.component('muti-select', {
+    template: `
+    <div id="muti-select" ref="mutiSelect">
+      <div class="input-box" @click="show = !show">
+        <span class="placeholder" v-show="value.length == 0">{{placeholder || '请选择'}}</span>
+        <span class="tag" v-show="names.length > 0">{{names[0]}}</span>
+        <span class="tag" v-show="names.length > 1">+{{names.length - 1}}</span>
+        <i class="el-input__icon el-icon-arrow-up" :class="show ? 'active' : ''"></i>
+      </div>
+      <div class="arrow" v-show="show"></div>
+      <div class="dropdown-box" v-show="show">
+        <div class="controll-box">
+          <input v-model="keyword" placeholder="查找"/>
+          <span class="btn" @click="clear">清空</span>
+        </div>
+        <ul class="dropdown-list">
+          <li
+            v-for="item in f_option"
+            @click="checkOption(item.id, item.name)"
+            :class="value.indexOf(item.id) > -1 ? 'active' : ''"
+          >{{item.name}}<li>
+        </ul>
+        <p class="empty" v-show="f_option.length == 0">无匹配数据</p>
+      </div>
+    <div>
+    `,
+    props: ['option', 'placeholder'],
+    data: function() {
+      return {
+        value: [],
+        names: [],
+        keyword: '',
+        show: false,
+        f_option: []
+      };
+    },
+    mounted() {
+      this.initOption();
+    },
+    methods: {
+      initOption() {
+        this.f_option = this.option.filter(item => {
+          return item.name.indexOf(this.keyword) > -1;
+        });
+      },
+      checkOption(val, name) {
+        const index = this.value.indexOf(val);
+        if(index > -1) {
+          this.value.splice(index, 1);
+          this.names.splice(index, 1);
+        } else {
+          this.value.push(val);
+          this.names.push(name);
+        }
+        console.log(this.names);
+      },
+      clear() {
+        this.value = [];
+        this.names = [];
+      },
+      clickOther(e) {
+        if (!this.$refs.mutiSelect.contains(e.target)) {
+          this.show = false;
+        }
+      }
+    },
+    watch: {
+      option: {
+        deep: true,
+        handler(val) {
+          console.log(val)
+          this.initOption();
+        }
+      },
+      value: {
+        deep: true,
+        handler(val) {
+          this.$emit('input', val);
+        }
+      },
+      keyword(val) {
+        this.f_option = this.option.filter(item => {
+          return item.name.indexOf(val) > -1;
+        });
+      },
+      show(val) {
+        if (val) {
+          window.addEventListener("click", this.clickOther);
+        } else {
+          window.removeEventListener('click', this.clickOther);
+        }
+      }
+    }
+  });
   var app = new Vue({
     el: '#main',
     data: {
@@ -23,6 +117,7 @@ $(function() {
       chartHeight: window.innerHeight - 390,
       chartWidth: window.innerWidth,
       data: [],
+      materials_list: [],
       sort: {
         rep: {},
         chef: {},
@@ -365,6 +460,12 @@ $(function() {
         this.leftBar = false;
       },
       initData() {
+        this.materials_list = this.data.materials.map(item => {
+          return {
+            id: item.materialId,
+            name: item.name
+          }
+        });
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.slice(-8);
         this.data.recipes = this.data.recipes.map(item => {
@@ -910,6 +1011,12 @@ $(function() {
             checked: this.decoSelectId.indexOf(r.id) > -1
           };
         });
+      },
+      checkRow(curRow) {
+        if (curRow) {
+          const val = !curRow.checked;
+          this.handleSelectionChange(val, curRow);
+        }
       },
       handleSelectionChange(val, row) {
         let newSelect = [];
