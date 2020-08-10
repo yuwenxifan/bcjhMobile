@@ -113,6 +113,7 @@ $(function() {
       hideSuspend: false,
       settingVisible: false,
       reg: new RegExp( '<br>' , "g" ),
+      userData: null,
       nav: [
         { id: 1, name: '菜谱', icon: 'el-icon-food' },
         { id: 2, name: '厨师', icon: 'el-icon-user' },
@@ -455,6 +456,7 @@ $(function() {
       for (const key of arr) {
         this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
       }
+      this.getUserData();
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -1416,6 +1418,39 @@ $(function() {
         } else if (val > 300) {
           $('.el-drawer__body').scrollTop(val);
         }
+      },
+      saveUserData() {
+        const userData = {
+          repCol: this.repCol,
+          chefCol: this.chefCol,
+          equipCol: this.equipCol,
+          decorationCol: this.decorationCol,
+          mapCol: this.mapCol,
+        };
+        localStorage.setItem('data', JSON.stringify(userData));
+      },
+      getUserData() {
+        let userData = localStorage.getItem('data');
+        const colName = ['repCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol'];
+        if (userData) {
+          try {
+            this.userData = JSON.parse(userData);
+            colName.forEach(col => {
+              this.putUserCol(col);
+            });
+          } catch {
+            this.$message.error('个人数据解析错误！');
+          }
+        }
+      },
+      putUserCol(key) {
+        const col = {};
+        if (this.userData[key]) {
+          for (const k in this[key]) {
+            col[k] = this.userData[key][k] != undefined ? this.userData[key][k] : this[key][k];
+          }
+          this[key] = col;
+        }
       }
     },
     watch: {
@@ -1429,6 +1464,7 @@ $(function() {
       repCol: {
         deep: true,
         handler() {
+          this.saveUserData();
           this.$nextTick(()=>{
             this.$refs.recipesTable.doLayout();
           });
@@ -1446,6 +1482,7 @@ $(function() {
       chefCol: {
         deep: true,
         handler() {
+          this.saveUserData();
           this.$nextTick(()=>{
             this.$refs.chefsTable.doLayout();
           });
@@ -1463,6 +1500,7 @@ $(function() {
       equipCol: {
         deep: true,
         handler() {
+          this.saveUserData();
           this.$nextTick(()=>{
             this.$refs.equipsTable.doLayout();
           });
@@ -1475,6 +1513,12 @@ $(function() {
           this.$nextTick(()=>{
             this.$refs.equipsTable.doLayout();
           });
+        }
+      },
+      decorationCol: {
+        deep: true,
+        handler() {
+          this.saveUserData();
         }
       },
       decorationFilter: {
@@ -1493,6 +1537,12 @@ $(function() {
           this.$nextTick(()=>{
             this.$refs.mapsTable.doLayout();
           });
+        }
+      },
+      mapCol: {
+        deep: true,
+        handler() {
+          this.saveUserData();
         }
       },
       rightBar(val) {
