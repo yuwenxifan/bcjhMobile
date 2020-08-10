@@ -625,7 +625,7 @@ $(function() {
         this.data.chefs.forEach(item => {
           if (item.ultimateSkillCondition == 'Partial') {
             partial_skill.push({
-              id: item.ultimateSkillId,
+              id: `${item.chefId},${item.ultimateSkillId}`,
               name: item.name,
               subName: item.ultimateSkillShow
             });
@@ -699,8 +699,6 @@ $(function() {
             });
           }
         }
-        console.log(this.recipes[0])
-        console.log(this.sort.rep);
         if (this.sort.rep.order) {
           this.handleRepSort(this.sort.rep);
         } else {
@@ -1127,7 +1125,9 @@ $(function() {
         this.decoSelect = [];
         this.decoSelectId = [];
         this.handleSelectionChange(false, {});
-        this.$refs.decorationsTable.clearSort();
+        if (this.sort.decoration.prop == 'checkbox') {
+          this.$refs.decorationsTable.clearSort();
+        }
       },
       selectSuit(val) {
         this.decoSelect = [];
@@ -1409,7 +1409,11 @@ $(function() {
         }
       },
       scroll(val) {
-        if ($('.el-drawer__body').scrollTop() < val) {
+        if (window.innerWidth < 669) {
+          if ($('.el-drawer__body').scrollTop() < val) {
+            $('.el-drawer__body').scrollTop(val);
+          }
+        } else if (val > 300) {
           $('.el-drawer__body').scrollTop(val);
         }
       }
@@ -1489,6 +1493,13 @@ $(function() {
           this.$nextTick(()=>{
             this.$refs.mapsTable.doLayout();
           });
+        }
+      },
+      rightBar(val) {
+        if (val) {
+          setTimeout(() => {
+            $('.el-drawer__body').scrollTop(0);
+          }, 100);
         }
       },
       mapType() {
