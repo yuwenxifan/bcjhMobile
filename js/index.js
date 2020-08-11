@@ -481,24 +481,6 @@ $(function() {
         this.leftBar = false;
       },
       initData() {
-        this.materials_list = this.data.materials.map(item => {
-          return {
-            id: item.materialId,
-            name: item.name
-          }
-        });
-        this.chefs_list = this.data.chefs.map(item => {
-          return {
-            id: item.chefId,
-            name: item.name
-          }
-        });
-        this.reps_list = this.data.recipes.map(item => {
-          return {
-            id: item.recipeId,
-            name: item.name
-          }
-        });
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.slice(-8);
         this.data.recipes = this.data.recipes.map(item => {
@@ -562,6 +544,7 @@ $(function() {
           item.normal_guests = guests.join('\n');
           return item;
         });
+        this.initRep();
         this.data.chefs = this.data.chefs.map(item => {
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam', 'meat', 'veg', 'fish', 'creation'];
@@ -634,17 +617,24 @@ $(function() {
           }
         });
         this.partial_skill_list = partial_skill;
-        if (this.navId === 1) {
-          this.initRep();
-        } else if (this.navId === 2) {
-          this.initChef();
-        } else if (this.navId === 3) {
-          this.initEquip();
-        } else if (this.navId === 4) {
-          this.initDecoration();
-        } else if (this.navId === 5) {
-          this.initMap();
-        }
+        this.materials_list = this.data.materials.map(item => {
+          return {
+            id: item.materialId,
+            name: item.name
+          }
+        });
+        this.chefs_list = this.data.chefs.map(item => {
+          return {
+            id: item.chefId,
+            name: item.name
+          }
+        });
+        this.reps_list = this.data.recipes.map(item => {
+          return {
+            id: item.recipeId,
+            name: item.name
+          }
+        });
       },
       initRep() {
         this.recipes = [];

@@ -366,7 +366,9 @@ section.header .right {
   display: inline-block;
   cursor: pointer;
   font-size: 13px;
-  padding: 3px 11px;
+  padding: 0 11px;
+  height: 24px;
+  line-height: 24px;
   margin: 5px 3px;
   border: 1px solid #e4e7ed;
   background-color: #fff;
@@ -450,10 +452,16 @@ input:focus {
   border: 1px solid #DCDFE6 ;
 }
 .checkbox.clear {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: absolute;
-  right: 3px;
+  right: 2px;
   top: 0px;
-  padding: 11px 8px;
+  line-height: 18px;
+  padding: 0;
+  height: 58px;
+  width: 31px;
 }
 input.hidden {
   width: 0px;
