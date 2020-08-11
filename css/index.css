@@ -534,6 +534,11 @@ input.hidden {
 .el-table__body tr.current-row>td {
   background-color: #f5f7fa;
 }
+
+.switch-box {
+  margin-top: 9px;
+}
+
 #muti-select {
   display: inline-block;
   position: relative;

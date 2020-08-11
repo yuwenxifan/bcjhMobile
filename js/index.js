@@ -309,7 +309,8 @@ $(function() {
           male: { name: '男', flag: true },
           female: { name: '女', flag: true },
           other: { name: '未知', flag: true }
-        }
+        },
+        partial_skill: { id: [], name: [] },
       },
       chefSkillGap: false,
       chefUltimate: true,
@@ -479,7 +480,7 @@ $(function() {
     },
     computed: {
       skillWidth() {
-        return this.showLastSkill ? 48 : 68;
+        return (this.showLastSkill || !this.chefUltimate) ? 48 : 68;
       }
     },
     mounted() {
@@ -678,7 +679,9 @@ $(function() {
             partial_skill.push({
               id,
               name: item.name,
-              subName: item.ultimateSkillShow
+              subName: item.ultimateSkillShow,
+              type: item.ultimateSkill.effect[0].type,
+              value: item.ultimateSkill.effect[0].value,
             });
           }
           if (item.ultimateSkillCondition == 'Self' && item.ultimateSkill.effect[0].type != 'Material_Gain' && item.ultimateSkill.effect[0].type != 'GuestDropCount') {
@@ -832,10 +835,31 @@ $(function() {
           skill_arr.forEach(key => {
             if (this.chefUltimate) {
               let value;
+              const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
+              const effect = item.ultimateSkill ? item.ultimateSkill.effect[0] : {};
+              const partial_skill = this.chefFilter.partial_skill.id.map(id => {
+                return this.partial_skill_list.find(s => { return s.id == id });
+              });
               if (this.chefUseAllUltimate) {
                 value = this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
+                if (this.allUltimate.Partial.indexOf(partial_id) > -1 && effect.type == key) { // 上场类技能-给自己加
+                  value += effect.value;
+                }
+                partial_skill.forEach(s => {
+                  if (s.type == key && s.id != partial_id) {
+                    value += s.value;
+                  }
+                });
               } else {
                 value = (this.userUltimate[key] || 0) + (this.userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? this.userUltimate.Male : this.userUltimate.Female) : 0) || 0);
+                if (this.userUltimate.Partial.indexOf(partial_id) > -1 && effect.type == key) { // 上场类技能-给自己加
+                  value += effect.value;
+                }
+                partial_skill.forEach(s => {
+                  if (s.type == key && (s.id != partial_id || this.userUltimate.Partial.indexOf(s.id) < 0)) {
+                    value += s.value;
+                  }
+                });
               }
               ultimate[`${key}_show`] = (item[key.toLowerCase()] || '') + `${value ? '+' + value : ''}`;
               ultimate[`${key}_last`] = (item[key.toLowerCase()] + value) || '';

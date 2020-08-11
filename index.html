@@ -139,13 +139,37 @@
               <div class="box-title">修炼</div>
               <div class="hr"></div>
               <div class="checkbox-contain">
-                <span class="select-box" style="width: 205px; position: relative; z-index: 1002;">
+                <div style="margin-top: 12px;">
+                  <el-switch
+                    v-model="chefUltimate"
+                    active-color="#82a1b0"
+                    active-text="修炼开"
+                    @change="initChef"
+                    inactive-color="#ddd">
+                  </el-switch>
+                </div>
+                <span v-show="chefUltimate" class="select-box" style="width: 250px; position: relative; z-index: 1002;">
                   <muti-select
                     :option="partial_skill_list"
                     placeholder="额外使用上场类技能"
-                    v-model="repFilter.materialEff"
+                    v-model="chefFilter.partial_skill"
                   ></muti-select>
                 </span>
+                <div v-show="chefUltimate" class="switch-box">
+                  <el-switch
+                    v-model="showLastSkill"
+                    active-color="#82a1b0"
+                    active-text="显示最终值"
+                    inactive-color="#ddd">
+                  </el-switch>
+                  <el-switch
+                    v-model="chefUseAllUltimate"
+                    active-color="#82a1b0"
+                    active-text="全修炼"
+                    @change="initChef"
+                    inactive-color="#ddd">
+                  </el-switch>
+                </div>
               </div>
             </div>
             <div class="box">
@@ -163,6 +187,7 @@
                   :option="reps_list"
                   placeholder="选择菜谱"
                   v-model="repFilter.materialEff"
+                  @focus="scroll(150)"
                 ></muti-select>
               </span>
               <span
@@ -189,7 +214,7 @@
                 <div class="prepend-input" v-for="(val, key) in chefFilter.skills" :key="key">
                   <div class="input-box">
                     <div class="prepend">{{val.name}}</div>
-                    <input v-model="chefFilter.skills[key].val" @focus="scroll(200)"/>
+                    <input v-model="chefFilter.skills[key].val" @focus="scroll(240)"/>
                   </div>
                 </div>
                 <span class="checkbox clear" @click="clearFilterSkills">
@@ -349,6 +374,7 @@
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
+      <div class="notice" v-if="(navId == 1 || navId == 2) && chefFilter.partial_skill.id.length > 0">Tips: 额外上场类技能使用中</div>
       <span class="right">
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
         <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
