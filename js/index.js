@@ -312,6 +312,9 @@ $(function() {
         }
       },
       chefSkillGap: false,
+      chefUltimate: true,
+      chefUseAllUltimate: false,
+      showLastSkill: true,
       originChefFilter: {},
       chefsCurPage: 1,
       chefsPageSize: 20,
@@ -473,6 +476,11 @@ $(function() {
         window.innerHeight ||
         document.documentElement.clientHeight ||
         document.body.clientHeight,
+    },
+    computed: {
+      skillWidth() {
+        return this.showLastSkill ? 48 : 68;
+      }
     },
     mounted() {
       this.loadData();
@@ -647,6 +655,7 @@ $(function() {
         const global_obj = {
           Male: 0,
           Female: 0,
+          All: 0,
         }
         const price_obj = {
           PriceBuff_1: 0,
@@ -703,8 +712,7 @@ $(function() {
             } else if (effect.tag == 2) {
               global_obj.Female += effect.value;
             } else {
-              global_obj.Male += effect.value;
-              global_obj.Female += effect.value;
+              global_obj.All += effect.value;
             }
           }
         });
@@ -819,8 +827,28 @@ $(function() {
             }
           }
           const f_sex = sex_check.indexOf(item.sex || '未知') > -1;
+          const skill_arr = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+          const ultimate = {};
+          skill_arr.forEach(key => {
+            if (this.chefUltimate) {
+              let value;
+              if (this.chefUseAllUltimate) {
+                value = this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
+              } else {
+                value = (this.userUltimate[key] || 0) + (this.userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? this.userUltimate.Male : this.userUltimate.Female) : 0) || 0);
+              }
+              ultimate[`${key}_show`] = (item[key.toLowerCase()] || '') + `${value ? '+' + value : ''}`;
+              ultimate[`${key}_last`] = (item[key.toLowerCase()] + value) || '';
+            } else {
+              ultimate[`${key}_show`] = item[key.toLowerCase()];
+              ultimate[`${key}_last`] = item[key.toLowerCase()] || '';
+            }
+          });
           if (search && f_rarity && f_skills && f_sex) {
-            this.chefs.push(item);
+            this.chefs.push({
+              ...item,
+              ...ultimate
+            });
           }
         }
         if (this.sort.chef.order) {
@@ -1107,6 +1135,12 @@ $(function() {
         this.sort.chef = sort;
         const map = {
           rarity_show: 'rarity',
+          Stirfry_show: 'Stirfry_last',
+          Boil_show: 'Boil_last',
+          Knife_show: 'Knife_last',
+          Bake_show: 'Bake_last',
+          Fry_show: 'Fry_last',
+          Steam_show: 'Steam_last',
         };
         if (!sort.order) {
           this.initChef();

@@ -428,12 +428,12 @@
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="chefCol.id"></el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="67"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="80" v-if="chefCol.rarity"></el-table-column>
-          <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="48" v-if="chefCol.skills"></el-table-column>
-          <el-table-column sortable="custom" prop="boil" label="煮" min-width="48" v-if="chefCol.skills"></el-table-column>
-          <el-table-column sortable="custom" prop="knife" label="切" min-width="48" v-if="chefCol.skills"></el-table-column>
-          <el-table-column sortable="custom" prop="fry" label="炸" min-width="48" v-if="chefCol.skills"></el-table-column>
-          <el-table-column sortable="custom" prop="bake" label="烤" min-width="48" v-if="chefCol.skills"></el-table-column>
-          <el-table-column sortable="custom" prop="steam" label="蒸" min-width="48" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Stirfry_last' : 'Stirfry_show'" label="炒" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Boil_last' : 'Boil_show'" label="煮" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Knife_last' : 'Knife_show'" label="切" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Fry_last' : 'Fry_show'" label="炸" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Bake_last' : 'Bake_show'" label="烤" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
+          <el-table-column sortable="custom" :prop="showLastSkill ? 'Steam_last' : 'Steam_show'" label="蒸" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="skill" label="技能" min-width="130" v-if="chefCol.skill"></el-table-column>
           <el-table-column sortable="custom" prop="meat" label="肉" min-width="48" v-if="chefCol.gather"></el-table-column>
           <el-table-column sortable="custom" prop="creation" label="面" min-width="48" v-if="chefCol.gather"></el-table-column>
@@ -638,7 +638,11 @@
       </div>
       </div>
       <div v-show="navId === 7">计算器</div>
-      <div v-show="navId === 8">个人</div>
+      <div v-show="navId === 8">
+        <div>
+          说明：
+        </div>
+      </div>
       <div v-show="navId === 9">说明</div>
     </section>
   </div>
