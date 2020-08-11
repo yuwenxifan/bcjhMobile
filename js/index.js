@@ -134,6 +134,30 @@ $(function() {
       chefs_list: [],
       partial_skill_list: [],
       reps_list: [],
+      userUltimate: {
+        Stirfry: '',
+        Boil: '',
+        Knife: '',
+        Fry: '',
+        Bake: '',
+        Steam: '',
+        Male: '',
+        Female: '',
+        Partial: [],
+        Self: [],
+        MaxLimit_1: '',
+        MaxLimit_2: '',
+        MaxLimit_3: '',
+        MaxLimit_4: '',
+        MaxLimit_5: '',
+        PriceBuff_1: '',
+        PriceBuff_2: '',
+        PriceBuff_3: '',
+        PriceBuff_4: '',
+        PriceBuff_5: '',
+      },
+      allUltimate: {
+      },
       sort: {
         rep: {},
         chef: {},
@@ -562,8 +586,8 @@ $(function() {
             return s.skillId === item.ultimateSkill;
           });
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
+          item.ultimateSkill = ultimateSkill;
           item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
-          item.ultimateSkillId = ultimateSkill ? ultimateSkill.skillId : '';
           return item;
         });
         this.data.equips = this.data.equips.map(item => {
@@ -607,15 +631,90 @@ $(function() {
         this.suits = Array.from(new Set(suits));
         this.mapTypes = this.data.maps.map(item => item.name);
         const partial_skill = [];
+        const self_skill = [];
+        let allUltimate = {
+          Partial: [],
+          Self: [],
+        };
+        const skill_obj = {
+          Stirfry: 0,
+          Boil: 0,
+          Knife: 0,
+          Fry: 0,
+          Bake: 0,
+          Steam: 0
+        };
+        const global_obj = {
+          Male: 0,
+          Female: 0,
+        }
+        const price_obj = {
+          PriceBuff_1: 0,
+          PriceBuff_2: 0,
+          PriceBuff_3: 0,
+          PriceBuff_4: 0,
+          PriceBuff_5: 0,
+        };
+        const limit_obj = {
+          MaxLimit_1: 0,
+          MaxLimit_2: 0,
+          MaxLimit_3: 0,
+          MaxLimit_4: 0,
+          MaxLimit_5: 0,
+        };
         this.data.chefs.forEach(item => {
+          const id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
           if (item.ultimateSkillCondition == 'Partial') {
+            allUltimate.Partial.push(id);
             partial_skill.push({
-              id: `${item.chefId},${item.ultimateSkillId}`,
+              id,
               name: item.name,
               subName: item.ultimateSkillShow
             });
           }
+          if (item.ultimateSkillCondition == 'Self' && item.ultimateSkill.effect[0].type != 'Material_Gain' && item.ultimateSkill.effect[0].type != 'GuestDropCount') {
+            allUltimate.Self.push(id);
+            self_skill.push({
+              id,
+              name: item.name,
+              subName: item.ultimateSkillShow
+            });
+          }
+          if (item.ultimateSkill && item.ultimateSkill.effect.length == 1) {
+            const effect = item.ultimateSkill.effect[0];
+            for (const key in skill_obj) {
+              if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
+                skill_obj[key] += effect.value;
+              }
+            }
+            for (let i = 1; i < 6; i++) {
+              if (effect.type == 'UseAll' && effect.rarity == i) {
+                price_obj[`PriceBuff_${i}`] += effect.value;
+              }
+              if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                limit_obj[`MaxLimit_${i}`] += effect.value;
+              }
+            }
+          }
+          if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
+            const effect = item.ultimateSkill.effect[0];
+            if (effect.tag == 1) {
+              global_obj.Male += effect.value;
+            } else if (effect.tag == 2) {
+              global_obj.Female += effect.value;
+            } else {
+              global_obj.Male += effect.value;
+              global_obj.Female += effect.value;
+            }
+          }
         });
+        this.allUltimate = {
+          ...allUltimate,
+          ...skill_obj,
+          ...global_obj,
+          ...price_obj,
+          ...limit_obj,
+        };
         this.partial_skill_list = partial_skill;
         this.materials_list = this.data.materials.map(item => {
           return {
