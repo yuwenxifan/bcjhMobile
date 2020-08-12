@@ -4,13 +4,15 @@ $(function() {
     <div id="muti-select" ref="mutiSelect">
       <div class="input-box" @click="show = !show">
         <span class="placeholder" v-show="valueId.length == 0">{{placeholder || '请选择'}}</span>
-        <span class="tag" v-show="names.length > 0">{{names[0]}}</span>
-        <span class="tag" v-show="names.length > 1">+{{names.length - 1}}</span>
+        <span class="tag" v-show="names.length > 0 && !max">{{names[0]}}</span>
+        <span class="tag" v-show="names.length > 1 && !max">+{{names.length - 1}}</span>
+        <span class="tag" v-if="max" v-for="name in names">{{name}}</span>
         <i class="el-input__icon el-icon-arrow-up" :class="show ? 'active' : ''"></i>
       </div>
       <div class="arrow" v-show="show"></div>
       <div class="dropdown-box" v-show="show">
         <div class="controll-box">
+          <i class="el-input__icon el-icon-error clear" @click="clearKeyword"></i>
           <input v-model="keyword" placeholder="查找" @focus="handlerFocus"/>
           <span class="btn" @click="clear">清空</span>
         </div>
@@ -28,7 +30,7 @@ $(function() {
       </div>
     <div>
     `,
-    props: ['option', 'placeholder', 'value'],
+    props: ['option', 'placeholder', 'value', 'max'],
     data: function() {
       return {
         valueId: [],
@@ -68,8 +70,17 @@ $(function() {
           this.valueId.splice(index, 1);
           this.names.splice(index, 1);
         } else {
-          this.valueId.push(val);
-          this.names.push(name);
+          if (this.max && this.valueId.length == this.max) { // 如果有选择个数限制，且已经达到了
+            const values = this.valueId.slice(1);
+            const names = this.names.slice(1);
+            values.push(val);
+            names.push(name);
+            this.valueId = values;
+            this.names = names;
+          } else {
+            this.valueId.push(val);
+            this.names.push(name);
+          }
         }
       },
       clear() {
@@ -88,6 +99,9 @@ $(function() {
         setTimeout(() => {
           window.addEventListener("click", that.clickOther);
         }, 200);
+      },
+      clearKeyword() {
+        this.keyword = '';
       }
     },
     watch: {
@@ -270,8 +284,8 @@ $(function() {
         combo: false,
         price: '',
         materialEff: {},
-        repChef: { id: [], row: [] },
       },
+      repChef: { id: [], row: [] },
       originRepFilter: {},
       material_type: [
         {
@@ -344,8 +358,8 @@ $(function() {
           female: { name: '女', flag: true },
           other: { name: '未知', flag: true }
         },
-        partial_skill: { id: [], row: [] },
       },
+      partial_skill: { id: [], row: [] },
       chefSkillGap: false,
       chefUltimate: true,
       chefUseAllUltimate: false,
@@ -515,6 +529,10 @@ $(function() {
     computed: {
       skillWidth() {
         return (this.showLastSkill || !this.chefUltimate) ? 48 : 68;
+      },
+      tips() {
+        const names = this.partial_skill.row.map(row => row.name);
+        return `${names.join('、')} 上场技能开`;
       }
     },
     mounted() {
@@ -546,6 +564,10 @@ $(function() {
       checkNav(id) {
         this.navId = id;
         this.leftBar = false;
+      },
+      nameMinWidth(name) {
+        const len = name.length;
+        return len * 15 + 30;
       },
       initData() {
         const s = Math.pow(10, 5);
@@ -805,6 +827,8 @@ $(function() {
       },
       initRep() {
         this.recipes = [];
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+        const materials_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         for (const item of this.data.recipes) {
           const s_name = this.checkKeyword(this.repKeyword, item.name);
           const s_origin = this.checkKeyword(this.repKeyword, item.origin);
@@ -853,7 +877,7 @@ $(function() {
           }
           if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff) {
             const chef_ext = {};
-            this.repFilter.repChef.row.forEach(chef => {
+            this.repChef.row.forEach(chef => {
               let min = 4;
               const diff = [];
               let diff_sum = 0;
@@ -879,11 +903,20 @@ $(function() {
               }
               // 技能/修炼技能加成（如果修炼没开在chefs_list就过滤掉了）
               chef.effect.forEach(eff => {
-                //
+                const type = eff.type.slice(3);
+                if (skill_type.indexOf(type) > -1 && item[type.toLowerCase()]) { // 技法类售价
+                  buff += eff.value;
+                }
+                if (materials_type.indexOf(type) > -1 && item.materials_type.indexOf(type.toLowerCase()) > -1) { // 食材类售价
+                  buff += eff.value;
+                }
+                if (eff.type == 'Gold_Gain') { // 金币获得
+                  buff += eff.value;
+                }
               });
               chef_ext[`chef_grade_${chef.id}`] = ' 可优特神'.slice(min, min + 1);
               chef_ext[`chef_diff_${chef.id}`] = diff.join('\n');
-              chef_ext[`chef_eff_${chef.id}`] = min == 0 ? '' : Math.round(Math.ceil(item.price * buff / 100) * 3600 / item.time);
+              chef_ext[`chef_eff_${chef.id}`] = min == 0 ? '' : Math.floor(Math.ceil(item.price * buff / 100) * 3600 / item.time);
               chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
               chef_ext[`chef_grade_value_${chef.id}`] = min;
             });
@@ -932,7 +965,7 @@ $(function() {
               let value = 0;
               const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
               const effect = item.ultimateSkill ? item.ultimateSkill.effect : [];
-              const partial_skill = this.chefFilter.partial_skill.row;
+              const partial_skill = this.partial_skill.row;
               if (this.chefUseAllUltimate) {
                 value += this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
@@ -1092,13 +1125,13 @@ $(function() {
             for (const i of [0, 1, 2, 3, 4]) {
               let min = m.quantity[i][0];
               let max = m.quantity[i][1];
-              if (this.mapFilter.skill && !isNaN(Number(this.mapFilter.skill))) {
-                min = percent(min, this.mapFilter.skill);
-                max = percent(max, this.mapFilter.skill);
-              }
               if (this.mapFilter.season) {
                 min = min + m.season[i];
                 max = max + m.season[i];
+              }
+              if (this.mapFilter.skill && !isNaN(Number(this.mapFilter.skill))) {
+                min = percent(min, this.mapFilter.skill);
+                max = percent(max, this.mapFilter.skill);
               }
               if (this.mapFilter.cnt != '' && this.mapFilter.cnt < m.skill) {
                 min = 0;
@@ -1753,6 +1786,15 @@ $(function() {
           });
         }
       },
+      repChef: {
+        deep: true,
+        handler() {
+          this.initRep();
+          this.$nextTick(()=>{
+            this.$refs.recipesTable.doLayout();
+          });
+        }
+      },
       chefCol: {
         deep: true,
         handler() {
@@ -1763,6 +1805,15 @@ $(function() {
         }
       },
       chefFilter: {
+        deep: true,
+        handler() {
+          this.initChef();
+          this.$nextTick(()=>{
+            this.$refs.chefsTable.doLayout();
+          });
+        }
+      },
+      partial_skill: {
         deep: true,
         handler() {
           this.initChef();
