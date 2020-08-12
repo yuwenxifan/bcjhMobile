@@ -141,6 +141,12 @@ $(function() {
         bake: '烤',
         steam: '蒸'
       },
+      skill_buff: {
+        1: 0,
+        2: 10,
+        3: 30,
+        4: 50,
+      },
       userData: null,
       nav: [
         { id: 1, name: '菜谱', icon: 'el-icon-food' },
@@ -635,7 +641,6 @@ $(function() {
           item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
           return item;
         });
-        this.initChef();
         this.data.equips = this.data.equips.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
           const skill = this.data.skills.filter(s => {
@@ -782,6 +787,7 @@ $(function() {
           ...price_obj,
           ...limit_obj,
         };
+        this.initChef();
         this.partial_skill_list = partial_skill;
         this.materials_list = this.data.materials.map(item => {
           return {
@@ -850,16 +856,36 @@ $(function() {
             this.repFilter.repChef.row.forEach(chef => {
               let min = 4;
               const diff = [];
+              let diff_sum = 0;
+              let buff = 100;
               for (const key in item.skills) {
                 const grade = Math.floor(chef.skills[key] / item.skills[key]);
                 min = grade >= min ? min : grade;
                 if (grade < 4) {
                   const diff_value = item.skills[key] * 4 - chef.skills[key];
                   diff.push(`${this.skill_map[key]}-${diff_value}`);
+                  diff_sum += diff_value;
                 }
               }
+              if (min > 0) { // 技法足够
+                buff += this.skill_buff[min]; // 品级加成
+              }
+              if (this.chefUltimate) {
+                if (this.chefUseAllUltimate) { // 使用全修炼
+                  buff += (this.allUltimate['PriceBuff_' + item.rarity] || 0); // *星菜谱售价加成
+                } else {
+                  buff += (this.userUltimate['PriceBuff_' + item.rarity] || 0); // *星菜谱售价加成
+                }
+              }
+              // 技能/修炼技能加成（如果修炼没开在chefs_list就过滤掉了）
+              chef.effect.forEach(eff => {
+                //
+              });
               chef_ext[`chef_grade_${chef.id}`] = ' 可优特神'.slice(min, min + 1);
               chef_ext[`chef_diff_${chef.id}`] = diff.join('\n');
+              chef_ext[`chef_eff_${chef.id}`] = min == 0 ? '' : Math.round(Math.ceil(item.price * buff / 100) * 3600 / item.time);
+              chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
+              chef_ext[`chef_grade_value_${chef.id}`] = min;
             });
             this.recipes.push({
               ...item,
@@ -947,15 +973,23 @@ $(function() {
             }
             skills[key.toLowerCase()] = ultimate[`${key}_last`] || 0;
           });
+          let effect = item.skill_obj.effect;
+          const uId = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
+          if (this.chefUltimate && ((this.chefUseAllUltimate && this.allUltimate.Self.id.indexOf(uId) > -1) || this.userUltimate.Self.id.indexOf(uId) > -1)) { // 个人类修炼
+            effect = effect.concat(item.ultimateSkill.effect);
+          }
           chefs_list.push({
             id: item.chefId,
             name: item.name,
-            skills
+            skills,
+            effect
           });
           if (search && f_rarity && f_skills && f_sex) {
             this.chefs.push({
               ...item,
-              ...ultimate
+              ...ultimate,
+              ...skills,
+              ...effect
             });
           }
         }
@@ -1236,6 +1270,14 @@ $(function() {
           this.initRep();
         }
         sort.prop = map[sort.prop] || sort.prop;
+        let arr = sort.prop.split('_');
+        let id = arr[arr.length - 1];
+        if (sort.prop.indexOf('chef_diff_') > -1) {
+          sort.prop = 'chef_diff_value_' + id;
+        }
+        if (sort.prop.indexOf('chef_grade_') > -1) {
+          sort.prop = 'chef_grade_value_' + id;
+        }
         this.recipesCurPage = 1;
         this.recipes.sort(this.customSort(sort));
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);

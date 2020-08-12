@@ -42,6 +42,7 @@
                   :option="chefs_list"
                   placeholder="选择厨师"
                   v-model="repFilter.repChef"
+                  @focus="scroll(100)"
                 ></muti-select>
               </span>
               <span
@@ -187,7 +188,7 @@
                   :option="reps_list"
                   placeholder="选择菜谱"
                   v-model="repFilter.materialEff"
-                  @focus="scroll(150)"
+                  @focus="scroll(100)"
                 ></muti-select>
               </span>
               <span
@@ -425,6 +426,11 @@
           <el-table-column sortable="custom" prop="degree_guests" label="升阶贵客" min-width="110" v-if="repCol.degree_guests"></el-table-column>
           <el-table-column sortable="custom" prop="gift" label="神级符文" min-width="92" v-if="repCol.gift"></el-table-column>
           <el-table-column sortable="custom" v-for="item in repFilter.materialEff.row" :prop="'materialEff_' + item.id" :label="item.name" min-width="92"></el-table-column>
+          <div v-for="item in repFilter.repChef.row">
+            <el-table-column sortable="custom" :prop="'chef_grade_' + item.id" :label="item.name" min-width="80"></el-table-column>
+            <el-table-column sortable="custom" :prop="'chef_eff_' + item.id" label="效率" min-width="70"></el-table-column>
+            <el-table-column sortable="custom" :prop="'chef_diff_' + item.id" label="神差值" min-width="80"></el-table-column>
+          </div>
           <el-table-column label="" min-width="1"></el-table-column>
         </el-table>
         <div class="pagination">
