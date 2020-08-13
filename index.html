@@ -188,7 +188,7 @@
                 <muti-select
                   :option="reps_list"
                   placeholder="选择菜谱"
-                  v-model="repFilter.materialEff"
+                  v-model="chefRep"
                   @focus="scroll(100)"
                 ></muti-select>
               </span>
@@ -476,6 +476,11 @@
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="chefCol.origin"></el-table-column>
           <el-table-column sortable="custom" prop="ultimateGoal" label="修炼任务" min-width="150" v-if="chefCol.ultimateGoal"></el-table-column>
           <el-table-column sortable="custom" prop="ultimateSkillShow" label="修炼技能" min-width="130" v-if="chefCol.ultimateSkill"></el-table-column>
+          <div v-for="item in chefRep.row">
+            <el-table-column sortable="custom" :prop="'rep_grade_' + item.id" :label="item.name" :min-width="nameMinWidth(item.name)"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_eff_' + item.id" label="效率" min-width="65"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_diff_' + item.id" label="神差值" min-width="75" v-if="chefSkillGap"></el-table-column>
+          </div>
           <el-table-column label="" min-width="1"></el-table-column>
         </el-table>
         <div class="pagination">

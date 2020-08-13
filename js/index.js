@@ -286,6 +286,7 @@ $(function() {
         materialEff: {},
       },
       repChef: { id: [], row: [] },
+      chefRep: { id: [], row: [] },
       originRepFilter: {},
       material_type: [
         {
@@ -822,6 +823,9 @@ $(function() {
             id: item.recipeId,
             name: item.name,
             skills: item.skills,
+            price: item.price,
+            time: item.time,
+            rarity: item.rarity,
           }
         });
       },
@@ -1018,11 +1022,43 @@ $(function() {
             effect
           });
           if (search && f_rarity && f_skills && f_sex) {
+            const rep_ext = {};
+            this.chefRep.row.forEach(rep => {
+              let min = 4;
+              const diff = [];
+              let diff_sum = 0;
+              let buff = 100;
+              for (const key in rep.skills) {
+                const chef_key = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
+                const grade = Math.floor((ultimate[chef_key] || 0) / rep.skills[key]);
+                min = grade > min ? min : grade;
+                if (grade < 4) {
+                  const diff_value = rep.skills[key] * 4 - ultimate[chef_key];
+                  diff.push(`${this.skill_map[key]}-${diff_value}`);
+                  diff_sum += diff_value;
+                }
+              }
+              if (min > 0) { // 技法足够
+                buff += this.skill_buff[min]; // 品级加成
+              }
+              if (this.chefUltimate) {
+                if (this.chefUseAllUltimate) { // 使用全修炼
+                  buff += (this.allUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                } else {
+                  buff += (this.userUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                }
+              }
+              rep_ext[`rep_grade_${rep.id}`] = ' 可优特神'.slice(min, min + 1);
+              rep_ext[`rep_diff_${rep.id}`] = diff.join('\n');
+              rep_ext[`rep_eff_${rep.id}`] = min == 0 ? '' : Math.floor(Math.ceil(rep.price * buff / 100) * 3600 / rep.time);
+              rep_ext[`rep_diff_value_${rep.id}`] = diff_sum;
+              rep_ext[`rep_grade_value_${rep.id}`] = min;
+            });
             this.chefs.push({
               ...item,
               ...ultimate,
               ...skills,
-              ...effect
+              ...rep_ext,
             });
           }
         }
@@ -1805,6 +1841,15 @@ $(function() {
         }
       },
       chefFilter: {
+        deep: true,
+        handler() {
+          this.initChef();
+          this.$nextTick(()=>{
+            this.$refs.chefsTable.doLayout();
+          });
+        }
+      },
+      chefRep: {
         deep: true,
         handler() {
           this.initChef();
