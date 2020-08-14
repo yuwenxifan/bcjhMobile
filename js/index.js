@@ -826,6 +826,7 @@ $(function() {
             price: item.price,
             time: item.time,
             rarity: item.rarity,
+            materials_type: item.materials_type,
           }
         });
       },
@@ -943,6 +944,8 @@ $(function() {
       },
       initChef() {
         this.chefs = [];
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+        const materials_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         chefs_list = [];
         for (const item of this.data.chefs) {
           const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
@@ -1040,13 +1043,26 @@ $(function() {
               }
               if (min > 0) { // 技法足够
                 buff += this.skill_buff[min]; // 品级加成
-              }
-              if (this.chefUltimate) {
-                if (this.chefUseAllUltimate) { // 使用全修炼
-                  buff += (this.allUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
-                } else {
-                  buff += (this.userUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                if (this.chefUltimate) { // 修炼加成
+                  if (this.chefUseAllUltimate) { // 使用全修炼
+                    buff += (this.allUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                  } else {
+                    buff += (this.userUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                  }
                 }
+                // 技能/修炼技能加成（如果修炼没开在effect就过滤掉了）
+                effect.forEach(eff => {
+                  const type = eff.type.slice(3);
+                  if (skill_type.indexOf(type) > -1 && rep.skills[type.toLowerCase()]) { // 技法类售价
+                    buff += eff.value;
+                  }
+                  if (materials_type.indexOf(type) > -1 && rep.materials_type.indexOf(type.toLowerCase()) > -1) { // 食材类售价
+                    buff += eff.value;
+                  }
+                  if (eff.type == 'Gold_Gain') { // 金币获得
+                    buff += eff.value;
+                  }
+                });
               }
               rep_ext[`rep_grade_${rep.id}`] = ' 可优特神'.slice(min, min + 1);
               rep_ext[`rep_diff_${rep.id}`] = diff.join('\n');
@@ -1364,6 +1380,14 @@ $(function() {
         };
         if (!sort.order) {
           this.initChef();
+        }
+        let arr = sort.prop.split('_');
+        let id = arr[arr.length - 1];
+        if (sort.prop.indexOf('rep_diff_') > -1) {
+          sort.prop = 'rep_diff_value_' + id;
+        }
+        if (sort.prop.indexOf('rep_grade_') > -1) {
+          sort.prop = 'rep_grade_value_' + id;
         }
         sort.prop = map[sort.prop] || sort.prop;
         this.chefsCurPage = 1;
@@ -1793,6 +1817,12 @@ $(function() {
             col[k] = this.userData[key][k] != undefined ? this.userData[key][k] : this[key][k];
           }
           this[key] = col;
+        }
+      },
+      changeChefUltimate(val) {
+        this.initChef();
+        if (!val) {
+          this.$refs.chefRep.clear();
         }
       }
     },

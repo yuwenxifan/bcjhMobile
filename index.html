@@ -145,7 +145,7 @@
                     v-model="chefUltimate"
                     active-color="#82a1b0"
                     active-text="修炼开"
-                    @change="initChef"
+                    @change="changeChefUltimate"
                     inactive-color="#ddd">
                   </el-switch>
                 </div>
@@ -154,6 +154,7 @@
                     :option="partial_skill_list"
                     placeholder="额外使用上场类技能"
                     v-model="partial_skill"
+                    ref="chefRep"
                     :max="3"
                   ></muti-select>
                 </span>
