@@ -173,15 +173,18 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 8,
       tableHeight: window.innerHeight - 122,
+      boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
       chartWidth: window.innerWidth,
       data: [],
       materials_list: [],
       chefs_list: [],
       partial_skill_list: [],
+      self_skill_list: [],
       reps_list: [],
+      userDataText: '',
       userUltimate: {
         Stirfry: '',
         Boil: '',
@@ -812,6 +815,7 @@ $(function() {
         };
         this.initChef();
         this.partial_skill_list = partial_skill;
+        this.self_skill_list = self_skill;
         this.materials_list = this.data.materials.map(item => {
           return {
             id: item.materialId,

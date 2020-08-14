@@ -357,7 +357,7 @@ section.header .right {
   border-left: 3px #82a1b0 solid;
 }
 
-.box .hr {
+.hr {
   border-top: 1px #dcdfe6 solid;
   margin: 8px 0 5px 3px;
 }
@@ -416,16 +416,24 @@ section.header .right {
 .prepend-input .input-box {
   display: flex;
 }
-.prepend-input .prepend {
+.prepend-input .prepend, .prepend-input .append {
   display: inline-block;
   padding: 0px 9px;
   height: 24px;
   line-height: 24px;
   border: 1px solid #dcdfe6;
-  border-right: 0;
+  background-color: #f5f7fa;
   border-radius: 4px;
+}
+.prepend-input .prepend {
+  border-right: 0;
   border-top-right-radius: 0;
   border-bottom-right-radius: 0;
+}
+.prepend-input .append {
+  border-left: 0;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
 }
 .prepend-input input {
   display: inline-block;
@@ -439,6 +447,10 @@ section.header .right {
   border-top-left-radius: 0;
   border-bottom-left-radius: 0;
   color: #606266;
+}
+.append-input input {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 }
 .prepend-input.large input {
   width: 40px;
@@ -537,6 +549,36 @@ input.hidden {
 
 .switch-box {
   margin-top: 9px;
+}
+
+.ultimate-box {
+  padding: 15px 10px;
+  padding-bottom: 20px;
+  box-sizing: border-box;
+  overflow: auto;
+}
+.ultimate-box .title {
+  font-size: 16px;
+  padding-left: 10px;
+  height: 20px;
+  line-height: 20px;
+  color: #526874;
+  border-left: 3px #82a1b0 solid;
+}
+.ultimate-box .box-body {
+  font-size: 13px;
+  padding-bottom: 20px;
+}
+
+.box-body .contain {
+  padding: 5px 0;
+  font-size: 0px;
+}
+.contain-title {
+  font-size: 14px;
+  color: #607d8b;
+  margin-bottom: 6px;
+  padding-left: 4px;
 }
 
 #muti-select {

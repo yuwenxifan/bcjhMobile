@@ -678,8 +678,95 @@
       </div>
       <div v-show="navId === 7">计算器</div>
       <div v-show="navId === 8">
-        <div>
-          说明：
+        <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
+          <div class="title">个人修炼数据配置</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="contain">
+              <div class="contain-title">单技法</div>
+              <div class="prepend-input" v-for="(val, key) in skill_map">
+                <div class="input-box">
+                  <div class="prepend">{{val}}</div>
+                  <input/>
+                </div>
+              </div>
+            </div>
+            <div class="contain">
+              <div class="contain-title">全技法</div>
+              <div class="prepend-input">
+                <div class="input-box">
+                  <div class="prepend">男厨</div>
+                  <input/>
+                </div>
+              </div>
+              <div class="prepend-input">
+                <div class="input-box">
+                  <div class="prepend">女厨</div>
+                  <input/>
+                </div>
+              </div>
+              <div class="prepend-input">
+                <div class="input-box">
+                  <div class="prepend">全体</div>
+                  <input/>
+                </div>
+              </div>
+            </div>
+            <div class="contain">
+              <div class="contain-title">菜谱上限</div>
+              <div class="prepend-input" v-for="val in [1, 2, 3, 4, 5]">
+                <div class="input-box">
+                  <div class="prepend">{{val}}星</div>
+                  <input/>
+                </div>
+              </div>
+            </div>
+            <div class="contain">
+              <div class="contain-title">菜谱售价</div>
+              <div class="prepend-input append-input" v-for="val in [1, 2, 3, 4, 5]">
+                <div class="input-box">
+                  <div class="prepend">{{val}}星</div>
+                  <input/>
+                  <div class="append">%</div>
+                </div>
+              </div>
+            </div>
+            <div class="contain">
+              <div class="contain-title">特殊</div>
+              <span class="select-box" style="width: 250px; position: relative; z-index: 1003;">
+                <muti-select
+                  :option="partial_skill_list"
+                  placeholder="上场类技能已修炼"
+                ></muti-select>
+              </span>
+              <span class="select-box" style="width: 250px;">
+                <muti-select
+                  :option="self_skill_list"
+                  placeholder="个人类技能已修炼"
+                ></muti-select>
+              </span>
+            </div>
+            <span class="btn">填入全修炼</span>
+            <span class="btn">清空修炼</span>
+          </div>
+          <div class="title">个人数据备份-手动复制版</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <el-input
+              type="textarea"
+              :rows="10"
+              placeholder="请贴入备份的个人数据"
+              v-model="userDataText">
+            </el-input>
+            <span class="btn">生成个人数据</span>
+            <span class="btn">导入个人数据</span>
+          </div>
+          <div class="title">个人数据备份-文件版（有的浏览器不支持）</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <span class="btn">下载个人数据文件</span>
+            <span class="btn">导入个人数据文件</span>
+          </div>
         </div>
       </div>
       <div v-show="navId === 9">说明</div>
