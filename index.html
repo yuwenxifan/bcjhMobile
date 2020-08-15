@@ -687,7 +687,7 @@
               <div class="prepend-input" v-for="(val, key) in skill_map">
                 <div class="input-box">
                   <div class="prepend">{{val}}</div>
-                  <input/>
+                  <input type="number" v-model.lazy="userUltimate[key.slice(0, 1).toUpperCase() + key.slice(1)]"/>
                 </div>
               </div>
             </div>
@@ -696,19 +696,19 @@
               <div class="prepend-input">
                 <div class="input-box">
                   <div class="prepend">男厨</div>
-                  <input/>
+                  <input type="number" v-model.lazy="userUltimate.Male"/>
                 </div>
               </div>
               <div class="prepend-input">
                 <div class="input-box">
                   <div class="prepend">女厨</div>
-                  <input/>
+                  <input type="number" v-model.lazy="userUltimate.Female"/>
                 </div>
               </div>
               <div class="prepend-input">
                 <div class="input-box">
                   <div class="prepend">全体</div>
-                  <input/>
+                  <input type="number" v-model.lazy="userUltimate.All"/>
                 </div>
               </div>
             </div>
@@ -717,7 +717,7 @@
               <div class="prepend-input" v-for="val in [1, 2, 3, 4, 5]">
                 <div class="input-box">
                   <div class="prepend">{{val}}星</div>
-                  <input/>
+                  <input type="number" v-model.lazy="userUltimate[`MaxLimit_${val}`]"/>
                 </div>
               </div>
             </div>
@@ -726,7 +726,7 @@
               <div class="prepend-input append-input" v-for="val in [1, 2, 3, 4, 5]">
                 <div class="input-box">
                   <div class="prepend">{{val}}星</div>
-                  <input/>
+                  <input @focus="scrollUser(200)" type="number" v-model.lazy="userUltimate[`PriceBuff_${val}`]"/>
                   <div class="append">%</div>
                 </div>
               </div>
@@ -735,19 +735,27 @@
               <div class="contain-title">特殊</div>
               <span class="select-box" style="width: 250px; position: relative; z-index: 1003;">
                 <muti-select
+                  ref="userPartial"
                   :option="partial_skill_list"
                   placeholder="上场类技能已修炼"
+                  v-model="userUltimate.Partial"
+                  @focus="scrollUser(360)"
                 ></muti-select>
               </span>
               <span class="select-box" style="width: 250px;">
                 <muti-select
+                  ref="userSelf"
                   :option="self_skill_list"
                   placeholder="个人类技能已修炼"
+                  v-model="userUltimate.Self"
+                  @focus="scrollUser(380)"
                 ></muti-select>
               </span>
             </div>
-            <span class="btn">填入全修炼</span>
-            <span class="btn">清空修炼</span>
+            <div class="btn-box" style="padding-left: 3px;">
+              <span class="btn" @click="setAllUltimate">填入全修炼</span>
+              <span class="btn" @click="emptyUserUltimate">清空修炼</span>
+            </div>
           </div>
           <div class="title">个人数据备份-手动复制版</div>
           <div class="hr"></div>
@@ -756,16 +764,23 @@
               type="textarea"
               :rows="10"
               placeholder="请贴入备份的个人数据"
-              v-model="userDataText">
+              v-model="userDataText"
+              @focus="scrollUser(400)"
+            >
             </el-input>
-            <span class="btn">生成个人数据</span>
-            <span class="btn">导入个人数据</span>
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="exportUserDataText">生成个人数据</span>
+              <span class="btn" @click="importUserDataText">导入个人数据</span>
+            </div>
           </div>
           <div class="title">个人数据备份-文件版（有的浏览器不支持）</div>
           <div class="hr"></div>
           <div class="box-body">
-            <span class="btn">下载个人数据文件</span>
-            <span class="btn">导入个人数据文件</span>
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="exportUserData">下载个人数据文件</span>
+              <span class="btn" @click="openFile">导入个人数据文件</span>
+              <input id="file" style="display: none" type="file" accept="text/plain" @change="importUserData(event)">
+            </div>
           </div>
         </div>
       </div>

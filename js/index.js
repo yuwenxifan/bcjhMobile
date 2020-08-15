@@ -173,7 +173,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 8,
+      navId: 1,
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
@@ -185,6 +185,7 @@ $(function() {
       self_skill_list: [],
       reps_list: [],
       userDataText: '',
+      userUltimateChange: false,
       userUltimate: {
         Stirfry: '',
         Boil: '',
@@ -194,6 +195,7 @@ $(function() {
         Steam: '',
         Male: '',
         Female: '',
+        All: '',
         Partial: { id: [], row: [] },
         Self: { id: [], row: [] },
         MaxLimit_1: '',
@@ -540,12 +542,12 @@ $(function() {
       }
     },
     mounted() {
+      this.getUserData();
       this.loadData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
       for (const key of arr) {
         this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
       }
-      this.getUserData();
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -950,6 +952,14 @@ $(function() {
         this.chefs = [];
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const materials_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
+        const userUltimate = {};
+        for (const key in this.userUltimate) {
+          if (typeof this.userUltimate[key] == 'string') {
+            userUltimate[key] = Number(this.userUltimate[key]);
+          } else {
+            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
+          }
+        }
         chefs_list = [];
         for (const item of this.data.chefs) {
           const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
@@ -985,9 +995,9 @@ $(function() {
                   }
                 });
               } else {
-                value += (this.userUltimate[key] || 0) + (this.userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? this.userUltimate.Male : this.userUltimate.Female) : 0) || 0);
+                value += (userUltimate[key] || 0) + (userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? userUltimate.Male : userUltimate.Female) : 0) || 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
-                  if (s.type == key && (s.id != partial_id || this.userUltimate.Partial.id.indexOf(s.id) < 0)) {
+                  if (s.type == key && (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0)) {
                     value += s.value;
                   }
                 });
@@ -1001,10 +1011,10 @@ $(function() {
                     value += eff.value;
                   }
                 } else {
-                  if (this.userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
+                  if (userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
                     value += eff.value;
                   }
-                  if (this.userUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
+                  if (userUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
                     value += eff.value;
                   }
                 }
@@ -1019,7 +1029,7 @@ $(function() {
           });
           let effect = item.skill_obj.effect;
           const uId = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
-          if (this.chefUltimate && ((this.chefUseAllUltimate && this.allUltimate.Self.id.indexOf(uId) > -1) || this.userUltimate.Self.id.indexOf(uId) > -1)) { // 个人类修炼
+          if (this.chefUltimate && ((this.chefUseAllUltimate && this.allUltimate.Self.id.indexOf(uId) > -1) || userUltimate.Self.id.indexOf(uId) > -1)) { // 个人类修炼
             effect = effect.concat(item.ultimateSkill.effect);
           }
           chefs_list.push({
@@ -1790,6 +1800,13 @@ $(function() {
           $('.el-drawer__body').scrollTop(val);
         }
       },
+      scrollUser(val) {
+        if (window.innerWidth < 669) {
+          if ($('.ultimate-box').scrollTop() < val) {
+            $('.ultimate-box').scrollTop(val);
+          }
+        }
+      },
       saveUserData() {
         const userData = {
           repCol: this.repCol,
@@ -1797,12 +1814,13 @@ $(function() {
           equipCol: this.equipCol,
           decorationCol: this.decorationCol,
           mapCol: this.mapCol,
+          userUltimate: this.userUltimate,
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
       getUserData() {
         let userData = localStorage.getItem('data');
-        const colName = ['repCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol'];
+        const colName = ['repCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -1813,6 +1831,62 @@ $(function() {
             this.$message.error('个人数据解析错误！');
           }
         }
+      },
+      exportUserDataText() {
+        this.saveUserData();
+        this.userDataText = localStorage.getItem('data');
+      },
+      importUserDataText() {
+        let data;
+        try {
+          data = JSON.parse(this.userDataText);
+          localStorage.setItem('data', this.userDataText);
+          this.getUserData();
+          setTimeout(() => {
+            this.$refs.userPartial.initOption();
+            this.$refs.userSelf.initOption();
+          }, 50);
+          this.userDataText = '';
+          this.$message.success('导入成功');
+        } catch {
+          this.$message.error('导入失败');
+        }
+      },
+      exportUserData() {
+        this.saveUserData();
+        let dataText = localStorage.getItem('data');
+        let a = document.createElement('a');
+        a.href = 'data:text/plain;charset=utf-8,' + dataText;
+        a.download = 'userData';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      },
+      openFile() {
+        $('#file').click();
+      },
+      importUserData(e) {
+        const input = event.target;
+        const reader = new FileReader();
+        const that = this;
+        reader.onload = function() {
+          if(reader.result) {
+            let data;
+            try {
+              data = JSON.parse(reader.result);
+              localStorage.setItem('data', reader.result);
+              that.getUserData();
+              setTimeout(() => {
+                that.$refs.userPartial.initOption();
+                that.$refs.userSelf.initOption();
+              }, 50);
+              that.$message.success('导入成功');
+            } catch {
+              that.$message.error('导入失败');
+            }
+          }
+        };
+        reader.readAsText(input.files[0]);
       },
       putUserCol(key) {
         const col = {};
@@ -1828,6 +1902,40 @@ $(function() {
         if (!val) {
           this.$refs.chefRep.clear();
         }
+      },
+      setAllUltimate() {
+        this.userUltimate = JSON.parse(JSON.stringify(this.allUltimate));
+        setTimeout(() => {
+          this.$refs.userPartial.initOption();
+          this.$refs.userSelf.initOption();
+        }, 50);
+      },
+      emptyUserUltimate() {
+        this.userUltimate = {
+          Stirfry: '',
+          Boil: '',
+          Knife: '',
+          Fry: '',
+          Bake: '',
+          Steam: '',
+          Male: '',
+          Female: '',
+          All: '',
+          Partial: { id: [], row: [] },
+          Self: { id: [], row: [] },
+          MaxLimit_1: '',
+          MaxLimit_2: '',
+          MaxLimit_3: '',
+          MaxLimit_4: '',
+          MaxLimit_5: '',
+          PriceBuff_1: '',
+          PriceBuff_2: '',
+          PriceBuff_3: '',
+          PriceBuff_4: '',
+          PriceBuff_5: '',
+        };
+        this.$refs.userPartial.clear();
+        this.$refs.userSelf.clear();
       }
     },
     watch: {
@@ -1949,6 +2057,13 @@ $(function() {
           this.saveUserData();
         }
       },
+      userUltimate: {
+        deep: true,
+        handler(val) {
+          this.userUltimateChange = true;
+          this.saveUserData();
+        }
+      },
       rightBar(val) {
         if (val) {
           setTimeout(() => {
@@ -1976,13 +2091,18 @@ $(function() {
           if (this.recipes.length == 0) {
             this.initRep();
           }
+          if (this.chefUltimate && !this.chefUseAllUltimate && this.userUltimateChange) {
+            this.userUltimateChange = false;
+            this.initChef();
+          }
           this.$nextTick(()=>{
             this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
             this.$refs.recipesTable.bodyWrapper.scrollLeft = 0;
             this.$refs.recipesTable.doLayout();
           });
         } else if (val == 2) {
-          if (this.chefs.length == 0) {
+          if (this.chefs.length == 0 || (this.chefUltimate && !this.chefUseAllUltimate && this.userUltimateChange)) {
+            this.userUltimateChange = false;
             this.initChef();
           }
           this.$nextTick(()=>{

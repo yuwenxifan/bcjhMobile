@@ -553,7 +553,7 @@ input.hidden {
 
 .ultimate-box {
   padding: 15px 10px;
-  padding-bottom: 20px;
+  padding-bottom: 50px;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -573,6 +573,23 @@ input.hidden {
 .box-body .contain {
   padding: 5px 0;
   font-size: 0px;
+}
+.ultimate-box .btn {
+  display: inline-block;
+  color: #606266;
+  height: 28px;
+  line-height: 28px;
+  padding: 0 12px;
+  box-sizing: border-box;
+}
+.ultimate-box .btn:active {
+  background-color: #f5f7fa;
+}
+.ultimate-box .btn-box {
+  margin-top: 3px;
+}
+.el-textarea {
+  font-size: 13px;
 }
 .contain-title {
   font-size: 14px;
