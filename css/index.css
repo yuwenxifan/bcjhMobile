@@ -570,7 +570,7 @@ input.hidden {
   border-left: 3px #82a1b0 solid;
 }
 .info-box .box-body p {
-  font-size: 14px;
+  font-size: 14px !important;
   margin: 10px 0;
   margin-left: 10px;
 }
