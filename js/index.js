@@ -817,13 +817,7 @@ $(function() {
             }
           }
         });
-        this.allUltimate = {
-          ...allUltimate,
-          ...skill_obj,
-          ...global_obj,
-          ...price_obj,
-          ...limit_obj,
-        };
+        this.allUltimate = Object.assign({}, allUltimate, skill_obj, global_obj, price_obj, limit_obj);
         this.initChef();
         this.partial_skill_list = partial_skill;
         this.self_skill_list = self_skill;
@@ -940,11 +934,7 @@ $(function() {
               chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
               chef_ext[`chef_grade_value_${chef.id}`] = min;
             });
-            this.recipes.push({
-              ...item,
-              ...ext,
-              ...chef_ext,
-            });
+            this.recipes.push(Object.assign({}, item, ext, chef_ext));
           }
         }
         if (this.sort.rep.order) {
@@ -1094,12 +1084,7 @@ $(function() {
               rep_ext[`rep_diff_value_${rep.id}`] = diff_sum;
               rep_ext[`rep_grade_value_${rep.id}`] = min;
             });
-            this.chefs.push({
-              ...item,
-              ...ultimate,
-              ...skills,
-              ...rep_ext,
-            });
+            this.chefs.push(Object.assign({}, item, ultimate, skills, rep_ext));
           }
         }
         this.chefs_list = chefs_list;
@@ -1170,10 +1155,7 @@ $(function() {
           this.decorationsCurPage = 1;
           const decorationsPage = this.decorations.slice(0, this.decorationsPageSize)
           this.decorationsPage = decorationsPage.map(d => {
-            return {
-              ...d,
-              checked: this.decoSelectId.indexOf(d.id) > -1,
-            };
+            return Object.assign({}, d, checked);
           });
         }
         this.$nextTick(() => {
@@ -1218,12 +1200,13 @@ $(function() {
               ext[i] = min ? `${min} ~ ${max}` : '0';
               avg.push(Math.round((min + max) / 2 * 36000 / item.time[i]) / 10);
             }
-            return {
+            let rst = {
               name: m.name,
               skill: m.skill,
-              ...ext,
               avg
             };
+            Object.assign(rst, ext);
+            return rst;
           });
           const sum_show = {
             name: '总计',
@@ -1357,10 +1340,10 @@ $(function() {
           const size = this[map[nav] + 'PageSize'];
           const page = this[map[nav]].slice((val - 1) * size, val * size);
           this[map[nav] + 'Page'] = page.map(item => {
-            return {
-              ...item,
+            let rst = {
               checked: this.decoSelectId.indexOf(item.id) > -1
-            };
+            }
+            return Object.assign(rst, item);
           });
         } else {
           this[map[nav] + 'CurPage'] = val;
@@ -1458,10 +1441,8 @@ $(function() {
         }
         const decorationsPage = this.decorations.slice(0, this.decorationsPageSize);
         this.decorationsPage = decorationsPage.map(r => {
-          return {
-            ...r,
-            checked: this.decoSelectId.indexOf(r.id) > -1
-          };
+          Object.assign(r, { checked: this.decoSelectId.indexOf(r.id) > -1 });
+          return r;
         });
       },
       checkRow(curRow) {
@@ -1485,10 +1466,8 @@ $(function() {
         this.decoSelect = newSelect;
         this.decoSelectId = newSelect.map(r => r.id);
         this.decorationsPage = this.decorationsPage.map(d => {
-          return {
-            ...d,
-            checked: this.decoSelectId.indexOf(d.id) > -1,
-          };
+          Object.assign(d, { checked: this.decoSelectId.indexOf(d.id) > -1 });
+          return d;
         });
         let avg = 0;
         let gold = 0;
@@ -1837,7 +1816,7 @@ $(function() {
             colName.forEach(col => {
               this.putUserCol(col);
             });
-          } catch {
+          } catch(e) {
             this.$message.error('个人数据解析错误！');
           }
         }
@@ -1858,7 +1837,7 @@ $(function() {
           }, 50);
           this.userDataText = '';
           this.$message.success('导入成功');
-        } catch {
+        } catch(e) {
           this.$message.error('导入失败');
         }
       },
@@ -1891,7 +1870,7 @@ $(function() {
                 that.$refs.userSelf.initOption();
               }, 50);
               that.$message.success('导入成功');
-            } catch {
+            } catch(e) {
               that.$message.error('导入失败');
             }
           }
