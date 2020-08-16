@@ -118,9 +118,9 @@ table {
   border-spacing: 0;
 }
 
-/* [v-cloak] .body, [v-cloak] .header, [v-cloak] .aside {
+[v-cloak] .body, [v-cloak] .header, [v-cloak] .aside {
   display: none;
-} */
+}
 
 .header {
   position: relative;

@@ -12,7 +12,7 @@
   <script src="./ele/index.js"></script>
 </head>
 <body>
-  <div id="main">
+  <div id="main" v-cloak>
     <div v-loading.fullscreen.lock="loading"></div>
     <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
