@@ -224,6 +224,7 @@ $(function() {
       recipesPage: [],
       repCol: {
         id: false,
+        img: false,
         rarity: false,
         skills: false,
         materials: false,
@@ -244,6 +245,7 @@ $(function() {
       },
       repColName: {
         id: '编号',
+        img: '图',
         rarity: '星级',
         skills: '技法',
         materials: '材料',
@@ -322,6 +324,7 @@ $(function() {
       chefsPage: [],
       chefCol: {
         id: false,
+        img: false,
         rarity: false,
         skills: true,
         skill: true,
@@ -333,6 +336,7 @@ $(function() {
       },
       chefColName: {
         id: '编号',
+        img: '图',
         rarity: '星',
         skills: '技法',
         skill: '技能',
@@ -377,12 +381,14 @@ $(function() {
       equipsPage: [],
       equipCol: {
         id: false,
+        img: false,
         rarity: true,
         skill: true,
         origin: true
       },
       equipColName: {
         id: '编号',
+        img: '图',
         rarity: '星',
         skill: '技能',
         origin: '来源'
@@ -435,6 +441,7 @@ $(function() {
       decorationCol: {
         checkbox: true,
         id: false,
+        img: false,
         gold: true,
         tipMin: false,
         tipMax: false,
@@ -450,6 +457,7 @@ $(function() {
       decorationColName: {
         checkbox: "选择",
         id: "编号",
+        img: '图',
         gold: "收入加成",
         tipMin: "最小玉璧",
         tipMax: "最大玉璧",

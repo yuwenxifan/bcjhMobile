@@ -553,7 +553,7 @@ input.hidden {
 
 .ultimate-box {
   padding: 15px 10px;
-  padding-bottom: 50px;
+  padding-bottom: 100px;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -568,6 +568,9 @@ input.hidden {
 .ultimate-box .box-body {
   font-size: 13px;
   padding-bottom: 20px;
+}
+.ultimate-box .prepend-input input {
+  width: 26px;
 }
 
 .box-body .contain {

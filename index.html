@@ -7,6 +7,7 @@
   <link rel="icon" href="./favicon.png">
   <link rel="stylesheet" href="./ele/index.css">
   <link rel="stylesheet" href="./css/index.css">
+  <link rel="stylesheet" href="./css/image.css">
 </head>
 <body>
   <div id="main" v-cloak>
@@ -115,7 +116,7 @@
                 <div class="prepend-input">
                   <div class="input-box">
                     <div class="prepend">单价大于</div>
-                    <input v-model="repFilter.price" @focus="scroll(220)" />
+                    <input type="number" v-model="repFilter.price" @focus="scroll(220)" />
                   </div>
                 </div>
               </div>
@@ -190,7 +191,7 @@
                   :option="reps_list"
                   placeholder="选择菜谱"
                   v-model="chefRep"
-                  @focus="scroll(100)"
+                  @focus="scroll(130)"
                 ></muti-select>
               </span>
               <span
@@ -217,7 +218,7 @@
                 <div class="prepend-input" v-for="(val, key) in chefFilter.skills" :key="key">
                   <div class="input-box">
                     <div class="prepend">{{val.name}}</div>
-                    <input v-model="chefFilter.skills[key].val" @focus="scroll(240)"/>
+                    <input type="number" v-model="chefFilter.skills[key].val" @focus="scroll(240)"/>
                   </div>
                 </div>
                 <span class="checkbox clear" @click="clearFilterSkills">
@@ -343,7 +344,7 @@
                 <div class="prepend-input large">
                   <div class="input-box">
                     <div class="prepend">采集点数</div>
-                    <input v-model="mapFilter.cnt" placeholder="不限" />
+                    <input type="number" v-model="mapFilter.cnt" placeholder="不限" />
                   </div>
                 </div>
               </div>
@@ -404,6 +405,11 @@
           @sort-change="handleRepSort"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="repCol.id"></el-table-column>
+          <el-table-column fixed label="" width="50" v-if="repCol.img">
+            <template slot-scope="scope">
+              <div class="icon-recipe" :class="'recipe_' + scope.row.recipeId"></div>
+            </template>
+          </el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="80" v-if="repCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="48" v-if="repCol.skills"></el-table-column>
@@ -460,6 +466,11 @@
           @sort-change="handleChefSort"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="chefCol.id"></el-table-column>
+          <el-table-column fixed label="" width="60" v-if="chefCol.img">
+            <template slot-scope="scope">
+              <div class="icon-chef" :class="'chef_' + scope.row.chefId"></div>
+            </template>
+          </el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="67"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="80" v-if="chefCol.rarity"></el-table-column>
           <el-table-column sortable="custom" :prop="showLastSkill ? 'Stirfry_last' : 'Stirfry_show'" label="炒" :min-width="skillWidth" v-if="chefCol.skills"></el-table-column>
@@ -509,6 +520,11 @@
           @sort-change="handleEquipSort"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="equipCol.id"></el-table-column>
+          <el-table-column fixed label="" width="45" v-if="equipCol.img">
+            <template slot-scope="scope">
+              <div class="icon-equip" :class="'equip_' + scope.row.equipId"></div>
+            </template>
+          </el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="55" v-if="equipCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="skill" label="技能" min-width="155" v-if="equipCol.skill"></el-table-column>
@@ -568,6 +584,11 @@
             </template>
           </el-table-column>
           <el-table-column fixed sortable="custom" prop="id" label="No." width="55" v-if="decorationCol.id"></el-table-column>
+          <el-table-column fixed label="" width="49" v-if="decorationCol.img">
+            <template slot-scope="scope">
+              <div style="zoom: 0.6;" class="icon-decoration" :class="'decoration_' + scope.row.icon"></div>
+            </template>
+          </el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="gold_show" label="加成" min-width="64" v-if="decorationCol.gold"></el-table-column>
           <el-table-column sortable="custom" prop="tipMin" label="最小玉" min-width="78" v-if="decorationCol.tipMin"></el-table-column>
@@ -765,7 +786,7 @@
               :rows="10"
               placeholder="请贴入备份的个人数据"
               v-model="userDataText"
-              @focus="scrollUser(400)"
+              @focus="scrollUser(480)"
             >
             </el-input>
             <div class="btn-box" style="margin-top: 10px;">
