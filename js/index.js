@@ -174,7 +174,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 9,
+      navId: 1,
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
