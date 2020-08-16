@@ -146,6 +146,7 @@ $(function() {
       rightBar: false,
       hideSuspend: false,
       settingVisible: false,
+      loading: true,
       reg: new RegExp( '<br>' , "g" ),
       skill_map: {
         stirfry: '炒',
@@ -173,7 +174,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 9,
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
@@ -955,6 +956,7 @@ $(function() {
         this.$nextTick(() => {
           this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
         });
+        this.loading = false;
       },
       initChef() {
         this.chefs = [];

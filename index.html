@@ -4,14 +4,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
-  <link rel="icon" href="./favicon.png">
-  <link rel="stylesheet" href="./ele/index.css">
-  <link rel="stylesheet" href="./css/index.css">
-  <link rel="stylesheet" href="./css/image.css">
+  <link rel="icon" href="./favicon.png?v=1">
+  <link rel="stylesheet" href="./ele/index.css?v=1">
+  <link rel="stylesheet" href="./css/index.css?v=1">
+  <link rel="stylesheet" href="./css/image.css?v=1">
+  <script src="./js/vue.min.js"></script>
+  <script src="./ele/index.js"></script>
 </head>
 <body>
   <div id="main" v-cloak>
-    <aside>
+    <div v-loading.fullscreen.lock="loading"></div>
+    <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
           <img class="img-header" src="./images/saltFish.png" alt="咸公主">
@@ -697,7 +700,14 @@
         </el-pagination>
       </div>
       </div>
-      <div v-show="navId === 7">计算器</div>
+      <div v-show="navId === 7">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666666; font-size: 20px;">
+          <span style="display: inline-block; transform: translateY(14px);">
+            <svg t="1597564496767" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1665" width="48" height="48"><path d="M350.144 494.208m-30.72 0a0.48 0.48 0 1 0 61.44 0 0.48 0.48 0 1 0-61.44 0Z" p-id="1666" fill="#606266"></path><path d="M355.136 207.68C344 173.632 197.504 270.08 237.184 357.696 245.376 375.808 388.864 310.72 355.136 207.68zM268.864 317.696C267.904 265.152 325.376 245.312 325.376 245.312 319.424 293.888 268.864 317.696 268.864 317.696z" p-id="1667" fill="#606266"></path><path d="M1017.344 662.144c-3.904-8.704-1.28-16.576-19.776-20.224-14.016-2.752-27.776 4.032-68.416 4.992 0 0 101.12-200.256 56.576-315.328 0 0-243.968-4.928-356.928 106.112 0 0-151.744-290.496-412.48 8.96 0 0 4.928-101.12-2.944-122.944 0 0 53.504-103.104-43.648-173.504-15.296-11.072-80.32 97.152 10.88 177.472 0 0 9.92 171.52-66.432 337.088C108.8 676.416 135.04 711.296 152.896 663.68c17.856-47.552 40.64-115.968 44.608-126.848 0 0 83.264 171.52 115.008 217.152s295.424 299.456 704.96-81.344C1019.52 670.72 1019.52 666.752 1017.344 662.144zM188.544 289.92C154.88 254.272 170.688 200.64 170.688 200.64 211.392 223.36 188.544 289.92 188.544 289.92zM357.12 742.08c-29.376-27.136-45.632-112.064-133.824-242.944 0 0 220.096-307.328 389.632-15.872 14.656 25.216 41.6 3.968 47.616-15.872 5.952-19.84 153.6-93.184 304.32-89.216 0 0-8.896 192.32-85.248 280.576-14.336 16.512 23.808 36.672 69.44 31.744C949.056 690.496 625.792 989.888 357.12 742.08z" p-id="1668" fill="#606266"></path><path d="M7.168 280.704c-12.096 8.64 52.544 128.192 159.872 93.504C210.304 360.192 90.752 220.544 7.168 280.704zM50.752 301.824c48.576-8.96 80.256 43.648 80.256 43.648C81.216 355.392 50.752 301.824 50.752 301.824z" p-id="1669" fill="#606266"></path></svg>
+          </span>
+          施工中…
+        </div>
+      </div>
       <div v-show="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
           <div class="title">个人修炼数据配置</div>
@@ -805,13 +815,69 @@
           </div>
         </div>
       </div>
-      <div v-show="navId === 9">说明</div>
+      <div v-show="navId === 9">
+        <div class="info-box">
+          <div class="title">说明</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <p>
+              本网页为<a href="https://foodgame.gitee.io">爆炒江湖图鉴网</a> by L 的手机版，开发者 小鱼，页面功能、数据等均参照原图鉴网（L神yyds！）。
+            </p>
+            <p>
+              本网页大部分功能与原图鉴网保持一致，不一致的部分会在下面的页面详情里详细说明。
+            </p>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">菜谱</div>
+            <p>
+              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 品阶、熟练、已有等个人数据列
+            </p>
+            <p>
+              <span class="add"><i class="el-icon-plus"></i> 新增</span> 技法、食材类型筛选新增[同时]按钮（例：[同时]按钮打开后选择炒、煮，则筛选同时使用了炒、煮技法的菜谱）。
+            </p>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">厨师</div>
+            <p>
+              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 厨具、修炼、已有等个人数据列，修炼数据仅在【个人】页维护最终值。
+            </p>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">厨具</div>
+            <p>
+              <span class="add"><i class="el-icon-plus"></i> 新增</span> 厨具技能筛选新增[同时]按钮。
+            </p>
+            <p>
+              <span class="add"><i class="el-icon-plus"></i> 新增</span> 厨具技能筛选新增[增益]按钮（例：[增益]按钮打开后，选择炒技法，则只筛选增加炒技法的厨具）。
+            </p>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">采集</div>
+            <p>
+              <span class="add"><i class="el-icon-plus"></i> 新增</span> 每小时平均采集量的堆叠图，点击图例可以选择显示/不显示某个食材的数据。
+            </p>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">个人</div>
+            <p>本站仅保存用户上一次在【菜谱】【厨师】等页选择的[展示列]，与修炼的最终值。</p>
+            <p>个人修炼数据在【个人】页维护，依照游戏中名厨录里的修炼加成数据填入即可（如果在意比丢的话，就分别填男厨/女厨/全体）。</p>
+          </div>
+          <div class="title">联系</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <p>任意官群/贴吧二群找@游啊游啊小小鱼，或联系任意官群管理转达。</p>
+          </div>
+          <div class="title">致谢</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <p>感谢L的图鉴网，感谢Boketto提供的菜谱数据，感谢闲时和小熊提供的升阶贵客符文数据，感谢梨大只提供的数据。</p>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 </body>
 <script src="./js/jquery-2.1.4.min.js"></script>
-<script src="./js/vue.min.js"></script>
 <script src="./js/echarts.min.js"></script>
-<script src="./ele/index.js"></script>
-<script src="./js/index.js"></script>
+<script src="./js/index.js?v=1"></script>
 </html>

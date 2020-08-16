@@ -118,7 +118,7 @@ table {
   border-spacing: 0;
 }
 
-[v-cloak] {
+[v-cloak] .body, [v-cloak] .header, [v-cloak] .aside {
   display: none;
 }
 
@@ -551,13 +551,17 @@ input.hidden {
   margin-top: 9px;
 }
 
-.ultimate-box {
+.ultimate-box, .info-box {
   padding: 15px 10px;
   padding-bottom: 100px;
   box-sizing: border-box;
   overflow: auto;
+  color: #606266;
 }
-.ultimate-box .title {
+.info-box {
+  padding-bottom: 20px;
+}
+.ultimate-box .title, .info-box .title {
   font-size: 16px;
   padding-left: 10px;
   height: 20px;
@@ -565,9 +569,17 @@ input.hidden {
   color: #526874;
   border-left: 3px #82a1b0 solid;
 }
+.info-box p {
+  font-size: 13px;
+  margin: 10px 0;
+  margin-left: 10px;
+}
 .ultimate-box .box-body {
   font-size: 13px;
   padding-bottom: 20px;
+}
+.info-box .box-body {
+  padding-bottom: 10px;
 }
 .ultimate-box .prepend-input input {
   width: 26px;
@@ -579,7 +591,6 @@ input.hidden {
 }
 .ultimate-box .btn {
   display: inline-block;
-  color: #606266;
   height: 28px;
   line-height: 28px;
   padding: 0 12px;
@@ -599,6 +610,12 @@ input.hidden {
   color: #607d8b;
   margin-bottom: 6px;
   padding-left: 4px;
+}
+.info-box .remove {
+  color: #760024;
+}
+.info-box .add {
+  color: #357500;
 }
 
 #muti-select {
