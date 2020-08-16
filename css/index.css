@@ -569,7 +569,7 @@ input.hidden {
   color: #526874;
   border-left: 3px #82a1b0 solid;
 }
-.info-box p {
+.info-box .box-body p {
   font-size: 13px;
   margin: 10px 0;
   margin-left: 10px;
