@@ -569,17 +569,18 @@ input.hidden {
   color: #526874;
   border-left: 3px #82a1b0 solid;
 }
-.info-box .box-body .p {
-  font-size: 14px;
-  margin: 10px 0;
-  margin-left: 10px;
-}
 .ultimate-box .box-body {
   font-size: 13px;
   padding-bottom: 20px;
 }
 .info-box .box-body {
   padding-bottom: 10px;
+}
+.info-box .box-body .p {
+  margin: 10px 0;
+  margin-left: 10px;
+  font-size: 14px;
+  max-height: 999px;
 }
 .ultimate-box .prepend-input input {
   width: 26px;
