@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./ele/index.css?v=1">
   <link rel="stylesheet" href="./css/index.css?v=1">
+  <link rel="stylesheet" href="./ele/index.css?v=1">
   <link rel="stylesheet" href="./css/image.css?v=1">
-  <script src="./js/vue.min.js"></script>
-  <script src="./ele/index.js"></script>
 </head>
 <body>
   <div id="main" v-cloak>
-    <div v-loading.fullscreen.lock="loading"></div>
+    <div v-if="loading" class="loading">
+      <div>爆炒江湖图鉴</div>
+    </div>
     <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
@@ -701,18 +701,91 @@
       </div>
       </div>
       <div v-show="navId === 7">
-        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #666666; font-size: 20px;">
-          <span style="display: inline-block; transform: translateY(14px);">
-            <svg t="1597564496767" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1665" width="48" height="48"><path d="M350.144 494.208m-30.72 0a0.48 0.48 0 1 0 61.44 0 0.48 0.48 0 1 0-61.44 0Z" p-id="1666" fill="#606266"></path><path d="M355.136 207.68C344 173.632 197.504 270.08 237.184 357.696 245.376 375.808 388.864 310.72 355.136 207.68zM268.864 317.696C267.904 265.152 325.376 245.312 325.376 245.312 319.424 293.888 268.864 317.696 268.864 317.696z" p-id="1667" fill="#606266"></path><path d="M1017.344 662.144c-3.904-8.704-1.28-16.576-19.776-20.224-14.016-2.752-27.776 4.032-68.416 4.992 0 0 101.12-200.256 56.576-315.328 0 0-243.968-4.928-356.928 106.112 0 0-151.744-290.496-412.48 8.96 0 0 4.928-101.12-2.944-122.944 0 0 53.504-103.104-43.648-173.504-15.296-11.072-80.32 97.152 10.88 177.472 0 0 9.92 171.52-66.432 337.088C108.8 676.416 135.04 711.296 152.896 663.68c17.856-47.552 40.64-115.968 44.608-126.848 0 0 83.264 171.52 115.008 217.152s295.424 299.456 704.96-81.344C1019.52 670.72 1019.52 666.752 1017.344 662.144zM188.544 289.92C154.88 254.272 170.688 200.64 170.688 200.64 211.392 223.36 188.544 289.92 188.544 289.92zM357.12 742.08c-29.376-27.136-45.632-112.064-133.824-242.944 0 0 220.096-307.328 389.632-15.872 14.656 25.216 41.6 3.968 47.616-15.872 5.952-19.84 153.6-93.184 304.32-89.216 0 0-8.896 192.32-85.248 280.576-14.336 16.512 23.808 36.672 69.44 31.744C949.056 690.496 625.792 989.888 357.12 742.08z" p-id="1668" fill="#606266"></path><path d="M7.168 280.704c-12.096 8.64 52.544 128.192 159.872 93.504C210.304 360.192 90.752 220.544 7.168 280.704zM50.752 301.824c48.576-8.96 80.256 43.648 80.256 43.648C81.216 355.392 50.752 301.824 50.752 301.824z" p-id="1669" fill="#606266"></path></svg>
-          </span>
-          施工中…
+        <div class="cal-box">
+          <div class="tab-box">
+            <el-tabs v-model="calCode">
+              <el-tab-pane label="计算器" name="cal"></el-tab-pane>
+              <el-tab-pane label="菜谱" name="rep"></el-tab-pane>
+            </el-tabs>
+          </div>
+          <div class="cal" v-show="calCode == 'cal'">
+            <span class="select-box" style="width: 210px;">
+              <muti-select
+                ref="calType"
+                :option="rules"
+                v-model="calType"
+                :max="1"
+                :empty="false"
+              ></muti-select>
+            </span>
+            <span class="btn" @click="navId = 8">个人配置</span>
+            <div class="tips">{{buffTips}}</div>
+            <div class="cal-contain">
+              <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]">
+                <div
+                  class="chef"
+                  :class="calFocus == `chef_${chef}` ? 'focus' : ''"
+                  @click="calFocus = `chef_${chef}`"
+                >
+                  <div v-if="calChef[chef]">
+                    <!--  -->
+                  </div>
+                  <div class="chef-empty" v-else>
+                    <i class="el-icon-plus"></i>
+                    <span place-holder>选择厨师</span>
+                  </div>
+                </div>
+                <div
+                  class="equip"
+                  :class="calFocus == `equip_${chef}` ? 'focus' : ''"
+                  @click="calFocus = `equip_${chef}`"
+                >
+                  <div v-if="calEquip[chef]">
+                    <!--  -->
+                  </div>
+                  <div class="equip-empty" v-else>
+                    <i class="el-icon-plus"></i>
+                  </div>
+                </div>
+                <div class="rep-box">
+                  <div
+                    class="rep"
+                    v-for="rep in [1, 2, 3]"
+                    :class="calFocus == `rep_${chef}_${rep}` ? 'focus' : ''"
+                    @click="calFocus = `rep_${chef}_${rep}`"
+                  >
+                    <div v-if="calRep[`${chef}-${rep}`]">
+                      <!--  -->
+                    </div>
+                    <div class="rep-empty" v-else>
+                      <i class="el-icon-plus"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="tool"></div>
+          </div>
+          <div class="rep" v-show="calCode == 'rep'">
+            <!--  -->
+          </div>
         </div>
       </div>
       <div v-show="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
-          <div class="title">个人修炼数据配置</div>
+          <div class="title">个人装饰/修炼数据配置</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="contain">
+              <div class="contain-title">家具</div>
+              <div class="prepend-input append-input">
+                <div class="input-box">
+                  <div class="prepend">装饰加成</div>
+                  <input type="number" v-model.lazy="userUltimate.decoBuff"/>
+                  <div class="append">%</div>
+                </div>
+              </div>
+            </div>
             <div class="contain">
               <div class="contain-title">单技法</div>
               <div class="prepend-input" v-for="(val, key) in skill_map">
@@ -748,7 +821,7 @@
               <div class="prepend-input" v-for="val in [1, 2, 3, 4, 5]">
                 <div class="input-box">
                   <div class="prepend">{{val}}星</div>
-                  <input type="number" v-model.lazy="userUltimate[`MaxLimit_${val}`]"/>
+                  <input @focus="scrollUser(140)" type="number" v-model.lazy="userUltimate[`MaxLimit_${val}`]"/>
                 </div>
               </div>
             </div>
@@ -757,7 +830,7 @@
               <div class="prepend-input append-input" v-for="val in [1, 2, 3, 4, 5]">
                 <div class="input-box">
                   <div class="prepend">{{val}}星</div>
-                  <input @focus="scrollUser(200)" type="number" v-model.lazy="userUltimate[`PriceBuff_${val}`]"/>
+                  <input @focus="scrollUser(250)" type="number" v-model.lazy="userUltimate[`PriceBuff_${val}`]"/>
                   <div class="append">%</div>
                 </div>
               </div>
@@ -770,7 +843,7 @@
                   :option="partial_skill_list"
                   placeholder="上场类技能已修炼"
                   v-model="userUltimate.Partial"
-                  @focus="scrollUser(360)"
+                  @focus="scrollUser(410)"
                 ></muti-select>
               </span>
               <span class="select-box" style="width: 250px;">
@@ -779,7 +852,7 @@
                   :option="self_skill_list"
                   placeholder="个人类技能已修炼"
                   v-model="userUltimate.Self"
-                  @focus="scrollUser(380)"
+                  @focus="scrollUser(430)"
                 ></muti-select>
               </span>
             </div>
@@ -796,7 +869,7 @@
               :rows="10"
               placeholder="请贴入备份的个人数据"
               v-model="userDataText"
-              @focus="scrollUser(480)"
+              @focus="scrollUser(530)"
             >
             </el-input>
             <div class="btn-box" style="margin-top: 10px;">
@@ -876,6 +949,8 @@
       </div>
     </section>
   </div>
+  <script src="./js/vue.min.js"></script>
+  <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
   <script src="./js/index.js?v=1"></script>

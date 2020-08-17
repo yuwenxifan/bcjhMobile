@@ -121,6 +121,28 @@ table {
 [v-cloak] .body, [v-cloak] .header, [v-cloak] .aside {
   display: none;
 }
+.loading {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background: #607d8b;
+  background-image: url('/images/saltFish.png');
+  background-size: 140px;
+  background-repeat: no-repeat;
+  background-position: center 150px;
+  z-index: 9999;
+}
+.loading div {
+  font-weight: 100;
+  color: #fff;
+  font-size: 30px;
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
 
 .header {
   position: relative;
@@ -379,7 +401,7 @@ section.header .right {
 .checkbox.active {
   border-color: #a3bac5;
   color: #82a1b0;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .checkbox-contain {
@@ -619,6 +641,116 @@ input.hidden {
   color: #357500;
 }
 
+.tab-box {
+  padding: 0 10px;
+}
+.tab-box .el-tabs__item {
+  height: 34px;
+  line-height: 34px;
+}
+.el-tabs__header {
+  margin-bottom: 8px;
+}
+.cal {
+  padding: 0 9px;
+  font-size: 0;
+  color: #606060;
+}
+.cal .select-box {
+  margin: 5px 8px 5px 0px;
+}
+.cal .btn {
+  display: inline-block;
+  font-size: 13px;
+  padding: 0 12px;
+  background-origin: padding-box;
+  height: 24px;
+  line-height: 24px;
+}
+.cal .btn:active {
+  background-color: #f5f7fa;
+}
+.cal .tips {
+  font-size: 11px;
+  padding-left: 1px;
+}
+.cal-contain {
+  display: flex;
+  justify-content: center;
+  padding-top: 5px;
+}
+.cal-contain .chef-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.chef-box .chef {
+  width: 98px;
+  height: 80px;
+}
+.chef-box .equip {
+  width: 98px;
+  height: 30px;
+}
+.chef-box .rep-box {
+  display: flex;
+  justify-content: space-between;
+  width: 102px;
+}
+.rep-box .rep {
+  width: 30px;
+  height: 30px;
+}
+.chef, .equip, .rep {
+  padding: 2px;
+}
+.chef.focus, .equip.focus, .rep.focus {
+  background: linear-gradient(to left, #607d8b, #607d8b) left top no-repeat,
+              linear-gradient(to bottom, #607d8b, #607d8b) left top no-repeat,
+              linear-gradient(to left, #607d8b, #607d8b) right top no-repeat,
+              linear-gradient(to bottom, #607d8b, #607d8b) right top no-repeat,
+              linear-gradient(to left, #607d8b, #607d8b) left bottom no-repeat,
+              linear-gradient(to bottom, #607d8b, #607d8b) left bottom no-repeat,
+              linear-gradient(to left, #607d8b, #607d8b) right bottom no-repeat,
+              linear-gradient(to left, #607d8b, #607d8b) right bottom no-repeat;
+  background-size: 2px 8px, 8px 2px, 2px 8px, 8px 2px;
+}
+.chef.focus {
+  background-size: 2px 13px, 13px 2px, 2px 13px, 13px 2px;
+}
+.chef-empty, .equip-empty, .rep-empty {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 1px dotted #dcdfe6;
+  border-radius: 4px;
+  height: 100%;
+  width: 100%;
+  color: #c0c4cc;
+}
+.chef-empty i, .equip-empty i, .rep-empty i {
+  font-size: 32px;
+  color: #dcdfe6;
+  line-height: 40px;
+}
+.equip-empty i {
+  font-size: 20px;
+}
+.rep-empty i {
+  font-size: 16px;
+}
+.chef-empty span {
+  font-size: 13px;
+}
+.cal .tool {
+  background: #f5f7fa;
+  width: 302px;
+  height: 50px;
+  margin: 0 auto;
+}
+
 #muti-select {
   display: inline-block;
   position: relative;
@@ -658,6 +790,13 @@ input.hidden {
   font-size: 11px;
   border-radius: 4px;
   padding: 2px 5px;
+}
+#muti-select .input-box .tag.only {
+  background-color: #fff;
+  border: none;
+  margin-left: -5px;
+  color: #606060;
+  font-size: 13px;
 }
 #muti-select .input-box i {
   position: absolute;
@@ -760,7 +899,7 @@ input.hidden {
   background-color: #f5f7fa;
 }
 #muti-select .dropdown-list {
-  font-size: 14px;
+  font-size: 13px;
   max-height: 200px;
   overflow-y: auto;
 }

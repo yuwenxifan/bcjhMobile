@@ -6,7 +6,7 @@ $(function() {
         <span class="placeholder" v-show="valueId.length == 0">{{placeholder || '请选择'}}</span>
         <span class="tag" v-show="names.length > 0 && !max">{{names[0]}}</span>
         <span class="tag" v-show="names.length > 1 && !max">+{{names.length - 1}}</span>
-        <span class="tag" v-if="max" v-for="name in names">{{name}}</span>
+        <span class="tag" :class="max == 1 ? 'only' : ''" v-if="max" v-for="name in names">{{name}}</span>
         <i class="el-input__icon el-icon-arrow-up" :class="show ? 'active' : ''"></i>
       </div>
       <div class="arrow" v-show="show"></div>
@@ -14,7 +14,7 @@ $(function() {
         <div class="controll-box">
           <i class="el-input__icon el-icon-error clear" @click="clearKeyword"></i>
           <input v-model="keyword" placeholder="查找" @focus="handlerFocus"/>
-          <span class="btn" @click="clear">清空</span>
+          <span class="btn" @click="clear" v-if="canEmpty">清空</span>
         </div>
         <ul class="dropdown-list">
           <li
@@ -30,7 +30,7 @@ $(function() {
       </div>
     <div>
     `,
-    props: ['option', 'placeholder', 'value', 'max'],
+    props: ['option', 'placeholder', 'value', 'max', 'empty'],
     data: function() {
       return {
         valueId: [],
@@ -39,6 +39,14 @@ $(function() {
         show: false,
         f_option: []
       };
+    },
+    computed: {
+      canEmpty() {
+        if (this.empty != null) {
+          return this.empty;
+        }
+        return true;
+      }
     },
     mounted() {
       this.initOption();
@@ -66,7 +74,7 @@ $(function() {
       },
       checkOption(val, name) {
         const index = this.valueId.indexOf(val);
-        if(index > -1) {
+        if(index > -1 && this.canEmpty) {
           this.valueId.splice(index, 1);
           this.names.splice(index, 1);
         } else {
@@ -176,6 +184,7 @@ $(function() {
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
       navId: 1,
+      calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
@@ -189,6 +198,7 @@ $(function() {
       userDataText: '',
       userUltimateChange: false,
       userUltimate: {
+        decoBuff: '',
         Stirfry: '',
         Boil: '',
         Knife: '',
@@ -532,6 +542,32 @@ $(function() {
       questsRegional: [],
       questsCurPage: 1,
       questsPageSize: 20,
+      calType: { id: [], row: [] },
+      rules: [],
+      decoBuffValue: "",
+      buffTips: '当前使用菜谱售价修炼加成：无，当前装饰加成：0%',
+      calChef: {
+        1: null,
+        2: null,
+        3: null
+      },
+      calEquip: {
+        1: null,
+        2: null,
+        3: null
+      },
+      calRep: {
+        '1-1': null,
+        '1-2': null,
+        '1-3': null,
+        '2-1': null,
+        '2-2': null,
+        '2-3': null,
+        '3-1': null,
+        '3-2': null,
+        '3-3': null,
+      },
+      calFocus: null,
       isOriginHei: true,
       screenHeight:
         window.innerHeight ||
@@ -548,7 +584,7 @@ $(function() {
       },
       tips() {
         const names = this.partial_skill.row.map(row => row.name);
-        return `${names.join('、')} 上场技能开`;
+        return `${names.join(' ')} 上场技能开`;
       }
     },
     mounted() {
@@ -839,6 +875,16 @@ $(function() {
             materials_type: item.materials_type,
           }
         });
+        this.rules = this.data.rules.map(item => {
+          const arr = item.Title.split(' - ');
+          return Object.assign({
+            id: item.Id,
+            name: arr[0],
+            subName: arr[1] || ''
+          }, item);
+        });
+        this.calType.id = [0];
+        this.$refs.calType.initOption();
       },
       initRep() {
         this.recipes = [];
@@ -1902,6 +1948,7 @@ $(function() {
       },
       emptyUserUltimate() {
         this.userUltimate = {
+          decoBuff: '',
           Stirfry: '',
           Boil: '',
           Knife: '',
@@ -1926,7 +1973,16 @@ $(function() {
         };
         this.$refs.userPartial.clear();
         this.$refs.userSelf.clear();
-      }
+      },
+      clickOther(e) {
+        let focus = false;
+        this.$refs.chefBox.forEach(b => {
+          focus = focus || b.contains(e.target);
+        });
+        if (!focus) {
+          this.calFocus = false;
+        }
+      },
     },
     watch: {
       screenHeight(val) {
@@ -2055,6 +2111,13 @@ $(function() {
         handler(val) {
           this.userUltimateChange = true;
           this.saveUserData();
+        }
+      },
+      calFocus(val) {
+        if (val) {
+          window.addEventListener("click", this.clickOther);
+        } else {
+          window.removeEventListener('click', this.clickOther);
         }
       },
       rightBar(val) {
