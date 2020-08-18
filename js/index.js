@@ -20,7 +20,7 @@ $(function() {
           <li
             v-for="item in f_option"
             @click="checkOption(item.id, item.name)"
-            :class="valueId.indexOf(item.id) > -1 ? 'active' : ''"
+            :class="valueId.indexOf(item.id) > -1 ? 'active' : disableClass(item.id)"
           >
             <span>{{item.name}}</span>
             <span class="sub-name" v-if="item.subName">{{item.subName}}</span>
@@ -30,7 +30,7 @@ $(function() {
       </div>
     <div>
     `,
-    props: ['option', 'placeholder', 'value', 'max', 'empty'],
+    props: ['option', 'placeholder', 'value', 'max', 'empty', 'disable'],
     data: function() {
       return {
         valueId: [],
@@ -79,6 +79,9 @@ $(function() {
           this.valueId.splice(index, 1);
           this.names.splice(index, 1);
         } else {
+          if (this.disable && this.disable.indexOf(val) > -1) { // 禁用了
+            return;
+          }
           if (this.max && this.valueId.length == this.max) { // 如果有选择个数限制，且已经达到了
             const values = this.valueId.slice(1);
             const names = this.names.slice(1);
@@ -95,6 +98,12 @@ $(function() {
       clear() {
         this.valueId = [];
         this.names = [];
+      },
+      disableClass(id) {
+        if (!this.disable || this.disable.length == 0 || this.disable.indexOf(id) < 0) {
+          return '';
+        }
+        return 'disable';
       },
       clickOther(e) {
         if (!this.$refs.mutiSelect.contains(e.target) && this.fold) {
@@ -139,6 +148,7 @@ $(function() {
             id: val,
             row
           });
+          this.$emit('change', row);
         }
       },
       keyword(val) {
@@ -165,6 +175,7 @@ $(function() {
       hideSuspend: false,
       settingVisible: false,
       loading: true,
+      tabBox: false,
       reg: new RegExp( '<br>' , "g" ),
       skill_map: {
         stirfry: '炒',
@@ -192,7 +203,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 7,
       calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
@@ -576,6 +587,17 @@ $(function() {
         '3-2': { id: [], row: [] },
         '3-3': { id: [], row: [] },
       },
+      calRepCnt: {
+        '1-1': 0,
+        '1-2': 0,
+        '1-3': 0,
+        '2-1': 0,
+        '2-2': 0,
+        '2-3': 0,
+        '3-1': 0,
+        '3-2': 0,
+        '3-3': 0,
+      },
       calFocus: null,
       calChefs_list: [],
       calEquips_list: [],
@@ -607,6 +629,35 @@ $(function() {
         const rst = {};
         for (const key in this.calChef) {
           rst[key] = this.calChef[key].row[0] ? this.showChef(this.calChef[key].row[0], key) : {};
+        }
+        return rst;
+      },
+      ulti() {
+        const userUltimate = {};
+        for (const key in this.userUltimate) {
+          if (typeof this.userUltimate[key] == 'string') {
+            userUltimate[key] = Number(this.userUltimate[key]);
+          } else {
+            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
+          }
+        }
+        return userUltimate;
+      },
+      disable() {
+        let rst = [];
+        for (let i = 1; i < 4; i++) {
+          if (this.calChef[i].id.length > 0) {
+            rst.push(this.calChef[i].id[0]);
+          }
+        }
+        return rst;
+      },
+      disableRep() {
+        let rst = [];
+        for (let key in this.calRep) {
+          if (this.calRep[key].id.length > 0) {
+            rst.push(this.calRep[key].id[0]);
+          }
         }
         return rst;
       }
@@ -914,6 +965,7 @@ $(function() {
           }, item);
         });
         if (this.navId == 7) {
+          this.tabBox = true;
           this.initCal();
         }
       },
@@ -923,14 +975,6 @@ $(function() {
         this.initCalRep();
       },
       initCalChef() {
-        const userUltimate = {};
-        for (const key in this.userUltimate) {
-          if (typeof this.userUltimate[key] == 'string') {
-            userUltimate[key] = Number(this.userUltimate[key]);
-          } else {
-            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
-          }
-        }
         let chefs_list = [];
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
@@ -969,53 +1013,72 @@ $(function() {
         const rep = [];
         for (let item of this.data.recipes) {
           if (this.calType.id[0] == 0) { // 正常营业
+            let limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
+            let price_total = item.price * limit;
             rep.push({
-              id: item.repicesId,
+              id: item.recipeId,
               name: item.name,
-              subName: (item.price * item.limit)
+              price_total: price_total,
+              limit
             });
           }
         }
-        this.calReps_list[1] = rep;
-        this.calReps_list[2] = rep;
-        this.calReps_list[3] = rep;
-      },
-      showChef(chef, position) {
-        const userUltimate = {};
-        let ultimate = false;
-        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
-        for (const key in this.userUltimate) {
-          if (typeof this.userUltimate[key] == 'string') {
-            userUltimate[key] = Number(this.userUltimate[key]);
-          } else {
-            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
+        for (let i = 1; i < 4; i++) {
+          let list = rep.slice();
+          if (this.calChefShow[i].id) {
+            this.calReps_list[i] = list.slice();
+          } else { // 无厨师
+            list.sort(this.customSort({
+              prop: 'price_total',
+              order: 'descending'
+            }));
+            this.calReps_list[i] = list.map(r => {
+              r.subName = String(r.price_total);
+              return r;
+            })
           }
         }
+      },
+      handleCalRepChange(row, key) {
+        this.calRepCnt[key] = row[0].limit;
+      },
+      showChef(chef, position) {
+        let ultimate = false;
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const skills_show = {};
         const skills_last = {};
         skill_type.forEach(key => {
           const lowKey = key.toLowerCase();
-          let value = userUltimate.All; // 全体全技法
-          value += userUltimate[key]; // 全体单技法
+          let value = this.ulti.All; // 全体全技法
+          value += this.ulti[key]; // 全体单技法
           if (chef.tag == 1) { // 男厨全技法
-            value += userUltimate.Male;
+            value += this.ulti.Male;
           }
           if (chef.tag == 2) { // 女厨全技法
-            value += userUltimate.Female;
+            value += this.ulti.Female;
           }
-          if (userUltimate.Self.id.indexOf(chef.uid) > -1) { // 已修炼的个人类修炼技能
+          if (this.ulti.Self.id.indexOf(chef.uid) > -1) { // 已修炼的个人类修炼技能
             ultimate = true;
             chef.ultimate_effect.forEach(eff => {
               if (eff.type == key) {
                 value += eff.value;
               }
+              if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent') { // 厨具技能加成
+                if (this.calEquip[position].row[0]) { // 装备厨具
+                  this.calEquip[position].row[0].effect.forEach(equ => {
+                    if (equ.type == key) {
+                      value += Math.ceil(equ.value * eff.value / 100);
+                    }
+                  });
+                }
+              }
             });
           }
-          if (userUltimate.Partial.id.indexOf(chef.uid) > -1) {
+          if (this.ulti.Partial.id.indexOf(chef.uid) > -1) {
             ultimate = true;
           }
           for (let i = 1; i < 4; i++) {
-            if (this.calChef[i].row[0] && userUltimate.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1) { // 已修炼且在场的上场类修炼技能
+            if (this.calChef[i].row[0] && this.ulti.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1) { // 已修炼且在场的上场类修炼技能
               this.calChef[i].row[0].ultimate_effect.forEach(eff => {
                 if (eff.type == key && eff.condition == 'Partial') {
                   value += eff.value;
@@ -2282,6 +2345,12 @@ $(function() {
           this.saveUserData();
         }
       },
+      calChef: {
+        deep: true,
+        handler() {
+          this.initCalRep();
+        }
+      },
       calFocus(val) {
         if (val) {
           window.addEventListener("click", this.clickOther);
@@ -2363,6 +2432,7 @@ $(function() {
           }
         } else if (val === 7) {
           if (this.calChefs_list.length == 0) {
+            this.tabBox = true;
             this.initCal();
           }
         }

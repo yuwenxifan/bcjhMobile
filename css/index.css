@@ -685,30 +685,32 @@ input.hidden {
 }
 .cal-contain {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   padding-top: 5px;
 }
 .cal-contain .chef-box {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-grow: 1;
 }
 .chef-box .chef {
-  width: 98px;
+  width: 95%;
   height: 92px;
 }
 .chef-box .equip {
-  width: 98px;
+  width: 95%;
   height: 26px;
 }
 .chef-box .rep-box {
   display: flex;
   justify-content: space-between;
-  width: 102px;
+  width: calc(95% + 4px);
 }
 .rep-box .rep {
-  width: 30px;
+  width: 100%;
   height: 30px;
+  flex-grow: 1;
 }
 .chef, .equip, .rep {
   padding: 2px;
@@ -752,10 +754,12 @@ input.hidden {
 }
 .chef-empty span {
   font-size: 13px;
+  width: 95px;
+  text-align: center;
 }
 .cal .tool {
   background: #f5f7fa;
-  width: 302px;
+  width: calc(100% - 4px);
   height: 40px;
   margin: 0 auto;
   margin-top: 3px;
@@ -768,6 +772,7 @@ input.hidden {
 .cal .name {
   font-size: 12px;
   font-weight: bold;
+  color: #6e7175;
 }
 .cal .show {
   border: 0.5px solid #dcdfe6;
@@ -778,7 +783,7 @@ input.hidden {
 }
 .cal .chef .show {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 .cal .equip .show {
   display: flex;
@@ -820,6 +825,33 @@ input.hidden {
   display: flex;
   flex-direction: column;
   justify-items: right;
+  width: 35px;
+}
+.chef .skill-box > div {
+  display: flex;
+  align-items: flex-end;
+}
+.rep .show {
+  height: 100%;
+  padding: 0;
+  display: flex;
+  position: relative;
+}
+.rep .img {
+  width: 40px;
+  zoom: 0.7;
+}
+.rep .img .cnt {
+  position: absolute;
+  top: -3px;
+  right: -5px;
+  font-size: 12px;
+  background: #fdf6ee;
+  color: #472a1e;
+  padding: 0 3px;
+  line-height: 13px;
+  box-shadow: rgba(0, 0, 0, .4) 2px 2px 1px;
+
 }
 .skill-box .label {
   margin-right: 3px;
@@ -829,8 +861,17 @@ input.hidden {
 }
 .skill-box .val {
   font-size: 9px;
+  line-height: 13px;
 }
-
+@media(min-width: 398px) {
+  .cal-contain {
+    width: 370px;
+    margin: 0 auto;
+  }
+  .cal .tool {
+    width: 364px;
+  }
+}
 #muti-select {
   display: inline-block;
   position: relative;
@@ -998,8 +1039,15 @@ input.hidden {
   background-color: #f5f7fa;
 }
 #muti-select .dropdown-list li.active {
-  font-weight: 600;
+  font-weight: bold;
   color: #409eff;
+}
+#muti-select .dropdown-list li.disable {
+  color: #c0c4cc;
+  cursor: not-allowed;
+}
+#muti-select .dropdown-list li.disable:hover {
+  background: #fff;
 }
 #muti-select .dropdown-list li.active:after {
   position: absolute;

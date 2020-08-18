@@ -702,7 +702,7 @@
       </div>
       <div v-show="navId === 7">
         <div class="cal-box">
-          <div class="tab-box">
+          <div class="tab-box" v-if="tabBox">
             <el-tabs v-model="calCode">
               <el-tab-pane label="计算器" name="cal"></el-tab-pane>
               <el-tab-pane label="菜谱" name="rep"></el-tab-pane>
@@ -768,8 +768,10 @@
                     :class="calFocus == `Rep_${chef}-${rep}` ? 'focus' : ''"
                     @click="calCheck(`Rep_${chef}-${rep}`)"
                   >
-                    <div v-if="calRep[`${chef}-${rep}`].row[0]">
-                      <!--  -->
+                    <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
+                      <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
+                        <span class="cnt">{{calRepCnt[`${chef}-${rep}`]}}</span>
+                      </div>
                     </div>
                     <div class="rep-empty" v-else>
                       <i class="el-icon-plus"></i>
@@ -787,6 +789,7 @@
                     :option="calChefs_list"
                     v-model="calChef[key]"
                     :max="1"
+                    :disable="disable"
                   ></muti-select>
                 </span>
               </div>
@@ -802,13 +805,15 @@
                 </span>
               </div>
               <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`">
-                <span class="select-box" style="width: 150px;">
+                <span class="select-box" style="width: 180px;">
                   <muti-select
                     :ref="`calRep_${key}`"
                     placeholder="请选择菜谱"
                     :option="calReps_list[key.slice(0, 1)]"
                     v-model="calRep[key]"
                     :max="1"
+                    :disable="disableRep"
+                    @change="handleCalRepChange($event, key)"
                   ></muti-select>
                 </span>
               </div>
