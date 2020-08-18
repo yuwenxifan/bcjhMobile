@@ -22,6 +22,7 @@
   }
 }
 /* 初始化css */
+html{-webkit-text-size-adjust: none;}
 body {
   -webkit-tap-highlight-color: transparent;
 }
@@ -137,7 +138,7 @@ table {
 .loading div {
   font-weight: 100;
   color: #fff;
-  font-size: 30px;
+  font-size: 24px;
   position: absolute;
   bottom: 60px;
   left: 50%;
@@ -645,16 +646,24 @@ input.hidden {
   padding: 0 10px;
 }
 .tab-box .el-tabs__item {
-  height: 34px;
-  line-height: 34px;
+  height: 38px;
+  line-height: 38px;
+  color: #606266;
 }
-.el-tabs__header {
-  margin-bottom: 8px;
+.el-tabs__header.is-top {
+  margin-bottom: 5px;
+}
+.el-tabs__item.is-top.is-active {
+  color: #82a1b0;
+}
+.el-tabs__active-bar.is-top {
+  background-color: #82a1b0;
 }
 .cal {
   padding: 0 9px;
   font-size: 0;
-  color: #606060;
+  color: #606266;
+  overflow: auto;
 }
 .cal .select-box {
   margin: 5px 8px 5px 0px;
@@ -686,11 +695,11 @@ input.hidden {
 }
 .chef-box .chef {
   width: 98px;
-  height: 80px;
+  height: 92px;
 }
 .chef-box .equip {
   width: 98px;
-  height: 30px;
+  height: 26px;
 }
 .chef-box .rep-box {
   display: flex;
@@ -705,14 +714,14 @@ input.hidden {
   padding: 2px;
 }
 .chef.focus, .equip.focus, .rep.focus {
-  background: linear-gradient(to left, #607d8b, #607d8b) left top no-repeat,
-              linear-gradient(to bottom, #607d8b, #607d8b) left top no-repeat,
-              linear-gradient(to left, #607d8b, #607d8b) right top no-repeat,
-              linear-gradient(to bottom, #607d8b, #607d8b) right top no-repeat,
-              linear-gradient(to left, #607d8b, #607d8b) left bottom no-repeat,
-              linear-gradient(to bottom, #607d8b, #607d8b) left bottom no-repeat,
-              linear-gradient(to left, #607d8b, #607d8b) right bottom no-repeat,
-              linear-gradient(to left, #607d8b, #607d8b) right bottom no-repeat;
+  background: linear-gradient(to left, #82a1b0, #82a1b0) left top no-repeat,
+              linear-gradient(to bottom, #82a1b0, #82a1b0) left top no-repeat,
+              linear-gradient(to left, #82a1b0, #82a1b0) right top no-repeat,
+              linear-gradient(to bottom, #82a1b0, #82a1b0) right top no-repeat,
+              linear-gradient(to left, #82a1b0, #82a1b0) left bottom no-repeat,
+              linear-gradient(to bottom, #82a1b0, #82a1b0) left bottom no-repeat,
+              linear-gradient(to left, #82a1b0, #82a1b0) right bottom no-repeat,
+              linear-gradient(to left, #82a1b0, #82a1b0) right bottom no-repeat;
   background-size: 2px 8px, 8px 2px, 2px 8px, 8px 2px;
 }
 .chef.focus {
@@ -747,8 +756,81 @@ input.hidden {
 .cal .tool {
   background: #f5f7fa;
   width: 302px;
-  height: 50px;
+  height: 40px;
   margin: 0 auto;
+  margin-top: 3px;
+  border-radius: 4px;
+}
+.tool .select-box {
+  padding: 7px 5px;
+  margin: 0;
+}
+.cal .name {
+  font-size: 12px;
+  font-weight: bold;
+}
+.cal .show {
+  border: 0.5px solid #dcdfe6;
+  box-sizing: border-box;
+  padding: 1px 3px;
+  height: 100%;
+  border-radius: 4px;
+}
+.cal .chef .show {
+  display: flex;
+  justify-content: space-between;
+}
+.cal .equip .show {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.chef .show .name-img {
+  width: 55px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+.chef .name {
+  font-size: 13.5px;
+}
+.chef .img {
+  width: 50px;
+  height: 50px;
+  zoom: 1.1;
+  position: relative;
+}
+.chef .img .ultimate {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  display: inline-block;
+  height: 12px;
+  width: 12px;
+  text-align: center;
+  border-radius: 12px;
+  line-height: 12px;
+  color: #fea64f;
+  font-weight: bold;
+  font-size: 10px;
+  background: linear-gradient(to bottom, #b85630, #b2270f);
+  border: 1px solid #733308;
+}
+.chef .skill-box {
+  display: flex;
+  flex-direction: column;
+  justify-items: right;
+}
+.skill-box div {
+  padding: 1px 0;
+}
+.skill-box .label {
+  margin-right: 3px;
+  font-size: 10px;
+  color: #607d8b;
+}
+.skill-box .val {
+  font-size: 9px;
 }
 
 #muti-select {
@@ -795,7 +877,7 @@ input.hidden {
   background-color: #fff;
   border: none;
   margin-left: -5px;
-  color: #606060;
+  color: #606266;
   font-size: 13px;
 }
 #muti-select .input-box i {
@@ -905,10 +987,11 @@ input.hidden {
 }
 #muti-select .dropdown-list li {
   position: relative;
-  padding: 0 10px;
-  line-height: 34px;
+  padding: 8px 10px;
+  line-height: 18px;
   cursor: pointer;
 }
+
 #muti-select .dropdown-list li .sub-name {
   font-size: 11px;
   color: #909399;
@@ -926,7 +1009,7 @@ input.hidden {
   font-family: element-icons;
   content: "\e6da";
   font-size: 12px;
-  font-weight: 700;
+  font-weight: bold;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

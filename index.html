@@ -708,7 +708,7 @@
               <el-tab-pane label="菜谱" name="rep"></el-tab-pane>
             </el-tabs>
           </div>
-          <div class="cal" v-show="calCode == 'cal'">
+          <div class="cal" v-show="calCode == 'cal'" :style="'height: '+ (boxHeight - 50) + 'px;'">
             <span class="select-box" style="width: 210px;">
               <muti-select
                 ref="calType"
@@ -724,11 +724,25 @@
               <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]">
                 <div
                   class="chef"
-                  :class="calFocus == `chef_${chef}` ? 'focus' : ''"
-                  @click="calFocus = `chef_${chef}`"
+                  :class="calFocus == `Chef_${chef}` ? 'focus' : ''"
+                  @click="calCheck(`Chef_${chef}`)"
                 >
-                  <div v-if="calChef[chef]">
-                    <!--  -->
+                  <div v-if="calChef[chef].row[0]" class="show">
+                    <div class="name-img">
+                      <span class="name">{{calChefShow[chef].name}}</span>
+                      <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
+                        <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
+                      </div>
+                    </div>
+                    <div class="skill-box">
+                      <div
+                        v-for="(val, key) in calChefShow[chef].skills_last"
+                        v-show="val"
+                      >
+                        <span class="label">{{skill_map[key]}}</span>
+                        <span class="val">{{val}}</span>
+                      </div>
+                    </div>
                   </div>
                   <div class="chef-empty" v-else>
                     <i class="el-icon-plus"></i>
@@ -737,11 +751,11 @@
                 </div>
                 <div
                   class="equip"
-                  :class="calFocus == `equip_${chef}` ? 'focus' : ''"
-                  @click="calFocus = `equip_${chef}`"
+                  :class="calFocus == `Equip_${chef}` ? 'focus' : ''"
+                  @click="calCheck(`Equip_${chef}`)"
                 >
-                  <div v-if="calEquip[chef]">
-                    <!--  -->
+                  <div class="show" v-if="calEquip[chef].row[0]">
+                    <span class="name">{{calEquip[chef].row[0].name}}</span>
                   </div>
                   <div class="equip-empty" v-else>
                     <i class="el-icon-plus"></i>
@@ -751,10 +765,10 @@
                   <div
                     class="rep"
                     v-for="rep in [1, 2, 3]"
-                    :class="calFocus == `rep_${chef}_${rep}` ? 'focus' : ''"
-                    @click="calFocus = `rep_${chef}_${rep}`"
+                    :class="calFocus == `Rep_${chef}-${rep}` ? 'focus' : ''"
+                    @click="calCheck(`Rep_${chef}-${rep}`)"
                   >
-                    <div v-if="calRep[`${chef}-${rep}`]">
+                    <div v-if="calRep[`${chef}-${rep}`].row[0]">
                       <!--  -->
                     </div>
                     <div class="rep-empty" v-else>
@@ -764,7 +778,41 @@
                 </div>
               </div>
             </div>
-            <div class="tool"></div>
+            <div ref="tool" class="tool" v-show="calFocus">
+              <div v-for="(val, key) in calChef" v-show="calFocus == `Chef_${key}`">
+                <span class="select-box" style="width: calc(100% - 10px);">
+                  <muti-select
+                    :ref="`calChef_${key}`"
+                    placeholder="请选择厨师"
+                    :option="calChefs_list"
+                    v-model="calChef[key]"
+                    :max="1"
+                  ></muti-select>
+                </span>
+              </div>
+              <div v-for="(val, key) in calEquip" v-show="calFocus == `Equip_${key}`">
+                <span class="select-box" style="width: calc(100% - 10px);">
+                  <muti-select
+                    :ref="`calEquip_${key}`"
+                    placeholder="请选择厨具"
+                    :option="calEquips_list"
+                    v-model="calEquip[key]"
+                    :max="1"
+                  ></muti-select>
+                </span>
+              </div>
+              <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`">
+                <span class="select-box" style="width: 150px;">
+                  <muti-select
+                    :ref="`calRep_${key}`"
+                    placeholder="请选择菜谱"
+                    :option="calReps_list[key.slice(0, 1)]"
+                    v-model="calRep[key]"
+                    :max="1"
+                  ></muti-select>
+                </span>
+              </div>
+            </div>
           </div>
           <div class="rep" v-show="calCode == 'rep'">
             <!--  -->

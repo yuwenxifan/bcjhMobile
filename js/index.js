@@ -22,9 +22,9 @@ $(function() {
             @click="checkOption(item.id, item.name)"
             :class="valueId.indexOf(item.id) > -1 ? 'active' : ''"
           >
-            {{item.name}}
+            <span>{{item.name}}</span>
             <span class="sub-name" v-if="item.subName">{{item.subName}}</span>
-          <li>
+          </li>
         </ul>
         <p class="empty" v-show="f_option.length == 0">无匹配数据</p>
       </div>
@@ -37,7 +37,8 @@ $(function() {
         names: [],
         keyword: '',
         show: false,
-        f_option: []
+        f_option: [],
+        fold: true
       };
     },
     computed: {
@@ -96,7 +97,7 @@ $(function() {
         this.names = [];
       },
       clickOther(e) {
-        if (!this.$refs.mutiSelect.contains(e.target)) {
+        if (!this.$refs.mutiSelect.contains(e.target) && this.fold) {
           this.show = false;
         }
       },
@@ -110,6 +111,13 @@ $(function() {
       },
       clearKeyword() {
         this.keyword = '';
+      },
+      unfold() {
+        this.fold = false;
+        this.show = true;
+        setTimeout(() => {
+          this.fold = true;
+        }, 50);
       }
     },
     watch: {
@@ -140,6 +148,7 @@ $(function() {
       },
       show(val) {
         if (val) {
+          this.keyword = "";
           window.addEventListener("click", this.clickOther);
         } else {
           window.removeEventListener('click', this.clickOther);
@@ -547,27 +556,35 @@ $(function() {
       decoBuffValue: "",
       buffTips: '当前使用菜谱售价修炼加成：无，当前装饰加成：0%',
       calChef: {
-        1: null,
-        2: null,
-        3: null
+        1: { id: [], row: [] },
+        2: { id: [], row: [] },
+        3: { id: [], row: [] }
       },
       calEquip: {
-        1: null,
-        2: null,
-        3: null
+        1: { id: [], row: [] },
+        2: { id: [], row: [] },
+        3: { id: [], row: [] }
       },
       calRep: {
-        '1-1': null,
-        '1-2': null,
-        '1-3': null,
-        '2-1': null,
-        '2-2': null,
-        '2-3': null,
-        '3-1': null,
-        '3-2': null,
-        '3-3': null,
+        '1-1': { id: [], row: [] },
+        '1-2': { id: [], row: [] },
+        '1-3': { id: [], row: [] },
+        '2-1': { id: [], row: [] },
+        '2-2': { id: [], row: [] },
+        '2-3': { id: [], row: [] },
+        '3-1': { id: [], row: [] },
+        '3-2': { id: [], row: [] },
+        '3-3': { id: [], row: [] },
       },
       calFocus: null,
+      calChefs_list: [],
+      calEquips_list: [],
+      calReps_list: {
+        1: [],
+        2: [],
+        3: []
+      },
+      calRep_list: [],
       isOriginHei: true,
       screenHeight:
         window.innerHeight ||
@@ -585,6 +602,13 @@ $(function() {
       tips() {
         const names = this.partial_skill.row.map(row => row.name);
         return `${names.join(' ')} 上场技能开`;
+      },
+      calChefShow() {
+        const rst = {};
+        for (const key in this.calChef) {
+          rst[key] = this.calChef[key].row[0] ? this.showChef(this.calChef[key].row[0]) : {};
+        }
+        return rst;
       }
     },
     mounted() {
@@ -720,6 +744,11 @@ $(function() {
           const skill = this.data.skills.filter(s => {
             return item.skill.indexOf(s.skillId) > -1;
           });
+          let effect = [];
+          skill.forEach(s => {
+            effect = effect.concat(s.effect);
+          })
+          item.effect = effect;
           item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
           let skillType = {};
           for (const s of skill) {
@@ -875,6 +904,7 @@ $(function() {
             materials_type: item.materials_type,
           }
         });
+        this.calType.id = [0];
         this.rules = this.data.rules.map(item => {
           const arr = item.Title.split(' - ');
           return Object.assign({
@@ -883,8 +913,130 @@ $(function() {
             subName: arr[1] || ''
           }, item);
         });
-        this.calType.id = [0];
-        this.$refs.calType.initOption();
+        if (this.navId == 7) {
+          this.initCal();
+        }
+      },
+      initCal() {
+        this.initCalChef();
+        this.initCalEquip();
+        this.initCalRep();
+      },
+      initCalChef() {
+        const userUltimate = {};
+        for (const key in this.userUltimate) {
+          if (typeof this.userUltimate[key] == 'string') {
+            userUltimate[key] = Number(this.userUltimate[key]);
+          } else {
+            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
+          }
+        }
+        let chefs_list = [];
+        for (const item of this.data.chefs) {
+          const ultimateSkill = item.ultimateSkill || {};
+          chefs_list.push({
+            id: item.chefId,
+            uid: `${item.chefId},${ultimateSkill.skillId}`,
+            rarity: item.rarity,
+            name: item.name,
+            skills: {
+              stirfry: item.stirfry,
+              boil: item.boil,
+              knife: item.knife,
+              fry: item.fry,
+              bake: item.bake,
+              steam: item.steam,
+            },
+            skill_effect: item.skill_obj.effect,
+            ultimate_effect: ultimateSkill.effect,
+            tag: item.tags ? item.tags[0] : null
+          });
+        }
+        chefs_list.sort(this.customSort({ prop: 'rarity', order: 'descending' }));
+        this.calChefs_list = chefs_list;
+      },
+      initCalEquip() {
+        this.calEquips_list = this.data.equips.map(item => {
+          return {
+            id: item.equipId,
+            name: item.name,
+            subName: item.skill,
+            effect: item.effect
+          }
+        });
+      },
+      initCalRep() {
+        const rep = [];
+        for (let item of this.data.recipes) {
+          if (this.calType.id[0] == 0) { // 正常营业
+            rep.push({
+              id: item.repicesId,
+              name: item.name,
+              subName: (item.price * item.limit)
+            });
+          }
+        }
+        this.calReps_list[1] = rep;
+        this.calReps_list[2] = rep;
+        this.calReps_list[3] = rep;
+      },
+      showChef(chef) {
+        const userUltimate = {};
+        let ultimate = false;
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+        for (const key in this.userUltimate) {
+          if (typeof this.userUltimate[key] == 'string') {
+            userUltimate[key] = Number(this.userUltimate[key]);
+          } else {
+            userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
+          }
+        }
+        const skills_show = {};
+        const skills_last = {};
+        skill_type.forEach(key => {
+          const lowKey = key.toLowerCase();
+          let value = userUltimate.All; // 全体全技法
+          value += userUltimate[key]; // 全体单技法
+          if (chef.tag == 1) { // 男厨全技法
+            value += userUltimate.Male;
+          }
+          if (chef.tag == 2) { // 女厨全技法
+            value += userUltimate.Female;
+          }
+          if (userUltimate.Self.id.indexOf(chef.uid) > -1) { // 已修炼的个人类修炼技能
+            ultimate = true;
+            chef.ultimate_effect.forEach(eff => {
+              if (eff.type == key) {
+                value += eff.value;
+              }
+            });
+          }
+          if (userUltimate.Partial.id.indexOf(chef.uid) > -1) {
+            ultimate = true;
+          }
+          for (let i = 1; i < 4; i++) {
+            if (this.calChef[i].row[0] && userUltimate.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1) { // 已修炼且在场的上场类修炼技能
+              this.calChef[i].row[0].ultimate_effect.forEach(eff => {
+                if (eff.type == key && eff.condition == 'Partial') {
+                  value += eff.value;
+                }
+              });
+            }
+            if (this.calEquip[i].row[0]) { // 装备厨具
+              this.calEquip[i].row[0].effect.forEach(eff => {
+                if (eff.type == key) {
+                  value += eff.value;
+                }
+              });
+            }
+          }
+          skills_last[lowKey] = (chef.skills[lowKey] || 0) + value;
+          skills_show[lowKey] = value ? `${chef.skills[lowKey] || ''}+${value}` : chef.skills[lowKey];
+        });
+        chef.skills_show = skills_show;
+        chef.skills_last = skills_last;
+        chef.ultimate = ultimate;
+        return chef;
       },
       initRep() {
         this.recipes = [];
@@ -1007,7 +1159,7 @@ $(function() {
             userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
           }
         }
-        chefs_list = [];
+        let chefs_list = [];
         for (const item of this.data.chefs) {
           const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
           const s_skill = this.checkKeyword(this.chefFilter.chefKeyword, item.skill);
@@ -1979,10 +2131,27 @@ $(function() {
         this.$refs.chefBox.forEach(b => {
           focus = focus || b.contains(e.target);
         });
+        focus = focus || this.$refs.tool.contains(e.target);
         if (!focus) {
           this.calFocus = false;
         }
       },
+      calCheck(key) {
+        const arr = key.split('_');
+        if (this.calFocus != key) {
+          this.calFocus = key;
+          if (this[`cal${arr[0]}`][arr[1]].row.length == 0) {
+            this.$refs[`cal${key}`][0].unfold();
+          }
+        } else {
+          window.removeEventListener('click', this.clickOther);
+          this.$refs[`cal${key}`][0].clear();
+          setTimeout(() => {
+            window.addEventListener('click', this.clickOther);
+          }, 100);
+          this.$refs[`cal${key}`][0].unfold();
+        }
+      }
     },
     watch: {
       screenHeight(val) {
@@ -2191,6 +2360,10 @@ $(function() {
         } else if (val === 6) {
           if (this.questsMain.length == 0) {
             this.initQuests();
+          }
+        } else if (val === 7) {
+          if (this.calChefs_list.length == 0) {
+            this.initCal();
           }
         }
       }
