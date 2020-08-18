@@ -821,13 +821,11 @@ input.hidden {
   flex-direction: column;
   justify-items: right;
 }
-.skill-box div {
-  padding: 1px 0;
-}
 .skill-box .label {
   margin-right: 3px;
   font-size: 10px;
   color: #607d8b;
+  line-height: 15px;
 }
 .skill-box .val {
   font-size: 9px;

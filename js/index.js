@@ -606,7 +606,7 @@ $(function() {
       calChefShow() {
         const rst = {};
         for (const key in this.calChef) {
-          rst[key] = this.calChef[key].row[0] ? this.showChef(this.calChef[key].row[0]) : {};
+          rst[key] = this.calChef[key].row[0] ? this.showChef(this.calChef[key].row[0], key) : {};
         }
         return rst;
       }
@@ -980,7 +980,7 @@ $(function() {
         this.calReps_list[2] = rep;
         this.calReps_list[3] = rep;
       },
-      showChef(chef) {
+      showChef(chef, position) {
         const userUltimate = {};
         let ultimate = false;
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
@@ -1022,13 +1022,13 @@ $(function() {
                 }
               });
             }
-            if (this.calEquip[i].row[0]) { // 装备厨具
-              this.calEquip[i].row[0].effect.forEach(eff => {
-                if (eff.type == key) {
-                  value += eff.value;
-                }
-              });
-            }
+          }
+          if (this.calEquip[position].row[0]) { // 装备厨具
+            this.calEquip[position].row[0].effect.forEach(eff => {
+              if (eff.type == key) {
+                value += eff.value;
+              }
+            });
           }
           skills_last[lowKey] = (chef.skills[lowKey] || 0) + value;
           skills_show[lowKey] = value ? `${chef.skills[lowKey] || ''}+${value}` : chef.skills[lowKey];
