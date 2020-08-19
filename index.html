@@ -805,8 +805,8 @@
                   ></muti-select>
                 </span>
               </div>
-              <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`">
-                <span class="select-box" style="width: 180px;">
+              <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`" class="tool-rep">
+                <span class="select-box" style="width: 180px;" v-show="!calRep[key].row[0]">
                   <muti-select
                     :ref="`calRep_${key}`"
                     placeholder="请选择菜谱"
@@ -817,6 +817,29 @@
                     @change="handleCalRepChange($event, key)"
                   ></muti-select>
                 </span>
+                <div v-show="calRep[key].row[0]">
+                  食材份数
+                </div>
+                <div v-if="calRep[key].row[0]" class="control">
+                  <input
+                    type="number"
+                    class="input"
+                    v-model="calRepCnt[key]"
+                    :max="calRep[key].row[0].limit"
+                    :min="0"
+                    @input="handleRepCntChange(key, calRep[key].row[0].limit)"
+                  />
+                  <span class="max">/ {{calRep[key].row[0].limit}}</span>
+                  <div class="slider">
+                    <el-slider
+                      v-model="calRepCnt[key]"
+                      vertical
+                      :max="calRep[key].row[0].limit"
+                      :show-tooltip="false"
+                      height="26px">
+                    </el-slider>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

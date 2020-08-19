@@ -23,6 +23,17 @@
 }
 /* 初始化css */
 html{-webkit-text-size-adjust: none;}
+/* 谷歌 */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+/* 火狐 */
+input[type="number"]{
+  -moz-appearance:textfield;
+}
 body {
   -webkit-tap-highlight-color: transparent;
   font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
@@ -761,13 +772,13 @@ input.hidden {
 .cal .tool {
   background: #f5f7fa;
   width: calc(100% - 4px);
-  height: 40px;
+  height: 46px;
   margin: 0 auto;
   margin-top: 3px;
   border-radius: 4px;
 }
 .tool .select-box {
-  padding: 7px 5px;
+  padding: 10px 5px;
   margin: 0;
 }
 .cal .name {
@@ -843,8 +854,9 @@ input.hidden {
   zoom: 0.7;
 }
 .rep .img .cnt {
+  display: inline-block;
   position: absolute;
-  top: -3px;
+  top: -4px;
   right: -5px;
   font-size: 12px;
   font-weight: bold;
@@ -852,8 +864,43 @@ input.hidden {
   color: #583526;
   padding: 0 3px;
   line-height: 13px;
+  height: 13px;
   box-shadow: rgba(19, 12, 12, 0.3) 1px 2px 1px;
-
+}
+.tool-rep {
+  display: flex;
+  height: 100%;
+  justify-content: space-between;
+  align-items: center;
+  padding-left: 5px;
+}
+.tool-rep .select-box {
+  display: block;
+  padding: 0;
+}
+.tool-rep .control {
+  display: flex;
+  align-items: center;
+}
+.tool-rep .input {
+  width: 35px;
+  font-size: 13px;
+  box-sizing: border-box;
+  padding: 0 8px;
+  height: 26px;
+  line-height: 26px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+}
+.tool-rep .max {
+  font-size: 13px;
+  padding-left: 5px;
+}
+.slider .el-slider__bar {
+  background: #82a1b0;
+}
+.slider .el-slider__button {
+  border-color: #82a1b0;
 }
 .skill-box .label {
   margin-right: 3px;

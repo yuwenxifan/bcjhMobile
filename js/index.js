@@ -93,6 +93,9 @@ $(function() {
             this.valueId.push(val);
             this.names.push(name);
           }
+          if (this.max == 1) {
+            this.show = false;
+          }
         }
       },
       clear() {
@@ -203,7 +206,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 7,
       calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
@@ -1013,20 +1016,70 @@ $(function() {
         const rep = [];
         for (let item of this.data.recipes) {
           if (this.calType.id[0] == 0) { // 正常营业
-            let limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
-            let price_total = item.price * limit;
-            rep.push({
+            let r = {};
+            let buff = 100;
+
+            r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
+            buff += r.buff_ulti;
+
+            r.price_buff = Math.ceil((item.price * buff) / 100);
+            r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
+            r.price_total = r.price_buff * r.limit; // 未选厨子时的总价
+
+            for (let i = 1; i < 4; i++) {
+              if (this.calChefShow[i].id) { // 如果选了厨子
+                let chef = {};
+                let min = 4;
+                let inf = [];
+                chef.buff = buff;
+                for (let sk in item.skills) { // 判断品级
+                  let multi = Math.floor(this.calChefShow[i].skills_last[sk] / item.skills[sk]);
+                  inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - item.skills[sk]}`);
+                  min = multi > min ? min : multi;
+                }
+                chef.grade = min; // 品级
+                chef.buff_grade = this.skill_buff[min] || 0; // 品级加成
+                chef.buff += chef.buff_grade;
+
+                this.calChefShow[i].sum_skill_effect(eff => { // 技能
+                  if (1) {
+                    //
+                  }
+                })
+
+                // 厨具技能
+
+                chef.price_buff = Math.ceil(item.price * chef.buff / 100);
+                chef.price_total = chef.price_buff * r.limit;
+                chef.subName = chef.price_total;
+
+                if (min == 0) {
+                  chef.subName += ' ' + inf.join(' ');
+                }
+
+                r[`chef_${i}`] = chef;
+                r[`price_chef_${i}`] = chef.price_total;
+              }
+            }
+
+            rep.push(Object.assign({
               id: item.recipeId,
               name: item.name,
-              price_total: price_total,
-              limit
-            });
+              price: item.price
+            }, r));
           }
         }
         for (let i = 1; i < 4; i++) {
-          let list = rep.slice();
-          if (this.calChefShow[i].id) {
-            this.calReps_list[i] = list.slice();
+          let list = JSON.parse(JSON.stringify(rep));
+          if (this.calChefShow[i].id) { // 厨子菜谱排序
+            list.sort(this.customSort({
+              prop: `price_chef_${i}`,
+              order: 'descending'
+            }));
+            this.calReps_list[i] = list.map(r => {
+              r.subName = String(r[`chef_${i}`].subName);
+              return r;
+            });
           } else { // 无厨师
             list.sort(this.customSort({
               prop: 'price_total',
@@ -1035,18 +1088,48 @@ $(function() {
             this.calReps_list[i] = list.map(r => {
               r.subName = String(r.price_total);
               return r;
-            })
+            });
           }
         }
       },
       handleCalRepChange(row, key) {
         this.calRepCnt[key] = row[0] ? row[0].limit : 0;
       },
+      handleRepCntChange(key, limit) {
+        let val = this.calRepCnt[key];
+        val = val.replace('.', '');
+        val = val.replace('-', '');
+        val = Number(val);
+        val = val > limit ? limit : val;
+        this.calRepCnt[key] = val;
+      },
       showChef(chef, position) {
         let ultimate = false;
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const skills_show = {};
         const skills_last = {};
+        let equip_effect = [];
+        let sum_skill_effect = [];
+        function judgeEff(eff) {
+          return eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type == 'OpenTime');
+        }
+        if (this.calEquip[position].row[0]) { // 厨具
+          equip_effect = this.calEquip[position].row[0].effect.filter(eff => { // 对售价/时间有影响的技能效果
+            return judgeEff(eff);
+          });
+        }
+        chef.skill_effect.forEach(eff => {
+          if (judgeEff(eff)) { // 对售价/时间有影响的技能效果
+            sum_skill_effect.push(eff);
+          }
+        });
+        chef.ultimate_effect.forEach(eff => {
+          if (judgeEff(eff)) { // 对售价/时间有影响的修炼技能效果
+            sum_skill_effect.push(eff);
+          }
+        });
+        chef.equip_effect = equip_effect;
+        chef.sum_skill_effect = sum_skill_effect;
         skill_type.forEach(key => {
           const lowKey = key.toLowerCase();
           let value = this.ulti.All; // 全体全技法
@@ -1229,10 +1312,6 @@ $(function() {
           const s_origin = this.checkKeyword(this.chefFilter.chefKeyword, item.origin);
           const search = s_name || s_skill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
-          let f_skills = true;
-          for (key in this.chefFilter.skills) {
-            f_skills = f_skills && (item[key] >= this.chefFilter.skills[key].val);
-          }
           const sex_check = [];
           for (key in this.chefFilter.sex) {
             if (this.chefFilter.sex[key].flag) {
@@ -1289,6 +1368,13 @@ $(function() {
             }
             skills[key.toLowerCase()] = ultimate[`${key}_last`] || 0;
           });
+
+          let f_skills = true;
+          for (key in this.chefFilter.skills) {
+            const lastKey = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
+            f_skills = f_skills && (ultimate[lastKey] >= this.chefFilter.skills[key].val);
+          }
+
           let effect = item.skill_obj.effect;
           const uId = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
           if (this.chefUltimate && ((this.chefUseAllUltimate && this.allUltimate.Self.id.indexOf(uId) > -1) || userUltimate.Self.id.indexOf(uId) > -1)) { // 个人类修炼
@@ -2346,7 +2432,7 @@ $(function() {
           this.saveUserData();
         }
       },
-      calChef: {
+      calChefShow: {
         deep: true,
         handler() {
           this.initCalRep();
