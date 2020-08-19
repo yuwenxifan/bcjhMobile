@@ -25,6 +25,7 @@
 html{-webkit-text-size-adjust: none;}
 body {
   -webkit-tap-highlight-color: transparent;
+  font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
 }
 body,
 h1,
@@ -159,10 +160,10 @@ section.header .right {
   float: right;
 }
 
-.el-dialog__header {
+.aside .el-dialog__header {
   padding: 0;
 }
-.el-dialog {
+.aside .el-dialog {
   text-align: center;
 }
 
@@ -170,10 +171,10 @@ section.header .right {
   font-size: 20px;
   cursor: pointer;
 }
-.el-drawer__container:focus {
+.aside .el-drawer__container:focus {
   outline: none;
 }
-.el-drawer:focus {
+.aside .el-drawer:focus {
   outline: none;
 }
 
@@ -224,29 +225,29 @@ section.header .right {
   float: right;
 }
 
-.el-table th {
+.body .el-table th {
   background-color: #f5f7fa;
 }
-.el-table th .cell {
+.body .el-table th .cell {
   height: 28px;
   line-height: 28px;
 }
-.el-table th .el-checkbox {
+.body .el-table th .el-checkbox {
   display: none;
 }
-.el-table th .caret-wrapper {
+.body .el-table th .caret-wrapper {
   position: absolute;
   top: 50%;
   transform: translateY(-16px);
 }
 
-.el-table .cell {
+.body .el-table .cell {
   white-space: pre-line;
   padding-right: 3px !important;
   line-height: 18px;
 }
 
-.el-table td {
+.body .el-table td {
   padding: 8px 0;
   font-size: 13px;
 }
@@ -340,7 +341,7 @@ section.header .right {
   background-color: #fff;
 }
 
-.el-drawer__body {
+.aside .el-drawer__body {
   overflow: auto;
 }
 
@@ -402,7 +403,7 @@ section.header .right {
 .checkbox.active {
   border-color: #a3bac5;
   color: #82a1b0;
-  font-weight: 600;
+  font-weight: bold;
 }
 
 .checkbox-contain {
@@ -421,13 +422,13 @@ section.header .right {
   transform: translateY(-5px);
   margin: 0 5px;
 }
-.el-switch__label {
+.box .el-switch__label {
   margin-left: 5px;
   color: #606266;
   font-weight: 400;
 }
 
-.el-switch__label.el-switch__label--right.is-active {
+#main .el-switch__label.el-switch__label--right.is-active {
   color: #82a1b0;
 }
 .prepend-input {
@@ -503,11 +504,11 @@ input.hidden {
   height: 0px;
 }
 
-.el-table.sum tbody .el-table__row:last-child {
+.body .el-table.sum tbody .el-table__row:last-child {
   background-color: #f5f7fa;
 }
 
-.el-table.sum tbody .el-table__row:last-child .cell {
+.body .el-table.sum tbody .el-table__row:last-child .cell {
   line-height: 24px;
   color: #526874;
 }
@@ -523,16 +524,16 @@ input.hidden {
 .search-box .el-switch {
   transform: translate(5px, 4px);
 }
-.el-checkbox__inner:hover, .el-checkbox__input.is-focus .el-checkbox__inner {
+.body .el-checkbox__inner:hover,.body .el-checkbox__input.is-focus .el-checkbox__inner {
   border-color: #dcdfe6;
 }
-.el-checkbox__input.is-checked .el-checkbox__inner {
+.body .el-checkbox__input.is-checked .el-checkbox__inner {
   border-color: #409EFF;
 }
-.el-checkbox__inner {
+.body .el-checkbox__inner {
   transition: backgroud-color 0s;
 }
-.el-checkbox__inner::after {
+.body .el-checkbox__inner::after {
   transition: transform 0s;
 }
 .header .notice {
@@ -566,7 +567,7 @@ input.hidden {
   margin: 4px 2px;
 }
 
-.el-table__body tr.current-row>td {
+.body .el-table__body tr.current-row>td {
   background-color: #f5f7fa;
 }
 
@@ -626,7 +627,7 @@ input.hidden {
 .ultimate-box .btn-box {
   margin-top: 3px;
 }
-.el-textarea {
+.body .el-textarea {
   font-size: 13px;
 }
 .contain-title {
@@ -650,13 +651,13 @@ input.hidden {
   line-height: 38px;
   color: #606266;
 }
-.el-tabs__header.is-top {
+.body .el-tabs__header.is-top {
   margin-bottom: 5px;
 }
-.el-tabs__item.is-top.is-active {
+.body .el-tabs__item.is-top.is-active {
   color: #82a1b0;
 }
-.el-tabs__active-bar.is-top {
+.body .el-tabs__active-bar.is-top {
   background-color: #82a1b0;
 }
 .cal {
@@ -846,11 +847,12 @@ input.hidden {
   top: -3px;
   right: -5px;
   font-size: 12px;
+  font-weight: bold;
   background: #fdf6ee;
-  color: #472a1e;
+  color: #583526;
   padding: 0 3px;
   line-height: 13px;
-  box-shadow: rgba(0, 0, 0, .4) 2px 2px 1px;
+  box-shadow: rgba(19, 12, 12, 0.3) 1px 2px 1px;
 
 }
 .skill-box .label {
@@ -1028,6 +1030,8 @@ input.hidden {
   position: relative;
   padding: 8px 10px;
   line-height: 18px;
+  /* chrome 手机版，不设max-height会把字体调到奇大无比巨丑 */
+  max-height: 999px;
   cursor: pointer;
 }
 

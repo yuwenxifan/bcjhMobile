@@ -203,7 +203,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 7,
+      navId: 1,
       calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
@@ -1040,7 +1040,7 @@ $(function() {
         }
       },
       handleCalRepChange(row, key) {
-        this.calRepCnt[key] = row[0].limit;
+        this.calRepCnt[key] = row[0] ? row[0].limit : 0;
       },
       showChef(chef, position) {
         let ultimate = false;
@@ -1708,6 +1708,7 @@ $(function() {
         });
       },
       checkRow(curRow) {
+        console.log(curRow);
         if (curRow) {
           const val = !curRow.checked;
           this.handleSelectionChange(val, curRow);
