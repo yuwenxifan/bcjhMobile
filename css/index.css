@@ -1093,6 +1093,9 @@ input.hidden {
   font-weight: bold;
   color: #409eff;
 }
+#muti-select .dropdown-list li.red {
+  color: #760024;
+}
 #muti-select .dropdown-list li.disable {
   color: #c0c4cc;
   cursor: not-allowed;

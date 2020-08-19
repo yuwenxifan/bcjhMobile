@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=4">
+  <link rel="stylesheet" href="./css/index.css?v=5">
   <link rel="stylesheet" href="./ele/index.css?v=1">
   <link rel="stylesheet" href="./css/image.css?v=1">
 </head>
@@ -806,7 +806,7 @@
                 </span>
               </div>
               <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`" class="tool-rep">
-                <span class="select-box" style="width: 180px;" v-show="!calRep[key].row[0]">
+                <span class="select-box" style="width: calc(100% - 10px);" v-show="!calRep[key].row[0]">
                   <muti-select
                     :ref="`calRep_${key}`"
                     placeholder="请选择菜谱"
@@ -1030,6 +1030,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=4"></script>
+  <script src="./js/index.js?v=5"></script>
 </body>
 </html>

@@ -20,7 +20,7 @@ $(function() {
           <li
             v-for="item in f_option"
             @click="checkOption(item.id, item.name)"
-            :class="valueId.indexOf(item.id) > -1 ? 'active' : disableClass(item.id)"
+            :class="(valueId.indexOf(item.id) > -1 ? 'active' : disableClass(item.id)) + ' ' + (item.isf ? 'red' : '')"
           >
             <span>{{item.name}}</span>
             <span class="sub-name" v-if="item.subName">{{item.subName}}</span>
@@ -47,7 +47,7 @@ $(function() {
           return this.empty;
         }
         return true;
-      }
+      },
     },
     mounted() {
       this.initOption();
@@ -1014,6 +1014,8 @@ $(function() {
       },
       initCalRep() {
         const rep = [];
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+        const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         for (let item of this.data.recipes) {
           if (this.calType.id[0] == 0) { // 正常营业
             let r = {};
@@ -1031,28 +1033,60 @@ $(function() {
                 let chef = {};
                 let min = 4;
                 let inf = [];
+                let skill_buff = 0;
+                let equip_buff = 0;
                 chef.buff = buff;
                 for (let sk in item.skills) { // 判断品级
                   let multi = Math.floor(this.calChefShow[i].skills_last[sk] / item.skills[sk]);
-                  inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - item.skills[sk]}`);
+                  if (this.calChefShow[i].skills_last[sk] < item.skills[sk]) {
+                    inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - item.skills[sk]}`);
+                  }
                   min = multi > min ? min : multi;
                 }
                 chef.grade = min; // 品级
                 chef.buff_grade = this.skill_buff[min] || 0; // 品级加成
                 chef.buff += chef.buff_grade;
 
-                this.calChefShow[i].sum_skill_effect(eff => { // 技能
-                  if (1) {
-                    //
+                this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
+                  if (eff.type == 'Gold_Gain') { // 金币加成
+                    skill_buff += eff.value;
                   }
-                })
+                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                      skill_buff += eff.value;
+                    }
+                  }
+                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                      skill_buff += eff.value;
+                    }
+                  }
+                });
+                chef.skill_buff = skill_buff;
+                chef.buff += skill_buff;
 
                 // 厨具技能
+                this.calChefShow[i].equip_effect.forEach(eff => { // 技能
+                  if (eff.type == 'Gold_Gain') { // 金币加成
+                    equip_buff += eff.value;
+                  }
+                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                      equip_buff += eff.value;
+                    }
+                  }
+                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                      equip_buff += eff.value;
+                    }
+                  }
+                });
+                chef.equip_buff = equip_buff;
+                chef.buff += equip_buff;
 
                 chef.price_buff = Math.ceil(item.price * chef.buff / 100);
                 chef.price_total = chef.price_buff * r.limit;
                 chef.subName = chef.price_total;
-
                 if (min == 0) {
                   chef.subName += ' ' + inf.join(' ');
                 }
@@ -1078,6 +1112,7 @@ $(function() {
             }));
             this.calReps_list[i] = list.map(r => {
               r.subName = String(r[`chef_${i}`].subName);
+              r.isf = r[`chef_${i}`].grade == 0 ? true : false; // 是否技法不足
               return r;
             });
           } else { // 无厨师
@@ -1123,11 +1158,13 @@ $(function() {
             sum_skill_effect.push(eff);
           }
         });
-        chef.ultimate_effect.forEach(eff => {
-          if (judgeEff(eff)) { // 对售价/时间有影响的修炼技能效果
-            sum_skill_effect.push(eff);
-          }
-        });
+        if (chef.ultimate_effect) {
+          chef.ultimate_effect.forEach(eff => {
+            if (judgeEff(eff)) { // 对售价/时间有影响的修炼技能效果
+              sum_skill_effect.push(eff);
+            }
+          });
+        }
         chef.equip_effect = equip_effect;
         chef.sum_skill_effect = sum_skill_effect;
         skill_type.forEach(key => {
