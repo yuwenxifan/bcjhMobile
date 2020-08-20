@@ -852,6 +852,8 @@ input.hidden {
 .rep .img {
   width: 40px;
   zoom: 0.7;
+  align-self: flex-end;
+  margin-bottom: 2px;
 }
 .rep .img .cnt {
   display: inline-block;

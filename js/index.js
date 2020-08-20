@@ -206,7 +206,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 7,
+      navId: 1,
       calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
@@ -701,7 +701,7 @@ $(function() {
       },
       initData() {
         const s = Math.pow(10, 5);
-        const combo_recipes = this.data.recipes.slice(-8);
+        const combo_recipes = this.data.recipes.filter(r => { return r.recipeId > 5000 });
         this.data.recipes = this.data.recipes.map(item => {
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
@@ -1209,7 +1209,11 @@ $(function() {
           if (this.calEquip[position].row[0]) { // 装备厨具
             this.calEquip[position].row[0].effect.forEach(eff => {
               if (eff.type == key) {
-                value += eff.value;
+                if (eff.cal == 'Abs') {
+                  value += eff.value;
+                } else if (eff.cal == 'Percent') {
+                  value += Math.ceil(((chef.skills[lowKey] || 0) + value) * eff.value / 100)
+                }
               }
             });
           }
