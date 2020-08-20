@@ -590,7 +590,7 @@ $(function() {
         '3-2': { id: [], row: [] },
         '3-3': { id: [], row: [] },
       },
-      calRepCnt: {
+      calRepCnt: { // 数量
         '1-1': 0,
         '1-2': 0,
         '1-3': 0,
@@ -601,6 +601,17 @@ $(function() {
         '3-2': 0,
         '3-3': 0,
       },
+      calRepEx: { // 专精
+        '1-1': false,
+        '1-2': false,
+        '1-3': false,
+        '2-1': false,
+        '2-2': false,
+        '2-3': false,
+        '3-1': false,
+        '3-2': false,
+        '3-3': false,
+      },
       calFocus: null,
       calChefs_list: [],
       calEquips_list: [],
@@ -610,6 +621,31 @@ $(function() {
         3: []
       },
       calRep_list: [],
+      calSort: 1,
+      calSort_list: [
+        { id: 1, name: '分数降序' },
+        { id: 2, name: '时间升序' },
+        { id: 3, name: '时间降序' },
+        { id: 4, name: '效率降序' }
+      ],
+      calSortMap: {
+        1: {
+          chef: { prop: 'price_chef_${i}', order: 'descending' },
+          normal: { prop: 'price_total', order: 'descending' },
+        },
+        2: {
+          chef: { prop: 'time_last', show: 'time_show', order: 'ascending' },
+          normal: { prop: 'time_last', show: 'time_show', order: 'ascending' },
+        },
+        3: {
+          chef: { prop: 'time_last', show: 'time_show', order: 'descending' },
+          normal: { prop: 'time_last', show: 'time_show', order: 'descending' },
+        },
+        4: {
+          chef: { prop: 'gold_eff_chef_${i}', order: 'descending' },
+          normal: { prop: 'gold_eff', order: 'descending' },
+        }
+      },
       isOriginHei: true,
       screenHeight:
         window.innerHeight ||
@@ -1018,6 +1054,13 @@ $(function() {
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         for (let item of this.data.recipes) {
           let r = {};
+          let materials = item.materials_search.split(' ');
+          materials = materials.map((m, i) => {
+            return Object.assign({
+              name: m
+            }, item.materials[i]);
+          });
+          r.materials = materials;
           let buff = 100;
 
           r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
@@ -1029,7 +1072,6 @@ $(function() {
           } else { // 规则加成
             //
           }
-
 
           r.price_buff = Math.ceil((item.price * buff) / 100);
 
@@ -1100,11 +1142,9 @@ $(function() {
               chef.buff += buff_equip;
 
               chef.price_buff = Math.ceil(item.price * chef.buff / 100);
-
-              // if 正常营业，算效率
-
               chef.price_total = chef.price_buff * r.limit;
-              chef.subName = chef.price_total;
+
+              chef.subName = '';
               if (min == 0) {
                 chef.subName += ' ' + inf.join(' ');
               }
@@ -1115,50 +1155,47 @@ $(function() {
           }
 
           if (this.calType.id[0] == 0) { // 正常营业算效率
+            r.time_last = Math.ceil(item.time * (buff_time * 100) / 10000);
             for (let i = 1; i < 4; i++) {
               if (r[`chef_${i}`]) {
-                r[`chef_${i}`].time_last = Math.ceil(item.time * (buff_time * 100) / 10000);
-                r[`chef_${i}`]
+                r[`chef_${i}`].gold_eff = Math.floor(r[`chef_${i}`].price_buff * 3600 / r.time_last);
+                r[`gold_eff_chef_${i}`] = r[`chef_${i}`].gold_eff;
               }
             }
+            r.gold_eff = Math.floor(r.price_buff * 3600 / r.time_last);
+            r.time_show = this.formatTime(r.time_last);
           }
 
-          rep.push(Object.assign({
+          let ext = {
             id: item.recipeId,
             name: item.name,
             price: item.price,
-            exPrice: item.exPrice,
-            time: item.time
-          }, r));
-          if (item.name == '蒸汽海鲜') {
-            console.log(Object.assign({
-              id: item.recipeId,
-              name: item.name,
-              price: item.price,
-              exPrice: item.exPrice,
-              time: item.time
-            }, r))
-          }
+            exPrice: item.exPrice
+          };
+          Object.assign(ext, r)
+          rep.push(ext);
         }
+        this.calRep_list = rep;
+        this.calRepSort();
+      },
+      calRepSort() { // 计算器页厨师选菜谱下拉框的排序
         for (let i = 1; i < 4; i++) {
-          let list = JSON.parse(JSON.stringify(rep));
+          let list = JSON.parse(JSON.stringify(this.calRep_list));
           if (this.calChefShow[i].id) { // 厨子菜谱排序
-            list.sort(this.customSort({
-              prop: `price_chef_${i}`,
-              order: 'descending'
-            }));
+            let prop = this.calSortMap[this.calSort].chef.prop.replace('${i}', i);
+            let order = this.calSortMap[this.calSort].chef.order;
+            list.sort(this.customSort({ prop, order }));
             this.calReps_list[i] = list.map(r => {
-              r.subName = String(r[`chef_${i}`].subName);
+              let show = this.calSortMap[this.calSort].chef.show || prop;
+              r.subName = r[show] + String(r[`chef_${i}`].subName);
               r.isf = r[`chef_${i}`].grade == 0 ? true : false; // 是否技法不足
               return r;
             });
           } else { // 无厨师
-            list.sort(this.customSort({
-              prop: 'price_total',
-              order: 'descending'
-            }));
+            list.sort(this.customSort(this.calSortMap[this.calSort].normal));
+            let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
             this.calReps_list[i] = list.map(r => {
-              r.subName = String(r.price_total);
+              r.subName = String(r[show]);
               return r;
             });
           }
@@ -1183,7 +1220,7 @@ $(function() {
         let equip_effect = [];
         let sum_skill_effect = [];
         function judgeEff(eff) {
-          return eff.condition == ('Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain')) || eff.type == 'OpenTime';
+          return (eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain')) || eff.type == 'OpenTime';
         }
         if (this.calEquip[position].row[0]) { // 厨具
           equip_effect = this.calEquip[position].row[0].effect.filter(eff => { // 对售价/时间有影响的技能效果
@@ -1872,7 +1909,6 @@ $(function() {
         });
       },
       checkRow(curRow) {
-        console.log(curRow);
         if (curRow) {
           const val = !curRow.checked;
           this.handleSelectionChange(val, curRow);

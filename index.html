@@ -710,16 +710,26 @@
             </el-tabs>
           </div>
           <div class="cal" v-show="calCode == 'cal'" :style="'height: '+ (boxHeight - 50) + 'px;'">
-            <span class="select-box" style="width: 210px;">
-              <muti-select
-                ref="calType"
-                :option="rules"
-                v-model="calType"
-                :max="1"
-                :empty="false"
-              ></muti-select>
-            </span>
-            <span class="btn" @click="navId = 8">个人配置</span>
+            <div class="ctl-box">
+              <span class="select-box" class="cal-type" style="width: 158px;">
+                <muti-select
+                  ref="calType"
+                  :option="rules"
+                  v-model="calType"
+                  :max="1"
+                  :empty="false"
+                ></muti-select>
+              </span>
+              <span class="btn" @click="navId = 8">个人</span>
+              <el-select size="mini" v-model="calSort" @change="calRepSort">
+                <el-option
+                  v-for="item in calSort_list"
+                  :key="item.id"
+                  :label="item.name"
+                  :value="item.id">
+                </el-option>
+              </el-select>
+            </div>
             <div class="tips">{{buffTips}}</div>
             <div class="cal-contain">
               <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]">
@@ -817,10 +827,20 @@
                     @change="handleCalRepChange($event, key)"
                   ></muti-select>
                 </span>
-                <div v-show="calRep[key].row[0]">
-                  食材份数
+                <div v-if="calRep[key].row[0]" class="material-box">
+                  <span v-for="item in calRep[key].row[0].materials" class="material">
+                    <span class="label">{{item.name}}</span>
+                    <!-- 现在先这样写，之后要分限制了数量的展示  -->
+                    <span class="quantity">{{item.quantity * calRepCnt[key]}}</span>
+                  </span>
                 </div>
                 <div v-if="calRep[key].row[0]" class="control">
+                  <el-switch
+                    v-model="calRepEx[key]"
+                    active-color="#82a1b0"
+                    active-text="专精"
+                    inactive-color="#ddd">
+                  </el-switch>
                   <input
                     type="number"
                     class="input"

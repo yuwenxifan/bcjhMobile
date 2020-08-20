@@ -678,22 +678,25 @@ input.hidden {
   overflow: auto;
 }
 .cal .select-box {
-  margin: 5px 8px 5px 0px;
+  margin: 5px 4px 5px 0px;
 }
 .cal .btn {
   display: inline-block;
   font-size: 13px;
-  padding: 0 12px;
+  padding: 0 9px;
   background-origin: padding-box;
   height: 24px;
   line-height: 24px;
+  margin-right: 3px;
+  width: 28px;
+  flex-shrink: 0;
 }
 .cal .btn:active {
   background-color: #f5f7fa;
 }
 .cal .tips {
   font-size: 11px;
-  padding-left: 1px;
+  padding-left: 3px;
 }
 .cal-contain {
   display: flex;
@@ -884,6 +887,9 @@ input.hidden {
   display: flex;
   align-items: center;
 }
+.tool .el-switch__label.el-switch__label--right {
+  color: #606266;
+}
 .tool-rep .input {
   width: 35px;
   font-size: 13px;
@@ -893,6 +899,7 @@ input.hidden {
   line-height: 26px;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
+  color: #303133;
 }
 .tool-rep .max {
   font-size: 13px;
@@ -904,6 +911,9 @@ input.hidden {
 .slider .el-slider__button {
   border-color: #82a1b0;
 }
+.slider .el-slider.is-vertical .el-slider__runway {
+  margin: 0 10px;
+}
 .skill-box .label {
   margin-right: 3px;
   font-size: 10px;
@@ -913,6 +923,57 @@ input.hidden {
 .skill-box .val {
   font-size: 9px;
   line-height: 13px;
+}
+.tool .el-switch__label.el-switch__label--right {
+  margin-left: 4px;
+  margin-right: 7px;
+}
+.tool .material-box {
+  display: flex;
+}
+.tool .material {
+  display: flex;
+  flex-direction: column;
+  margin: 0 3px;
+}
+.tool .material .label {
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+.tool .material .quantity {
+  font-size: 10px;
+}
+.cal .ctl-box {
+  display: flex;
+  align-items: center;
+  padding: 0 2px;
+}
+.cal .ctl-box .select-box {
+  flex-grow: 1;
+}
+.cal .ctl-box .el-select.el-select--mini {
+  height: 26px;
+  width: 90px;
+  flex-shrink: 0;
+}
+.cal .ctl-box .el-input.el-input--mini.el-input--suffix {
+  line-height: 26px;
+  height: 26px;
+  box-sizing: border-box;
+}
+.cal .ctl-box .el-input__suffix {
+  right: 1px;
+}
+.cal .ctl-box .el-input--mini .el-input__inner {
+  line-height: 26px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 1px #dcdfe6 solid;
+  padding-left: 10px;
+  padding-right: 24px;
+}
+.cal .ctl-box .el-select:hover .el-input__inner, .cal .el-select .el-input__inner:focus, .cal .el-select .el-input.is-focus .el-input__inner {
+  border: 1px #dcdfe6 solid;
 }
 @media(min-width: 398px) {
   .cal-contain {
@@ -1119,4 +1180,7 @@ input.hidden {
   line-height: 30px;
   color: #999;
   text-align: center;
+}
+.cal .ctl-box #muti-select .dropdown-box {
+  min-width: 210px;
 }
