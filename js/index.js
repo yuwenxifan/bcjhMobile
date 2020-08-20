@@ -188,7 +188,7 @@ $(function() {
         bake: '烤',
         steam: '蒸'
       },
-      skill_buff: {
+      grade_buff: {
         1: 0,
         2: 10,
         3: 30,
@@ -206,7 +206,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 7,
       calCode: 'cal',
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
@@ -1017,90 +1017,127 @@ $(function() {
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         for (let item of this.data.recipes) {
-          if (this.calType.id[0] == 0) { // 正常营业
-            let r = {};
-            let buff = 100;
+          let r = {};
+          let buff = 100;
 
-            r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
-            buff += r.buff_ulti;
+          r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
+          buff += r.buff_ulti;
 
-            r.price_buff = Math.ceil((item.price * buff) / 100);
-            r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
-            r.price_total = r.price_buff * r.limit; // 未选厨子时的总价
+          if (this.calType.id[0] == 0) { // 正常营业，加上家具加成
+            r.buff_deco = this.ulti.decoBuff;
+            buff += r.buff_deco;
+          } else { // 规则加成
+            //
+          }
 
+
+          r.price_buff = Math.ceil((item.price * buff) / 100);
+
+          r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`]; // 根据规则算份数
+          r.price_total = r.price_buff * r.limit; // 未选厨子时的总价
+          let buff_time = 100;
+
+          for (let i = 1; i < 4; i++) {
+            if (this.calChefShow[i].id) { // 如果选了厨子
+              let chef = {};
+              let min = 4;
+              let inf = [];
+              let buff_skill = 0;
+              let buff_equip = 0;
+              chef.buff = buff;
+              for (let sk in item.skills) { // 判断品级
+                let multi = Math.floor(this.calChefShow[i].skills_last[sk] / item.skills[sk]);
+                if (this.calChefShow[i].skills_last[sk] < item.skills[sk]) {
+                  inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - item.skills[sk]}`);
+                }
+                min = multi > min ? min : multi;
+              }
+              chef.grade = min; // 品级
+              chef.buff_grade = this.grade_buff[min] || 0; // 品级加成
+              chef.buff += chef.buff_grade;
+
+              this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
+                if (eff.type == 'Gold_Gain') { // 金币加成
+                  buff_skill += eff.value;
+                }
+                if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                  if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                    buff_skill += eff.value;
+                  }
+                }
+                if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                  if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                    buff_skill += eff.value;
+                  }
+                }
+                if (eff.type == 'OpenTime') { // 开业时间
+                  buff_time += eff.value;
+                }
+              });
+              chef.buff_skill = buff_skill;
+              chef.buff += buff_skill;
+
+              // 厨具技能
+              this.calChefShow[i].equip_effect.forEach(eff => { // 技能
+                if (eff.type == 'Gold_Gain') { // 金币加成
+                  buff_equip += eff.value;
+                }
+                if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                  if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                    buff_equip += eff.value;
+                  }
+                }
+                if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                  if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                    buff_equip += eff.value;
+                  }
+                }
+                if (eff.type == 'OpenTime') { // 开业时间
+                  buff_time += eff.value;
+                }
+              });
+              chef.buff_equip = buff_equip;
+              chef.buff += buff_equip;
+
+              chef.price_buff = Math.ceil(item.price * chef.buff / 100);
+
+              // if 正常营业，算效率
+
+              chef.price_total = chef.price_buff * r.limit;
+              chef.subName = chef.price_total;
+              if (min == 0) {
+                chef.subName += ' ' + inf.join(' ');
+              }
+
+              r[`chef_${i}`] = chef;
+              r[`price_chef_${i}`] = chef.price_total;
+            }
+          }
+
+          if (this.calType.id[0] == 0) { // 正常营业算效率
             for (let i = 1; i < 4; i++) {
-              if (this.calChefShow[i].id) { // 如果选了厨子
-                let chef = {};
-                let min = 4;
-                let inf = [];
-                let skill_buff = 0;
-                let equip_buff = 0;
-                chef.buff = buff;
-                for (let sk in item.skills) { // 判断品级
-                  let multi = Math.floor(this.calChefShow[i].skills_last[sk] / item.skills[sk]);
-                  if (this.calChefShow[i].skills_last[sk] < item.skills[sk]) {
-                    inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - item.skills[sk]}`);
-                  }
-                  min = multi > min ? min : multi;
-                }
-                chef.grade = min; // 品级
-                chef.buff_grade = this.skill_buff[min] || 0; // 品级加成
-                chef.buff += chef.buff_grade;
-
-                this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
-                  if (eff.type == 'Gold_Gain') { // 金币加成
-                    skill_buff += eff.value;
-                  }
-                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
-                      skill_buff += eff.value;
-                    }
-                  }
-                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                      skill_buff += eff.value;
-                    }
-                  }
-                });
-                chef.skill_buff = skill_buff;
-                chef.buff += skill_buff;
-
-                // 厨具技能
-                this.calChefShow[i].equip_effect.forEach(eff => { // 技能
-                  if (eff.type == 'Gold_Gain') { // 金币加成
-                    equip_buff += eff.value;
-                  }
-                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
-                      equip_buff += eff.value;
-                    }
-                  }
-                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                      equip_buff += eff.value;
-                    }
-                  }
-                });
-                chef.equip_buff = equip_buff;
-                chef.buff += equip_buff;
-
-                chef.price_buff = Math.ceil(item.price * chef.buff / 100);
-                chef.price_total = chef.price_buff * r.limit;
-                chef.subName = chef.price_total;
-                if (min == 0) {
-                  chef.subName += ' ' + inf.join(' ');
-                }
-
-                r[`chef_${i}`] = chef;
-                r[`price_chef_${i}`] = chef.price_total;
+              if (r[`chef_${i}`]) {
+                r[`chef_${i}`].time_last = Math.ceil(item.time * (buff_time * 100) / 10000);
+                r[`chef_${i}`]
               }
             }
+          }
 
-            rep.push(Object.assign({
+          rep.push(Object.assign({
+            id: item.recipeId,
+            name: item.name,
+            price: item.price,
+            exPrice: item.exPrice,
+            time: item.time
+          }, r));
+          if (item.name == '蒸汽海鲜') {
+            console.log(Object.assign({
               id: item.recipeId,
               name: item.name,
-              price: item.price
-            }, r));
+              price: item.price,
+              exPrice: item.exPrice,
+              time: item.time
+            }, r))
           }
         }
         for (let i = 1; i < 4; i++) {
@@ -1146,7 +1183,7 @@ $(function() {
         let equip_effect = [];
         let sum_skill_effect = [];
         function judgeEff(eff) {
-          return eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type == 'OpenTime');
+          return eff.condition == ('Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain')) || eff.type == 'OpenTime';
         }
         if (this.calEquip[position].row[0]) { // 厨具
           equip_effect = this.calEquip[position].row[0].effect.filter(eff => { // 对售价/时间有影响的技能效果
@@ -1292,7 +1329,7 @@ $(function() {
                 }
               }
               if (min > 0) { // 技法足够
-                buff += this.skill_buff[min]; // 品级加成
+                buff += this.grade_buff[min]; // 品级加成
               }
               if (this.chefUltimate) {
                 if (this.chefUseAllUltimate) { // 使用全修炼
@@ -1445,7 +1482,7 @@ $(function() {
                 }
               }
               if (min > 0) { // 技法足够
-                buff += this.skill_buff[min]; // 品级加成
+                buff += this.grade_buff[min]; // 品级加成
                 if (this.chefUltimate) { // 修炼加成
                   if (this.chefUseAllUltimate) { // 使用全修炼
                     buff += (this.allUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
@@ -2283,7 +2320,10 @@ $(function() {
         }
       },
       setAllUltimate() {
-        this.userUltimate = JSON.parse(JSON.stringify(this.allUltimate));
+        let userUltimate = JSON.parse(JSON.stringify(this.allUltimate));
+        this.userUltimate = Object.assign(userUltimate, {
+          decoBuff: this.userUltimate.decoBuff
+        });
         setTimeout(() => {
           this.$refs.userPartial.initOption();
           this.$refs.userSelf.initOption();
