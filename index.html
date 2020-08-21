@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=6">
+  <link rel="stylesheet" href="./css/index.css?v=7">
   <link rel="stylesheet" href="./css/image.css?v=2">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -363,20 +363,32 @@
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
-        top="200px"
+        top="250px"
         :show-close="false"
         :visible.sync="settingVisible"
-        width="200px">
-        <span>
-          筛选按钮固定在顶栏
-          <el-switch
-            style="display: block"
-            v-model="hideSuspend"
-            active-color="#82a1b0"
-            inactive-color="#ddd">
-          </el-switch>
+        width="250px">
+        <span class="switch-box">
+          <span>
+            <el-switch
+              style="display: block"
+              v-model="hideSuspend"
+              active-color="#82a1b0"
+              active-text="筛选浮球固定在顶栏"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
+          <span>
+            <el-switch
+              style="display: block"
+              v-model="defaultEx"
+              active-color="#82a1b0"
+              active-text="计算器选菜默认已专精"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
         </span>
       </el-dialog>
+      <div class="back" v-if="showBack" @click="navId = 7"><i class="el-icon-arrow-left"></i>返回</div>
     </aside>
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
@@ -720,7 +732,7 @@
                   :empty="false"
                 ></muti-select>
               </span>
-              <span class="btn" @click="navId = 8">个人</span>
+              <span class="btn" @click="goToConfig">个人</span>
               <el-select size="mini" v-model="calSort" @change="calRepSort">
                 <el-option
                   v-for="item in calSort_list"
@@ -782,6 +794,9 @@
                     <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
                       <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
                         <span class="cnt">{{calRepCnt[`${chef}-${rep}`]}}</span>
+                        <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
+                          <i class="el-icon-success"></i>
+                        </span>
                       </div>
                     </div>
                     <div class="rep-empty" v-else>
@@ -858,6 +873,16 @@
                       :show-tooltip="false"
                       height="26px">
                     </el-slider>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="total-result">{{calResultTotal}}</div>
+            <div class="result">
+              <div class="rst-box" v-for="i in [1, 2, 3]">
+                <div class="rst" v-for="j in [1, 2, 3]">
+                  <div class="show" v-if="calRepShow[`${i}-${j}`].id">
+                    <span class="name">{{calRepShow[`${i}-${j}`].name}}</span>
                   </div>
                 </div>
               </div>
@@ -1050,6 +1075,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=6"></script>
+  <script src="./js/index.js?v=7"></script>
 </body>
 </html>

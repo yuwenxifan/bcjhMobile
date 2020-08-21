@@ -179,6 +179,7 @@ $(function() {
       settingVisible: false,
       loading: true,
       tabBox: false,
+      showBack: false,
       reg: new RegExp( '<br>' , "g" ),
       skill_map: {
         stirfry: '炒',
@@ -208,6 +209,7 @@ $(function() {
       ],
       navId: 7,
       calCode: 'cal',
+      defaultEx: false,
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
@@ -567,8 +569,7 @@ $(function() {
       questsPageSize: 20,
       calType: { id: [], row: [] },
       rules: [],
-      decoBuffValue: "",
-      buffTips: '当前使用菜谱售价修炼加成：无，当前装饰加成：0%',
+      decoBuffValue: '',
       calChef: {
         1: { id: [], row: [] },
         2: { id: [], row: [] },
@@ -612,6 +613,7 @@ $(function() {
         '3-2': false,
         '3-3': false,
       },
+      calRepShow: {},
       calFocus: null,
       calChefs_list: [],
       calEquips_list: [],
@@ -697,6 +699,45 @@ $(function() {
           if (this.calRep[key].id.length > 0) {
             rst.push(this.calRep[key].id[0]);
           }
+        }
+        return rst;
+      },
+      buffTips() {
+        let raritys = [];
+        for (let key in this.calRepShow) {
+          if (this.calRepShow[key].price_total) {
+            raritys.push(this.calRepShow[key].rarity);
+          }
+        }
+        raritys = Array.from(new Set(raritys));
+        raritys.sort();
+        let rarity_buff = [];
+        raritys.forEach(r => {
+          if (this.userUltimate[`PriceBuff_${r}`]) {
+            rarity_buff.push(`${r}星${this.userUltimate[`PriceBuff_${r}`]}%`);
+          }
+        });
+        let rst = `当前使用菜谱售价修炼加成：${rarity_buff.length > 0 ? rarity_buff.join(' ') : '无'}`;
+        if (this.calType.id[0] == 0) { // 正常营业，加上装饰
+          rst += `，当前装饰加成：${this.userUltimate.decoBuff || 0}%`
+        }
+        return rst;
+      },
+      calResultTotal() {
+        let price = 0;
+        let price_origin = 0;
+        let time = 0;
+        let time_last = 0;
+        for (let key in this.calRepShow) {
+          price += this.calRepShow[key].price_total || 0;
+          price_origin += this.calRepShow[key].price_origin_total || 0;
+          time += this.calRepShow[key].time || 0;
+          time_last += this.calRepShow[key].time_last || 0;
+        }
+        let rst = `原售价：${price_origin} 总得分：${price}`;
+        if (this.calType.id[0] == 0) {
+          let gold_eff = time_last == 0 ? 0 : Math.round(price * 3600 / time_last);
+          rst += `${time == time_last ? '' : ` 原时间：${this.formatTime(time)}`} 总时间：${this.formatTime(time_last)} 总效率：${gold_eff}金币/h`;
         }
         return rst;
       }
@@ -1012,6 +1053,11 @@ $(function() {
         this.initCalChef();
         this.initCalEquip();
         this.initCalRep();
+        let rst = {};
+        for (let key in this.calRepEx) {
+          rst[key] = this.defaultEx;
+        }
+        this.calRepEx = rst;
       },
       initCalChef() {
         let chefs_list = [];
@@ -1087,6 +1133,7 @@ $(function() {
               let buff_skill = 0;
               let buff_equip = 0;
               chef.buff = buff;
+              buff_time += this.calChefShow[i].time_buff;
               for (let sk in item.skills) { // 判断品级
                 let multi = Math.floor(this.calChefShow[i].skills_last[sk] / item.skills[sk]);
                 if (this.calChefShow[i].skills_last[sk] < item.skills[sk]) {
@@ -1112,9 +1159,6 @@ $(function() {
                     buff_skill += eff.value;
                   }
                 }
-                if (eff.type == 'OpenTime') { // 开业时间
-                  buff_time += eff.value;
-                }
               });
               chef.buff_skill = buff_skill;
               chef.buff += buff_skill;
@@ -1134,9 +1178,6 @@ $(function() {
                     buff_equip += eff.value;
                   }
                 }
-                if (eff.type == 'OpenTime') { // 开业时间
-                  buff_time += eff.value;
-                }
               });
               chef.buff_equip = buff_equip;
               chef.buff += buff_equip;
@@ -1155,6 +1196,7 @@ $(function() {
           }
 
           if (this.calType.id[0] == 0) { // 正常营业算效率
+            r.time = item.time;
             r.time_last = Math.ceil(item.time * (buff_time * 100) / 10000);
             for (let i = 1; i < 4; i++) {
               if (r[`chef_${i}`]) {
@@ -1169,6 +1211,7 @@ $(function() {
           let ext = {
             id: item.recipeId,
             name: item.name,
+            rarity: item.rarity,
             price: item.price,
             exPrice: item.exPrice
           };
@@ -1219,22 +1262,32 @@ $(function() {
         const skills_last = {};
         let equip_effect = [];
         let sum_skill_effect = [];
+        let time_buff = 0;
         function judgeEff(eff) {
-          return (eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain')) || eff.type == 'OpenTime';
+          return eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain');
         }
         if (this.calEquip[position].row[0]) { // 厨具
           equip_effect = this.calEquip[position].row[0].effect.filter(eff => { // 对售价/时间有影响的技能效果
+            if (eff.type == 'OpenTime') {
+              time_buff += eff.value;
+            }
             return judgeEff(eff);
           });
         }
         chef.skill_effect.forEach(eff => {
-          if (judgeEff(eff)) { // 对售价/时间有影响的技能效果
+          if (eff.type == 'OpenTime') {
+            time_buff += eff.value;
+          }
+          if (judgeEff(eff)) { // 对售价有影响的技能效果
             sum_skill_effect.push(eff);
           }
         });
         if (chef.ultimate_effect) {
           chef.ultimate_effect.forEach(eff => {
-            if (judgeEff(eff)) { // 对售价/时间有影响的修炼技能效果
+            if (eff.type == 'OpenTime') {
+              time_buff += eff.value;
+            }
+            if (judgeEff(eff)) { // 对售价有影响的修炼技能效果
               sum_skill_effect.push(eff);
             }
           });
@@ -1297,7 +1350,51 @@ $(function() {
         chef.skills_show = skills_show;
         chef.skills_last = skills_last;
         chef.ultimate = ultimate;
+        chef.time_buff = time_buff;
         return chef;
+      },
+      getCalRepShow() {
+        let rst = {};
+        for (let key in this.calRep) {
+          rst[key] = this.calRep[key].row[0] ? this.showRep(this.calRep[key].row[0], key) : {};
+        }
+        this.calRepShow = rst;
+      },
+      showRep(rep, position) {
+        let rst = {
+          id: rep.id,
+          name: rep.name,
+          rarity: rep.rarity,
+          time: rep.time * this.calRepCnt[position],
+          time_last: rep.time_last * this.calRepCnt[position],
+          price: this.calRepEx[position] ? (rep.price + rep.exPrice) : rep.price,
+          chef: true
+        };
+        let chefId = position.slice(0, 1);
+        if (!this.calChef[position.slice(0, 1)].id[0]) { // 如果没有选厨子
+          rst.chef = false;
+          rst.price_total = 0;
+          rst.time = 0;
+          rst.time_last = 0;
+          return rst;
+        }
+        rst.grade = rep[`chef_${chefId}`].grade;
+        rst.grade_show = ' 可优特神'.slice(rst.grade, rst.grade + 1);
+        if (rst.grade == 0) { // 如果技法不足
+          rst.price_total = 0;
+          rst.time = 0;
+          rst.time_last = 0;
+          rst.gap = rep[`chef_${chefId}`].subName;
+          return rst;
+        }
+        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule'];
+        prop_arr.forEach(key => {
+          rst[key] = rep[`chef_${chefId}`][key];
+        });
+        rst.price_buff = Math.ceil(rst.price * rst.buff / 100);
+        rst.price_total = rst.price_buff * this.calRepCnt[position];
+        rst.price_origin_total = rst.price * this.calRepCnt[position];
+        return rst;
       },
       initRep() {
         this.recipes = [];
@@ -1782,7 +1879,29 @@ $(function() {
         return false;
       },
       formatTime(sec) {
-        return (sec >= 3600 ? `${~~(sec / 3600)}小时` : '') + ((sec % 3600) >= 60 ? `${~~((sec % 3600) / 60)}分` : '') + ((sec % 3600) % 60 !== 0 ? `${(sec % 3600) % 60}秒` : '')
+        if (sec == 0) {
+          return 0;
+        }
+        let rst = '';
+        const DAY = 86400;
+        const HOUR = 3600;
+        const MIN = 60;
+        if (sec >= DAY) {
+          rst += `${~~(sec / DAY)}天`;
+          sec = sec % DAY;
+        }
+        if (sec >= HOUR) {
+          rst += `${~~(sec / HOUR)}小时`;
+          sec = sec % HOUR;
+        }
+        if (sec >= MIN) {
+          rst += `${~~(sec / MIN)}分`;
+          sec = sec % MIN;
+        }
+        if (sec > 0) {
+          rst += `${sec}秒`;
+        }
+        return rst;
       },
       handleCurrentChange(val) {
         const map = {
@@ -2267,17 +2386,25 @@ $(function() {
           decorationCol: this.decorationCol,
           mapCol: this.mapCol,
           userUltimate: this.userUltimate,
+          defaultEx: this.defaultEx,
+          hideSuspend: this.hideSuspend,
+          repSkillGap: this.repSkillGap,
+          chefSkillGap: this.chefSkillGap
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
+        const propName = ['defaultEx', 'hideSuspend', 'repSkillGap', 'chefSkillGap'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
             colName.forEach(col => {
               this.putUserCol(col);
+            });
+            propName.forEach(prop => {
+              this[prop] = this.userData[prop] == null ? this[prop] : this.userData[prop];
             });
           } catch(e) {
             this.$message.error('个人数据解析错误！');
@@ -2417,7 +2544,14 @@ $(function() {
             window.addEventListener('click', this.clickOther);
           }, 100);
           this.$refs[`cal${key}`][0].unfold();
+          if (arr[1].indexOf('-') > -1) { // 如果是菜谱
+            this.calRepEx[arr[1]] = this.defaultEx;
+          }
         }
+      },
+      goToConfig() {
+        this.showBack = true;
+        this.navId = 8;
       }
     },
     watch: {
@@ -2555,6 +2689,45 @@ $(function() {
           this.initCalRep();
         }
       },
+      calRep: {
+        deep: true,
+        handler() {
+          this.getCalRepShow();
+        }
+      },
+      calRepEx: {
+        deep: true,
+        handler() {
+          this.getCalRepShow();
+        }
+      },
+      calRepCnt: {
+        deep: true,
+        handler() {
+          this.getCalRepShow();
+        }
+      },
+      hideSuspend() {
+        this.saveUserData();
+      },
+      chefSkillGap() {
+        this.saveUserData();
+      },
+      repSkillGap() {
+        this.saveUserData();
+      },
+      defaultEx(val) {
+        this.saveUserData();
+        let rst = {};
+        for (let key in this.calRepEx) {
+          if (!this.calRep[key].id[0]) {
+            rst[key] = val;
+          } else {
+            rst[key] = this.calRepEx[key];
+          }
+        }
+        this.calRepEx = rst;
+      },
       calFocus(val) {
         if (val) {
           window.addEventListener("click", this.clickOther);
@@ -2585,6 +2758,9 @@ $(function() {
         this.initQuests();
       },
       navId(val) {
+        if (val != 8) {
+          this.showBack = false;
+        }
         if (val === 1) {
           if (this.recipes.length == 0) {
             this.initRep();

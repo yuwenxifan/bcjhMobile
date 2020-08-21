@@ -174,8 +174,16 @@ section.header .right {
 .aside .el-dialog__header {
   padding: 0;
 }
-.aside .el-dialog {
-  text-align: center;
+.aside .el-dialog .switch-box {
+  display: flex;
+  margin: 0;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 55px;
+  align-content: flex-start;
+}
+.aside .el-switch__label {
+  color: #606266;
 }
 
 .icon-btn {
@@ -276,6 +284,22 @@ section.header .right {
   color: #fff;
   text-align: center;
   z-index: 999;
+}
+
+.aside .back {
+  position: absolute;
+  top: 100px;
+  right: 20px;
+  color: #fff;
+  text-align: center;
+  box-shadow: 1px 1px 5px rgba(96, 125, 139, 0.7);
+  background-color: #82a1b0;
+  z-index: 999;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.aside .back i {
+  margin-right: 3px;
 }
 
 .right-bar footer {
@@ -687,7 +711,7 @@ input.hidden {
   background-origin: padding-box;
   height: 24px;
   line-height: 24px;
-  margin-right: 3px;
+  margin-right: 4px;
   width: 28px;
   flex-shrink: 0;
 }
@@ -872,6 +896,21 @@ input.hidden {
   height: 13px;
   box-shadow: rgba(19, 12, 12, 0.3) 1px 2px 1px;
 }
+.rep .img .expert {
+  display: inline-block;
+  font-size: 11px;
+  color: #7CB342;
+  height: 11px;
+  width: 11px;
+  line-height: 11px;
+  position: absolute;
+  right: 5px;
+  bottom: 3px;
+}
+.rep .img .expert i {
+  border-radius: 11px;
+  background: #fff;
+}
 .tool-rep {
   display: flex;
   height: 100%;
@@ -889,6 +928,7 @@ input.hidden {
 }
 .tool .el-switch__label.el-switch__label--right {
   color: #606266;
+  font-weight: 400;
 }
 .tool-rep .input {
   width: 35px;
@@ -971,9 +1011,33 @@ input.hidden {
   border: 1px #dcdfe6 solid;
   padding-left: 10px;
   padding-right: 24px;
+  font-size: 13px;
 }
 .cal .ctl-box .el-select:hover .el-input__inner, .cal .el-select .el-input__inner:focus, .cal .el-select .el-input.is-focus .el-input__inner {
   border: 1px #dcdfe6 solid;
+}
+.cal .total-result {
+  font-size: 14px;
+  color: #607d8b;
+  padding: 2px 3px;
+}
+.cal .result {
+  display: flex;
+}
+.cal .rst-box {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+.cal .rst-box .rst {
+  width: 95%;
+  height: 92px;
+  background: #f5f7fa;
+  margin: 3px 2px;
+  border-radius: 4px;
+}
+.rst .name {
+  font-size: 12px;
 }
 @media(min-width: 398px) {
   .cal-contain {
@@ -1157,7 +1221,7 @@ input.hidden {
   color: #409eff;
 }
 #muti-select .dropdown-list li.red {
-  color: #760024;
+  color: #b71c1c;
 }
 #muti-select .dropdown-list li.disable {
   color: #c0c4cc;
