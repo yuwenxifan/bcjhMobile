@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=8">
+  <link rel="stylesheet" href="./css/index.css?v=9">
   <link rel="stylesheet" href="./css/image.css?v=3">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -14,6 +14,7 @@
     <div v-if="loading" class="loading">
       <div>爆炒江湖图鉴</div>
     </div>
+    <div v-loading.fullscreen.lock="calLoading"></div>
     <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
         <div class="header">
@@ -958,20 +959,11 @@
                       type="number"
                       class="input"
                       v-model="calRepCnt[key]"
-                      :max="calRep[key].row[0].limit"
+                      :max="calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit"
                       :min="0"
-                      @input="handleRepCntChange(key, calRep[key].row[0].limit)"
+                      @input="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
                     />
-                    <span class="max">/ {{calRep[key].row[0].limit}}</span>
-                    <div class="slider">
-                      <el-slider
-                        v-model="calRepCnt[key]"
-                        vertical
-                        :max="calRep[key].row[0].limit"
-                        :show-tooltip="false"
-                        height="26px">
-                      </el-slider>
-                    </div>
+                    <span class="max">/ {{calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit}}</span>
                   </div>
                 </div>
               </div>
@@ -1286,6 +1278,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=8"></script>
+  <script src="./js/index.js?v=9"></script>
 </body>
 </html>

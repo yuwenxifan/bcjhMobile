@@ -744,7 +744,7 @@ input.hidden {
 }
 .cal .btn.load {
   color: #fff;
-  background: #c62828;
+  background: #c62828 !important;
   border-color: #c62828;
 }
 .cal .btn:active {
@@ -966,6 +966,7 @@ input.hidden {
 .tool-rep .control {
   display: flex;
   align-items: center;
+  margin-right: 10px;
 }
 .tool .el-switch__label.el-switch__label--right {
   color: #606266;
@@ -1218,13 +1219,6 @@ input.hidden {
   font-size: 10px;
 }
 
-.rep .cal-search {
-  position: absolute;
-  z-index: 999;
-  width: 200px;
-  right: 10px;
-  top: 52px
-}
 @media(min-width: 398px) {
   .cal-contain, .total-result, .result {
     width: 370px;
