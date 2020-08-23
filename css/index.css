@@ -763,7 +763,7 @@ input.hidden {
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-grow: 1;
+  width: 33.4%;
 }
 .chef-box .chef {
   width: 95%;
@@ -779,9 +779,11 @@ input.hidden {
   width: calc(95% + 4px);
 }
 .rep-box .rep {
-  width: 100%;
+  width: 33.4%;
   height: 30px;
-  flex-grow: 1;
+}
+.chef-box .rep-box .rep .show {
+  padding: 0;
 }
 .cal .chef,.cal .equip,.cal .rep {
   padding: 2px;
