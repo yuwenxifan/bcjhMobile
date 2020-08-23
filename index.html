@@ -6,7 +6,7 @@
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=7">
-  <link rel="stylesheet" href="./css/image.css?v=2">
+  <link rel="stylesheet" href="./css/image.css?v=3">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -353,13 +353,34 @@
               </div>
             </div>
           </div>
+          <div v-show="navId === 7">
+            <div class="box">
+              <input class="hidden" type="checkbox">
+              <div class="box-title">搜索</div>
+              <div class="hr"></div>
+              <el-input size="mini" class="cal-search" prefix-icon="el-icon-search" placeholder="菜名 材料" v-model="calKeyword">
+              </el-input>
+            </div>
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('calRepCol')">全选</span>
+              <span
+                v-for="(val, key) in calRepCol"
+                v-show="!(calType.id[0] == 0 && ['price_rule', 'price_rule'].indexOf(key) > -1) && !(calType.id[0] != 0 && ['gold_eff', 'total_time_show'].indexOf(key) > -1)"
+                class="checkbox"
+                :class="val ? 'active' : ''"
+                @click="calRepCol[key] = !val"
+              >{{calRepColName[key]}}</span>
+            </div>
+          </div>
           <footer v-show="isOriginHei">
             <button class="btn btn-primary" @click="rightBar = false">确定</button>
             <button class="btn btn-reset" @click="reset" v-if="navId != 5">清空过滤</button>
           </footer>
         </div>
       </el-drawer>
-      <div v-if="navId < 6 && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="(navId < 6 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -367,6 +388,72 @@
         :show-close="false"
         :visible.sync="settingVisible"
         width="250px">
+        <div class="input-box" v-show="navId==1">
+          <span class="label">菜谱分页</span>
+          <el-select size="mini" v-model="recipesPageSize" @change="handlePageSizeChange($event, 'recipes')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==2">
+          <span class="label">厨师分页</span>
+          <el-select size="mini" v-model="chefsPageSize" @change="handlePageSizeChange($event, 'chefs')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==3">
+          <span class="label">厨具分页</span>
+          <el-select size="mini" v-model="equipsPageSize" @change="handlePageSizeChange($event, 'equips')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==4">
+          <span class="label">装修分页</span>
+          <el-select size="mini" v-model="decorationsPageSize" @change="handlePageSizeChange($event, 'decorations')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==6">
+          <span class="label">任务分页</span>
+          <el-select size="mini" v-model="questsPageSize" @change="handlePageSizeChange($event, 'quests')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==7 && calCode == 'rep'">
+          <span class="label">计算器菜谱分页</span>
+          <el-select size="mini" style="width: 101px;" v-model="calRepsPageSize" @change="handlePageSizeChange($event, 'calReps')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
         <span class="switch-box">
           <span>
             <el-switch
@@ -396,7 +483,7 @@
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
       <span class="right">
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
-        <i v-if="hideSuspend && navId < 6" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && cal))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
       </span>
     </section>
     <section class="body">
@@ -732,8 +819,15 @@
                   :empty="false"
                 ></muti-select>
               </span>
-              <span class="btn" @click="goToConfig">个人</span>
-              <el-select size="mini" v-model="calSort" @change="calRepSort">
+              <span class="btn load" @click="initCal" v-show="calLoad">加载</span>
+              <span class="btn" @click="goToConfig" v-show="!calLoad">个人</span>
+              <el-select
+                size="mini"
+                v-if="!calHidden"
+                v-model="calSort"
+                @change="calRepSort"
+                :disabled="calType.id[0] != 0 || calLoad"
+              >
                 <el-option
                   v-for="item in calSort_list"
                   :key="item.id"
@@ -742,154 +836,256 @@
                 </el-option>
               </el-select>
             </div>
-            <div class="tips">{{buffTips}}</div>
-            <div class="cal-contain">
-              <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]">
-                <div
-                  class="chef"
-                  :class="calFocus == `Chef_${chef}` ? 'focus' : ''"
-                  @click="calCheck(`Chef_${chef}`)"
-                >
-                  <div v-if="calChef[chef].row[0]" class="show">
-                    <div class="name-img">
-                      <span class="name">{{calChefShow[chef].name}}</span>
-                      <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
-                        <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
-                      </div>
-                    </div>
-                    <div class="skill-box">
-                      <div
-                        v-for="(val, key) in calChefShow[chef].skills_last"
-                        v-show="val"
-                      >
-                        <span class="label">{{skill_map[key]}}</span>
-                        <span class="val">{{val}}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="chef-empty" v-else>
-                    <i class="el-icon-plus"></i>
-                    <span place-holder>选择厨师</span>
-                  </div>
-                </div>
-                <div
-                  class="equip"
-                  :class="calFocus == `Equip_${chef}` ? 'focus' : ''"
-                  @click="calCheck(`Equip_${chef}`)"
-                >
-                  <div class="show" v-if="calEquip[chef].row[0]">
-                    <span class="name">{{calEquip[chef].row[0].name}}</span>
-                  </div>
-                  <div class="equip-empty" v-else>
-                    <i class="el-icon-plus"></i>
-                  </div>
-                </div>
-                <div class="rep-box">
+            <div v-if="!calHidden">
+              <div class="tips">{{buffTips}}</div>
+              <div class="cal-contain" v-if="calType.row[0]">
+                <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]" :class="chef > ChefNumLimit ? 'disable' : ''">
                   <div
-                    class="rep"
-                    v-for="rep in [1, 2, 3]"
-                    :class="calFocus == `Rep_${chef}-${rep}` ? 'focus' : ''"
-                    @click="calCheck(`Rep_${chef}-${rep}`)"
+                    class="chef"
+                    :class="calFocus == `Chef_${chef}` ? 'focus' : ''"
+                    @click="calCheck(`Chef_${chef}`)"
                   >
-                    <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
-                      <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
-                        <span class="cnt">{{calRepCnt[`${chef}-${rep}`]}}</span>
-                        <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
-                          <i class="el-icon-success"></i>
-                        </span>
+                    <div v-if="calChef[chef].row[0]" class="show">
+                      <div class="name-img">
+                        <span class="name">{{calChefShow[chef].name}}</span>
+                        <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
+                          <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
+                        </div>
+                      </div>
+                      <div class="skill-box">
+                        <div
+                          v-for="(val, key) in calChefShow[chef].skills_last"
+                          v-show="val"
+                        >
+                          <span class="label">{{skill_map[key]}}</span>
+                          <span class="val">{{val}}</span>
+                        </div>
                       </div>
                     </div>
-                    <div class="rep-empty" v-else>
+                    <div class="chef-empty" v-else>
+                      <i class="el-icon-plus"></i>
+                      <span place-holder>选择厨师</span>
+                    </div>
+                  </div>
+                  <div
+                    class="equip"
+                    :class="calFocus == `Equip_${chef}` ? 'focus' : ''"
+                    @click="calCheck(`Equip_${chef}`)"
+                  >
+                    <div class="show" v-if="calEquip[chef].row[0]">
+                      <span class="name">{{calEquip[chef].row[0].name}}</span>
+                    </div>
+                    <div class="equip-empty" v-else>
                       <i class="el-icon-plus"></i>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-            <div ref="tool" class="tool" v-show="calFocus">
-              <div v-for="(val, key) in calChef" v-show="calFocus == `Chef_${key}`">
-                <span class="select-box" style="width: calc(100% - 10px);">
-                  <muti-select
-                    :ref="`calChef_${key}`"
-                    placeholder="请选择厨师"
-                    :option="calChefs_list"
-                    v-model="calChef[key]"
-                    :max="1"
-                    :disable="disable"
-                  ></muti-select>
-                </span>
-              </div>
-              <div v-for="(val, key) in calEquip" v-show="calFocus == `Equip_${key}`">
-                <span class="select-box" style="width: calc(100% - 10px);">
-                  <muti-select
-                    :ref="`calEquip_${key}`"
-                    placeholder="请选择厨具"
-                    :option="calEquips_list"
-                    v-model="calEquip[key]"
-                    :max="1"
-                  ></muti-select>
-                </span>
-              </div>
-              <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`" class="tool-rep">
-                <span class="select-box" style="width: calc(100% - 10px);" v-show="!calRep[key].row[0]">
-                  <muti-select
-                    :ref="`calRep_${key}`"
-                    placeholder="请选择菜谱"
-                    :option="calReps_list[key.slice(0, 1)]"
-                    v-model="calRep[key]"
-                    :max="1"
-                    :disable="disableRep"
-                    @change="handleCalRepChange($event, key)"
-                  ></muti-select>
-                </span>
-                <div v-if="calRep[key].row[0]" class="material-box">
-                  <span v-for="item in calRep[key].row[0].materials" class="material">
-                    <span class="label">{{item.name}}</span>
-                    <!-- 现在先这样写，之后要分限制了数量的展示  -->
-                    <span class="quantity">{{item.quantity * calRepCnt[key]}}</span>
-                  </span>
-                </div>
-                <div v-if="calRep[key].row[0]" class="control">
-                  <el-switch
-                    v-model="calRepEx[key]"
-                    active-color="#82a1b0"
-                    active-text="专精"
-                    inactive-color="#ddd">
-                  </el-switch>
-                  <input
-                    type="number"
-                    class="input"
-                    v-model="calRepCnt[key]"
-                    :max="calRep[key].row[0].limit"
-                    :min="0"
-                    @input="handleRepCntChange(key, calRep[key].row[0].limit)"
-                  />
-                  <span class="max">/ {{calRep[key].row[0].limit}}</span>
-                  <div class="slider">
-                    <el-slider
-                      v-model="calRepCnt[key]"
-                      vertical
-                      :max="calRep[key].row[0].limit"
-                      :show-tooltip="false"
-                      height="26px">
-                    </el-slider>
+                  <div class="rep-box">
+                    <div
+                      class="rep"
+                      v-for="rep in [1, 2, 3]"
+                      :class="calFocus == `Rep_${chef}-${rep}` ? 'focus' : ''"
+                      @click="calCheck(`Rep_${chef}-${rep}`)"
+                    >
+                      <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
+                        <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
+                          <span class="cnt">{{calRepCnt[`${chef}-${rep}`]}}</span>
+                          <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
+                            <i class="el-icon-success"></i>
+                          </span>
+                        </div>
+                      </div>
+                      <div class="rep-empty" v-else>
+                        <i class="el-icon-plus"></i>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            <div class="total-result">{{calResultTotal}}</div>
-            <div class="result">
-              <div class="rst-box" v-for="i in [1, 2, 3]">
-                <div class="rst" v-for="j in [1, 2, 3]">
-                  <div class="show" v-if="calRepShow[`${i}-${j}`].id">
-                    <span class="name">{{calRepShow[`${i}-${j}`].name}}</span>
+              <div ref="tool" class="tool" v-show="calFocus">
+                <div v-for="(val, key) in calChef" v-show="calFocus == `Chef_${key}`">
+                  <span class="select-box" style="width: calc(100% - 10px);">
+                    <muti-select
+                      :ref="`calChef_${key}`"
+                      placeholder="请选择厨师"
+                      :option="calChefs_list"
+                      v-model="calChef[key]"
+                      :max="1"
+                      :disable="disable"
+                      @focus="calScroll(300)"
+                    ></muti-select>
+                  </span>
+                </div>
+                <div v-for="(val, key) in calEquip" v-show="calFocus == `Equip_${key}`">
+                  <span class="select-box" style="width: calc(100% - 10px);">
+                    <muti-select
+                      :ref="`calEquip_${key}`"
+                      placeholder="请选择厨具"
+                      :option="calEquips_list"
+                      v-model="calEquip[key]"
+                      :max="1"
+                      @focus="calScroll(300)"
+                    ></muti-select>
+                  </span>
+                </div>
+                <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`" class="tool-rep">
+                  <span class="select-box" style="width: calc(100% - 10px);" v-show="!calRep[key].row[0]">
+                    <muti-select
+                      :ref="`calRep_${key}`"
+                      placeholder="请选择菜谱"
+                      :option="calReps_list[key.slice(0, 1)]"
+                      v-model="calRep[key]"
+                      :max="1"
+                      :disable="disableRep"
+                      @change="handleCalRepChange($event, key)"
+                      @focus="calScroll(300)"
+                    ></muti-select>
+                  </span>
+                  <div v-if="calRep[key].row[0]" class="material-box">
+                    <span v-for="item in calRep[key].row[0].materials" class="material">
+                      <span class="label">{{item.name}}</span>
+                      <!-- 现在先这样写，之后要分限制了数量的展示  -->
+                      <span class="quantity">{{item.quantity * calRepCnt[key]}}</span>
+                    </span>
+                  </div>
+                  <div v-if="calRep[key].row[0]" class="control">
+                    <el-switch
+                      v-model="calRepEx[key]"
+                      active-color="#82a1b0"
+                      active-text="专精"
+                      inactive-color="#ddd">
+                    </el-switch>
+                    <input
+                      type="number"
+                      class="input"
+                      v-model="calRepCnt[key]"
+                      :max="calRep[key].row[0].limit"
+                      :min="0"
+                      @input="handleRepCntChange(key, calRep[key].row[0].limit)"
+                    />
+                    <span class="max">/ {{calRep[key].row[0].limit}}</span>
+                    <div class="slider">
+                      <el-slider
+                        v-model="calRepCnt[key]"
+                        vertical
+                        :max="calRep[key].row[0].limit"
+                        :show-tooltip="false"
+                        height="26px">
+                      </el-slider>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="total-result">{{calResultTotal}}</div>
+              <div class="result">
+                <div
+                  class="rst-box"
+                  v-for="(arr, i) in calRepShow"
+                  :class="calType.id[0] == 0 ? 'long ' : ''"
+                >
+                  <div class="rst" v-for="item in arr">
+                    <div class="show" v-if="item.id">
+                      <span class="name">{{item.name}}</span>
+                      <div class="top" :class="!item.showBuff ? 'center' : ''">
+                        <div class="top-left">
+                          <div class="img-box">
+                            <div class="img icon-recipe" :class="'recipe_' + item.id"></div>
+                            <span class="grade" :class="'grade-' + item.grade" v-show="item.grade">
+                              {{item.grade_show}}
+                            </span>
+                            <div class="skill-box">
+                              <div class="skill" v-for="(val, key) in item.skills">
+                                <span class="label">{{skill_map[key]}}</span>
+                                <span class="val">{{val}}</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="buff-box" v-if="item.showBuff">
+                          <div class="buff" v-if="item.buff_rule">
+                            <span class="label">规则</span>
+                            <span class="val">{{item.buff_rule}}%</span>
+                          </div>
+                          <div class="buff" v-if="item.buff_grade">
+                            <span class="label">品阶</span>
+                            <span class="val">{{item.buff_grade}}%</span>
+                          </div>
+                          <div class="buff" v-if="item.buff_skill">
+                            <span class="label">技能</span>
+                            <span class="val">{{item.buff_skill}}%</span>
+                          </div>
+                          <div class="buff" v-if="item.buff_equip">
+                            <span class="label">厨具</span>
+                            <span class="val">{{item.buff_equip}}%</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="time-price">
+                        <div class="time" v-if="item.time_last && calType.id[0] == 0 && item.grade">
+                          <i class="el-icon-time" style="margin-right: 2px;"></i>{{item.time_last_show}}
+                        </div>
+                        <div class="price-box">
+                          <span style="margin-right: 2px;" v-if="item.price_total">$</span>
+                          <div class="muti" v-if="item.price_total">
+                            <span class="price">{{item.price_buff}}</span>
+                            <span class="cnt">*{{item.cnt}}</span>
+                            <span style="margin: 0 2px">=</span>
+                          </div>
+                          <div class="total" v-if="item.price_total">{{item.price_total}}</div>
+                          <div v-if="item.grade == 0" style="color: #b71c1c;">{{item.gap}}</div>
+                          <div v-if="!item.chef" style="color: #b71c1c;">请选择厨师</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           <div class="rep" v-show="calCode == 'rep'">
-            <!--  -->
+            <el-table
+              style="margin-top: -4px;"
+              :data="calRepsPage"
+              style="width: 100%"
+              ref='calRepsTable'
+              :default-sort="sort.calRep"
+              @sort-change="handleCalRepSort"
+              :height="tableHeight - 6">
+              <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="calRepCol.id"></el-table-column>
+              <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="80"></el-table-column>
+              <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="80" v-if="calRepCol.rarity"></el-table-column>
+              <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="boil" label="煮" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="knife" label="切" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="fry" label="炸" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="bake" label="烤" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="steam" label="蒸" min-width="48" v-if="calRepCol.skills"></el-table-column>
+              <el-table-column sortable="custom" prop="materials_show" label="材料" min-width="130" v-if="calRepCol.materials"></el-table-column>
+              <el-table-column sortable="custom" prop="origin" label="来源" min-width="90" v-if="calRepCol.origin"></el-table-column>
+              <el-table-column sortable="custom" prop="limit" label="份数" min-width="64" v-if="calRepCol.limit"></el-table-column>
+              <el-table-column sortable="custom" prop="price" min-width="64" label="单价" v-if="calRepCol.price"></el-table-column>
+              <el-table-column sortable="custom" prop="buff_rule_show" min-width="90" label="规则加成" v-if="calRepCol.price && calType.id[0] != 0"></el-table-column>
+              <el-table-column sortable="custom" prop="price_rule" min-width="80" label="规则分" v-if="calRepCol.price_rule && calType.id[0] != 0"></el-table-column>
+              <el-table-column sortable="custom" prop="price_total" min-width="80" label="总得分" v-if="calRepCol.price_total"></el-table-column>
+              <el-table-column sortable="custom" prop="total_time_show" min-width="100" label="总时间" v-if="calRepCol.total_time_show && calType.id[0] == 0"></el-table-column>
+              <el-table-column sortable="custom" prop="gold_eff" label="金币/h" min-width="79" v-if="calRepCol.gold_eff && calType.id[0] == 0"></el-table-column>
+              <el-table-column sortable="custom" v-for="item in repFilter.materialEff.row" :prop="'materialEff_' + item.id" :label="item.name" min-width="92"></el-table-column>
+              <div v-for="(val, key) in calChef" v-if="val.row[0]">
+                <el-table-column sortable="custom" :prop="'price_chef_' + key" :label="val.row[0].name" :min-width="nameMinWidth(val.row[0].name)"></el-table-column>
+              </div>
+              <el-table-column label="" min-width="1"></el-table-column>
+            </el-table>
+            <div class="pagination">
+              <el-pagination
+                background
+                small
+                :page-size="calRepsPageSize"
+                :current-page.sync="calRepsCurPage"
+                @current-change="handleCurrentChange"
+                :pager-count="5"
+                layout="total, prev, pager, next"
+                :total="calReps.length">
+              </el-pagination>
+            </div>
           </div>
         </div>
       </div>
@@ -1050,6 +1246,21 @@
             <div class="contain-title">采集</div>
             <div class="p">
               <span class="add"><i class="el-icon-plus"></i> 新增</span> 每小时平均采集量的堆叠图，点击图例可以选择显示/不显示某个食材的数据。
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">计算器</div>
+            <div class="p">
+              计算器<span class="bold">只使用【个人】页中的个人配置数据</span>，在厨师页打开全修炼不会应用到计算器上。
+            </div>
+            <div class="p">
+              右上角的排序控制菜谱选择框的排序方式，默认分数降序。
+            </div>
+            <div class="p">
+              厨师头像右下角的[满]表示厨师上场类/个人类技能已修炼。
+            </div>
+            <div class="p">
+              菜谱图片右下角的绿色小勾表示菜谱已专精，设置中可以设置选菜时是否默认已专精。
             </div>
           </div>
           <div class="box-body">

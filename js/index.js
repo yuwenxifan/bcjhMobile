@@ -180,7 +180,17 @@ $(function() {
       loading: true,
       tabBox: false,
       showBack: false,
+      calLoad: true,
+      calHidden: true,
       reg: new RegExp( '<br>' , "g" ),
+      page_list: [
+        { id: 5, name: '5条/页' },
+        { id: 10, name: '10条/页' },
+        { id: 20, name: '20条/页' },
+        { id: 50, name: '50条/页' },
+        { id: 100, name: '100条/页' },
+        { id: 1000, name: '所有' },
+      ],
       skill_map: {
         stirfry: '炒',
         boil: '煮',
@@ -207,7 +217,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 7,
+      navId: 1,
       calCode: 'cal',
       defaultEx: false,
       tableHeight: window.innerHeight - 122,
@@ -250,6 +260,10 @@ $(function() {
       },
       sort: {
         rep: {},
+        calRep: {
+          prop: 'price_total',
+          order: 'descending'
+        },
         chef: {},
         equip: {},
         decoration: {
@@ -613,7 +627,7 @@ $(function() {
         '3-2': false,
         '3-3': false,
       },
-      calRepShow: {},
+      calRepShow: [[], [], []],
       calFocus: null,
       calChefs_list: [],
       calEquips_list: [],
@@ -622,7 +636,40 @@ $(function() {
         2: [],
         3: []
       },
-      calRep_list: [],
+      calRepCol: {
+        id: false,
+        rarity: false,
+        skills: false,
+        materials: false,
+        origin: false,
+        limit: true,
+        price: true,
+        buff_rule: true,
+        price_rule: false,
+        price_total: true,
+        total_time_show: false,
+        gold_eff: false,
+      },
+      calRepColName: {
+        id: '编号',
+        rarity: '星',
+        skills: '技能',
+        materials: '材料',
+        origin: '来源',
+        limit: '份数',
+        price: '单价',
+        buff_rule: '规则加成',
+        price_rule: '规则分',
+        price_total: '总得分',
+        total_time_show: '总时间',
+        gold_eff: '效率',
+      },
+      calKeyword: '',
+      calReps: [],
+      calRepsAll: [],
+      calRepsPage: [],
+      calRepsCurPage: 1,
+      calRepsPageSize: 20,
       calSort: 1,
       calSort_list: [
         { id: 1, name: '分数降序' },
@@ -648,6 +695,7 @@ $(function() {
           normal: { prop: 'gold_eff', order: 'descending' },
         }
       },
+      ChefNumLimit: 3,
       isOriginHei: true,
       screenHeight:
         window.innerHeight ||
@@ -704,9 +752,11 @@ $(function() {
       },
       buffTips() {
         let raritys = [];
-        for (let key in this.calRepShow) {
-          if (this.calRepShow[key].price_total) {
-            raritys.push(this.calRepShow[key].rarity);
+        for (let arr of this.calRepShow) {
+          for (let item of arr) {
+            if (item.price_total) {
+              raritys.push(item.rarity);
+            }
           }
         }
         raritys = Array.from(new Set(raritys));
@@ -726,15 +776,20 @@ $(function() {
       calResultTotal() {
         let price = 0;
         let price_origin = 0;
+        let price_rule = 0;
         let time = 0;
         let time_last = 0;
-        for (let key in this.calRepShow) {
-          price += this.calRepShow[key].price_total || 0;
-          price_origin += this.calRepShow[key].price_origin_total || 0;
-          time += this.calRepShow[key].time || 0;
-          time_last += this.calRepShow[key].time_last || 0;
+        for (let arr of this.calRepShow) {
+          for (let item of arr) {
+            price += item.price_total || 0;
+            price_origin += item.price_origin_total || 0;
+            time += item.time || 0;
+            time_last += item.time_last || 0;
+            price_rule += item.price_rule || 0;
+          }
         }
-        let rst = `原售价：${price_origin} 总得分：${price}`;
+        let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
+        let rst = `原售价：${price_origin}${rule_show} 总得分：${price}`;
         if (this.calType.id[0] == 0) {
           let gold_eff = time_last == 0 ? 0 : Math.round(price * 3600 / time_last);
           rst += `${time == time_last ? '' : ` 原时间：${this.formatTime(time)}`} 总时间：${this.formatTime(time_last)} 总效率：${gold_eff}金币/h`;
@@ -786,6 +841,7 @@ $(function() {
             item[i] = item[i] || null;
           }
           let materials_cnt = 0;
+          item.materials_id = item.materials.map(m => m.material);
           item.materials_show = item.materials.map(m => {
             const name = this.data.materials.find(i => {
               return i.materialId == m.material;
@@ -1035,9 +1091,17 @@ $(function() {
             materials_type: item.materials_type,
           }
         });
-        this.calType.id = [0];
+        const defaultRule = 0;
+        this.calType.id = [defaultRule];
         this.rules = this.data.rules.map(item => {
           const arr = item.Title.split(' - ');
+          if (item.Id == defaultRule) {
+            this.calType.row.push(Object.assign({
+              id: item.Id,
+              name: arr[0],
+              subName: arr[1] || ''
+            }, item));
+          }
           return Object.assign({
             id: item.Id,
             name: arr[0],
@@ -1046,10 +1110,46 @@ $(function() {
         });
         if (this.navId == 7) {
           this.tabBox = true;
-          this.initCal();
         }
       },
       initCal() {
+        this.ChefNumLimit = this.calType.row[0].ChefNumLimit || 3;
+        if (!this.calHidden) {
+          for (let key in this.calChef) {
+            this.$refs[`calChef_${key}`][0].clear();
+          }
+          for (let key in this.calEquip) {
+            this.$refs[`calEquip_${key}`][0].clear();
+          }
+          for (let key in this.calRep) {
+            this.$refs[`calRep_${key}`][0].clear();
+          }
+        }
+        this.calChef = {
+          1: { id: [], row: [] },
+          2: { id: [], row: [] },
+          3: { id: [], row: [] }
+        };
+        this.calEquip = {
+          1: { id: [], row: [] },
+          2: { id: [], row: [] },
+          3: { id: [], row: [] }
+        };
+        this.calRep = {
+          '1-1': { id: [], row: [] },
+          '1-2': { id: [], row: [] },
+          '1-3': { id: [], row: [] },
+          '2-1': { id: [], row: [] },
+          '2-2': { id: [], row: [] },
+          '2-3': { id: [], row: [] },
+          '3-1': { id: [], row: [] },
+          '3-2': { id: [], row: [] },
+          '3-3': { id: [], row: [] },
+        };
+        this.sort.calRep = {
+          prop: 'price_total',
+          order: 'descending'
+        };
         this.initCalChef();
         this.initCalEquip();
         this.initCalRep();
@@ -1058,28 +1158,34 @@ $(function() {
           rst[key] = this.defaultEx;
         }
         this.calRepEx = rst;
+        this.calHidden = false;
+        this.calLoad = false;
       },
       initCalChef() {
         let chefs_list = [];
+        const rule = this.calType.row[0];
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
-          chefs_list.push({
-            id: item.chefId,
-            uid: `${item.chefId},${ultimateSkill.skillId}`,
-            rarity: item.rarity,
-            name: item.name,
-            skills: {
-              stirfry: item.stirfry,
-              boil: item.boil,
-              knife: item.knife,
-              fry: item.fry,
-              bake: item.bake,
-              steam: item.steam,
-            },
-            skill_effect: item.skill_obj.effect,
-            ultimate_effect: ultimateSkill.effect,
-            tag: item.tags ? item.tags[0] : null
-          });
+          const tag = item.tags ? item.tags[0] : null;
+          if (!rule.EnableChefTags || rule.EnableChefTags.indexOf(tag) > -1) {
+            chefs_list.push({
+              id: item.chefId,
+              uid: `${item.chefId},${ultimateSkill.skillId}`,
+              rarity: item.rarity,
+              name: item.name,
+              skills: {
+                stirfry: item.stirfry,
+                boil: item.boil,
+                knife: item.knife,
+                fry: item.fry,
+                bake: item.bake,
+                steam: item.steam,
+              },
+              skill_effect: item.skill_obj.effect,
+              ultimate_effect: ultimateSkill.effect,
+              tag
+            });
+          }
         }
         chefs_list.sort(this.customSort({ prop: 'rarity', order: 'descending' }));
         this.calChefs_list = chefs_list;
@@ -1098,6 +1204,7 @@ $(function() {
         const rep = [];
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
+        const rule = this.calType.row[0];
         for (let item of this.data.recipes) {
           let r = {};
           let materials = item.materials_search.split(' ');
@@ -1111,24 +1218,43 @@ $(function() {
 
           r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
           buff += r.buff_ulti;
+          let buff_rule = 0
 
           if (this.calType.id[0] == 0) { // 正常营业，加上家具加成
             r.buff_deco = this.ulti.decoBuff;
             buff += r.buff_deco;
-          } else { // 规则加成
-            //
+          } else { // 菜谱规则加成
+            if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
+              rule.MaterialsEffect.forEach(m => {
+                if (item.materials_id.indexOf(m.MaterialID) > -1) {
+                  buff_rule += (m.Effect * 100);
+                }
+              });
+            }
           }
 
+          r.buff_rule = buff_rule;
+          r.price_wipe_rule = Math.ceil((item.price * buff) / 100);
+
+          buff += buff_rule;
           r.price_buff = Math.ceil((item.price * buff) / 100);
 
           r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`]; // 根据规则算份数
+          if (rule.DisableMultiCookbook) {
+            r.limit = 1;
+          }
           r.price_total = r.price_buff * r.limit; // 未选厨子时的总价
           let buff_time = 100;
 
           for (let i = 1; i < 4; i++) {
             if (this.calChefShow[i].id) { // 如果选了厨子
               let chef = {};
+              chef.buff_rule = buff_rule;
+
               let min = 4;
+              if (rule.DisableCookbookRank) { // 无菜品加成
+                min = 1;
+              }
               let inf = [];
               let buff_skill = 0;
               let buff_equip = 0;
@@ -1145,44 +1271,51 @@ $(function() {
               chef.buff_grade = this.grade_buff[min] || 0; // 品级加成
               chef.buff += chef.buff_grade;
 
-              this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
-                if (eff.type == 'Gold_Gain') { // 金币加成
-                  buff_skill += eff.value;
-                }
-                if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                  if (item.skills[eff.type.slice(3).toLowerCase()]) {
+              if (!rule.DisableChefSkillEffect) {
+                this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
+                  if (eff.type == 'Gold_Gain') { // 金币加成
                     buff_skill += eff.value;
                   }
-                }
-                if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                  if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                    buff_skill += eff.value;
+                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                      buff_skill += eff.value;
+                    }
                   }
-                }
-              });
+                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                      buff_skill += eff.value;
+                    }
+                  }
+                });
+              }
               chef.buff_skill = buff_skill;
               chef.buff += buff_skill;
 
-              // 厨具技能
-              this.calChefShow[i].equip_effect.forEach(eff => { // 技能
-                if (eff.type == 'Gold_Gain') { // 金币加成
-                  buff_equip += eff.value;
-                }
-                if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                  if (item.skills[eff.type.slice(3).toLowerCase()]) {
+              if (!rule.DisableEquipSkillEffect) {
+                this.calChefShow[i].equip_effect.forEach(eff => { // 厨具技能
+                  if (eff.type == 'Gold_Gain') { // 金币加成
                     buff_equip += eff.value;
                   }
-                }
-                if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                  if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                    buff_equip += eff.value;
+                  if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                    if (item.skills[eff.type.slice(3).toLowerCase()]) {
+                      buff_equip += eff.value;
+                    }
                   }
-                }
-              });
+                  if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+                    if (item.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                      buff_equip += eff.value;
+                    }
+                  }
+                });
+              }
               chef.buff_equip = buff_equip;
               chef.buff += buff_equip;
 
-              chef.price_buff = Math.ceil(item.price * chef.buff / 100);
+              let ex = 0;
+              if (this.defaultEx) {
+                ex += item.exPrice;
+              }
+              chef.price_buff = Math.ceil((item.price + ex) * chef.buff / 100);
               chef.price_total = chef.price_buff * r.limit;
 
               chef.subName = '';
@@ -1208,23 +1341,43 @@ $(function() {
             r.time_show = this.formatTime(r.time_last);
           }
 
+          r.buff_rule_show = buff_rule ? `${buff_rule}%` : '';
+          r.price_rule = r.price_total - (r.price_wipe_rule * r.limit);
+
           let ext = {
             id: item.recipeId,
+            galleryId: item.galleryId,
             name: item.name,
             rarity: item.rarity,
+            rarity_show: item.rarity_show,
             price: item.price,
-            exPrice: item.exPrice
+            exPrice: item.exPrice,
+            skills: item.skills,
+            stirfry: item.stirfry,
+            boil: item.boil,
+            knife: item.knife,
+            fry: item.fry,
+            bake: item.bake,
+            steam: item.steam,
+            materials_show: item.materials_show,
+            origin: item.origin,
+            total_time_show: item.total_time_show,
+            total_time: item.total_time,
+            gold_eff: item.gold_eff,
+            materials_search: item.materials_search
           };
-          Object.assign(ext, r)
-          rep.push(ext);
+          Object.assign(ext, r);
+          if (item.rarity <= (rule.CookbookRarityLimit || 6)) {
+            rep.push(ext);
+          }
         }
-        this.calRep_list = rep;
+        this.calRepsAll = rep;
         this.calRepSort();
       },
       calRepSort() { // 计算器页厨师选菜谱下拉框的排序
         for (let i = 1; i < 4; i++) {
-          let list = JSON.parse(JSON.stringify(this.calRep_list));
-          if (this.calChefShow[i].id) { // 厨子菜谱排序
+          let list = JSON.parse(JSON.stringify(this.calRepsAll));
+          if (this.calChef[i].id[0]) { // 厨子菜谱排序
             let prop = this.calSortMap[this.calSort].chef.prop.replace('${i}', i);
             let order = this.calSortMap[this.calSort].chef.order;
             list.sort(this.customSort({ prop, order }));
@@ -1354,9 +1507,9 @@ $(function() {
         return chef;
       },
       getCalRepShow() {
-        let rst = {};
+        let rst = [[], [], []];
         for (let key in this.calRep) {
-          rst[key] = this.calRep[key].row[0] ? this.showRep(this.calRep[key].row[0], key) : {};
+          rst[key.slice(0, 1) - 1].push(this.calRep[key].row[0] ? this.showRep(this.calRep[key].row[0], key) : {});
         }
         this.calRepShow = rst;
       },
@@ -1365,25 +1518,30 @@ $(function() {
           id: rep.id,
           name: rep.name,
           rarity: rep.rarity,
+          skills: rep.skills,
+          cnt: this.calRepCnt[position],
           time: rep.time * this.calRepCnt[position],
           time_last: rep.time_last * this.calRepCnt[position],
           price: this.calRepEx[position] ? (rep.price + rep.exPrice) : rep.price,
           chef: true
         };
+        rst.time_last_show = this.formatTime(rep.time_last * rst.cnt);
         let chefId = position.slice(0, 1);
         if (!this.calChef[position.slice(0, 1)].id[0]) { // 如果没有选厨子
           rst.chef = false;
           rst.price_total = 0;
           rst.time = 0;
           rst.time_last = 0;
+          rst.showBuff = false;
           return rst;
         }
         rst.grade = rep[`chef_${chefId}`].grade;
-        rst.grade_show = ' 可优特神'.slice(rst.grade, rst.grade + 1);
+        rst.grade_show = '!可优特神'.slice(rst.grade, rst.grade + 1);
         if (rst.grade == 0) { // 如果技法不足
           rst.price_total = 0;
           rst.time = 0;
           rst.time_last = 0;
+          rst.showBuff = false;
           rst.gap = rep[`chef_${chefId}`].subName;
           return rst;
         }
@@ -1391,9 +1549,12 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
+        rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
         rst.price_buff = Math.ceil(rst.price * rst.buff / 100);
-        rst.price_total = rst.price_buff * this.calRepCnt[position];
-        rst.price_origin_total = rst.price * this.calRepCnt[position];
+        rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
+        rst.price_total = rst.price_buff * rst.cnt;
+        rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
+        rst.price_origin_total = rst.price * rst.cnt;
         return rst;
       },
       initRep() {
@@ -1857,6 +2018,14 @@ $(function() {
         const myChart = echarts.init(document.getElementById('chart'));
         myChart.setOption(chartOption);
       },
+      handlePageSizeChange(val, prop) {
+        if (prop == 'quests') {
+          this.initQuests();
+        } else {
+          this[`${prop}CurPage`] = 1;
+          this[`${prop}Page`] = this[prop].slice(0, val);
+        }
+      },
       checkEquipSkillType(key, { obj, desc }) {
         if (key === 'AllSkill') {
           return this.equipFilter.buff ? desc.indexOf('全技法+') > -1 : desc.indexOf('全技法') > -1;
@@ -1908,7 +2077,8 @@ $(function() {
           1: 'recipes',
           2: 'chefs',
           3: 'equips',
-          4: 'decorations'
+          4: 'decorations',
+          7: 'calReps'
         }
         const nav = this.navId;
         if (nav === 6) {
@@ -1955,6 +2125,21 @@ $(function() {
         this.recipesCurPage = 1;
         this.recipes.sort(this.customSort(sort));
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+      },
+      handleCalRepSort(sort) {
+        this.sort.calRep = sort;
+        const map = {
+          rarity_show: 'rarity',
+          total_time_show: 'total_time',
+          buff_rule_show: 'buff_rule'
+        };
+        if (!sort.order) {
+          this.initCalRepSearch();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.calRepsCurPage = 1;
+        this.calReps.sort(this.customSort(sort));
+        this.calRepsPage = this.calReps.slice(0, this.calRepsPageSize);
       },
       handleChefSort(sort) {
         this.sort.chef = sort;
@@ -2348,7 +2533,9 @@ $(function() {
           3: 'Equip',
           4: 'Decoration'
         };
-        this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
+        if (map[this.navId]) {
+          this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
+        }
         if (this.navId === 1) {
           this.skill_radio = false;
           this.skill_type = false;
@@ -2360,6 +2547,8 @@ $(function() {
           this.equip_concurrent = false;
         } else if (this.navId === 4) {
           this.decoration_radio = false;
+        } else if (this.navId === 7) {
+          this.calKeyword = '';
         }
       },
       scroll(val) {
@@ -2378,9 +2567,17 @@ $(function() {
           }
         }
       },
+      calScroll(val) {
+        if (window.innerWidth < 669) {
+          if ($('.cal').scrollTop() < val) {
+            $('.cal').scrollTop(val);
+          }
+        }
+      },
       saveUserData() {
         const userData = {
           repCol: this.repCol,
+          calRepCol: this.calRepCol,
           chefCol: this.chefCol,
           equipCol: this.equipCol,
           decorationCol: this.decorationCol,
@@ -2395,7 +2592,7 @@ $(function() {
       },
       getUserData() {
         let userData = localStorage.getItem('data');
-        const colName = ['repCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
+        const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
         const propName = ['defaultEx', 'hideSuspend', 'repSkillGap', 'chefSkillGap'];
         if (userData) {
           try {
@@ -2552,6 +2749,16 @@ $(function() {
       goToConfig() {
         this.showBack = true;
         this.navId = 8;
+      },
+      initCalRepSearch() {
+        this.calReps = this.calRepsAll.filter(item => {
+          return this.checkKeyword(this.calKeyword, item.name) || this.checkKeyword(this.calKeyword, item.materials_search);
+        });
+        if (this.sort.calRep.order) {
+          this.$refs.calRepsTable.sort(this.sort.calRep.prop, this.sort.calRep.order);
+        }
+        this.calRepsCurPage = 1;
+        this.calRepsPage = this.calReps.slice(0, this.calRepsPageSize);
       }
     },
     watch: {
@@ -2566,6 +2773,15 @@ $(function() {
         }
       },
       repCol: {
+        deep: true,
+        handler() {
+          this.saveUserData();
+          this.$nextTick(()=>{
+            this.$refs.recipesTable.doLayout();
+          });
+        }
+      },
+      calRepCol: {
         deep: true,
         handler() {
           this.saveUserData();
@@ -2685,8 +2901,14 @@ $(function() {
       },
       calChefShow: {
         deep: true,
-        handler() {
-          this.initCalRep();
+        handler(val) {
+          let flag = false;
+          for (let key in val) {
+            flag = flag || val[key].id;
+          }
+          if (flag) {
+            this.initCalRep();
+          }
         }
       },
       calRep: {
@@ -2705,6 +2927,21 @@ $(function() {
         deep: true,
         handler() {
           this.getCalRepShow();
+        }
+      },
+      calRepsAll: {
+        deep: true,
+        handler(val) {
+          this.initCalRepSearch();
+        }
+      },
+      calType: {
+        deep: true,
+        handler(val) {
+          if (val.id[0] != 0) {
+            this.calSort = 1;
+          }
+          this.calLoad = true;
         }
       },
       hideSuspend() {
@@ -2727,6 +2964,12 @@ $(function() {
           }
         }
         this.calRepEx = rst;
+        if (this.navId == 7 && !this.calHidden) {
+          this.initCalRep();
+        }
+      },
+      calKeyword() {
+        this.initCalRepSearch();
       },
       calFocus(val) {
         if (val) {
@@ -2813,7 +3056,6 @@ $(function() {
         } else if (val === 7) {
           if (this.calChefs_list.length == 0) {
             this.tabBox = true;
-            this.initCal();
           }
         }
       }
