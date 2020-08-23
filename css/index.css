@@ -164,6 +164,14 @@ table {
   color: #fff;
   padding: 0 18px;
 }
+.el-dialog .btn {
+  display: inline-block;
+  font-size: 14px;
+  margin-top: 16px;
+}
+.el-dialog .btn:active {
+  background: #f5f7fa;
+}
 section.header {
   line-height: 50px;
 }
@@ -405,6 +413,9 @@ section.header .right {
   padding-bottom: 60px;
 }
 @media(max-width:669px){
+  .el-dialog__wrapper .el-dialog {
+    margin-top: 200px !important;
+  }
   .right-bar-body.scroll-rep {
     padding-bottom: 450px;
   }
@@ -1059,9 +1070,12 @@ input.hidden {
   border: 1px #dcdfe6 solid;
 }
 .cal .total-result {
-  font-size: 14px;
+  font-size: 15px;
   color: #607d8b;
   padding: 2px 3px;
+}
+.cal .total-result .line-tips {
+  font-weight: bold;
 }
 .cal .result {
   display: flex;
@@ -1217,6 +1231,9 @@ input.hidden {
 }
 .rst .price-box .muti {
   font-size: 10px;
+}
+.rst .red {
+  color: #b2270f;
 }
 
 @media(min-width: 398px) {
