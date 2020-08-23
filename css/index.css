@@ -141,7 +141,7 @@ table {
   width: 100%;
   height: 100%;
   background: #607d8b;
-  background-image: url('/images/saltFish.png');
+  background-image: url('../images/saltFish.png');
   background-size: 140px;
   background-repeat: no-repeat;
   background-position: center 150px;

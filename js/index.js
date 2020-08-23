@@ -800,6 +800,23 @@ $(function() {
         }
         let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
         let rst = `原售价：${price_origin}${rule_show} 总得分：${price}`;
+
+        if (this.calType.row[0].PassLine) { // 如果有分数线
+          function getGrade(line, score) {
+            for (let i = 0; i < line.length; i++) {
+              if (score >= line[i]) {
+                return i;
+              }
+            }
+            return 3;
+          }
+          let passLine = this.calType.row[0].PassLine;
+          let tips = ['高保', '中保', '低保', '未达到要求'];
+          let index = getGrade(passLine, price);
+          tips = tips.slice(index)[0];
+          rst += ` ${tips}`;
+        }
+
         if (this.calType.id[0] == 0) {
           let gold_eff = time_last == 0 ? 0 : Math.round(price * 3600 / time_last);
           rst += `${time == time_last ? '' : ` 原时间：${this.formatTime(time)}`} 总时间：${this.formatTime(time_last)} 总效率：${gold_eff}金币/h`;
@@ -1606,7 +1623,14 @@ $(function() {
           skills_show[lowKey] = value ? `${chef.skills[lowKey] || ''}+${value}` : chef.skills[lowKey];
         });
         chef.skills_show = skills_show;
-        chef.skills_last = skills_last;
+        const sortKey = Object.keys(skills_last).sort((a, b)=>{
+          return skills_last[b] - skills_last[a];
+        });
+        let skill_sort = {};
+        sortKey.forEach(sk => {
+          skill_sort[sk] = skills_last[sk];
+        });
+        chef.skills_last = skill_sort;
         chef.ultimate = ultimate;
         chef.time_buff = time_buff;
         return chef;
