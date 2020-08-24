@@ -719,7 +719,9 @@ $(function() {
       calRepLimit: {},
       ulti: {},
       calChefShow: {},
-      lineTips: ''
+      lineTips: '',
+      lastCalResultTotal: '',
+      hiddenMessage: false
     },
     computed: {
       skillWidth() {
@@ -771,48 +773,57 @@ $(function() {
         return rst;
       },
       calResultTotal() {
-        let price = 0;
-        let price_origin = 0;
-        let price_rule = 0;
-        let time = 0;
-        let time_last = 0;
-        for (let arr of this.calRepShow) {
-          for (let item of arr) {
-            price += item.price_total || 0;
-            price_origin += item.price_origin_total || 0;
-            time += item.time || 0;
-            time_last += item.time_last || 0;
-            price_rule += item.price_rule || 0;
-          }
-        }
-        let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
-        let rst = `原售价：${price_origin}${rule_show} 总得分：${price}`;
-
-        if (this.calType.row[0].PassLine && price) { // 如果有分数线
-          function getGrade(line, score) {
-            for (let i = 0; i < line.length; i++) {
-              if (score >= line[i]) {
-                return i;
-              }
+        if (!this.calLoad) {
+          let price = 0;
+          let price_origin = 0;
+          let price_rule = 0;
+          let time = 0;
+          let time_last = 0;
+          for (let arr of this.calRepShow) {
+            for (let item of arr) {
+              price += item.price_total || 0;
+              price_origin += item.price_origin_total || 0;
+              time += item.time || 0;
+              time_last += item.time_last || 0;
+              price_rule += item.price_rule || 0;
             }
-            return 3;
           }
-          let passLine = this.calType.row[0].PassLine;
-          let tips = ['高保', '中保', '低保', '分享保'];
-          let index = getGrade(passLine, price);
-          tips = tips.slice(index)[0];
-          this.lineTips = tips;
-        }
+          let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
+          let rst = `原售价：${price_origin}${rule_show} 总得分：${price}`;
 
-        if (this.calType.id[0] == 0) {
-          let gold_eff = time_last == 0 ? 0 : Math.round(price * 3600 / time_last);
-          rst += `${time == time_last ? '' : ` 原时间：${this.formatTime(time)}`} 总时间：${this.formatTime(time_last)} 总效率：${gold_eff}金币/h`;
+          if (this.calType.row[0].PassLine && price) { // 如果有分数线
+            function getGrade(line, score) {
+              for (let i = 0; i < line.length; i++) {
+                if (score >= line[i]) {
+                  return i;
+                }
+              }
+              return 3;
+            }
+            let passLine = this.calType.row[0].PassLine;
+            let tips = ['高保', '中保', '低保', '分享保'];
+            let index = getGrade(passLine, price);
+            tips = tips.slice(index)[0];
+            this.lineTips = tips;
+          } else {
+            this.lineTips = '';
+          }
+
+          if (this.calType.id[0] == 0) {
+            let gold_eff = time_last == 0 ? 0 : Math.round(price * 3600 / time_last);
+            rst += `${time == time_last ? '' : ` 原时间：${this.formatTime(time)}`} 总时间：${this.formatTime(time_last)} 总效率：${gold_eff}金币/h`;
+          }
+          this.lastCalResultTotal = rst;
+          return rst;
+        } else {
+          return this.lastCalResultTotal;
         }
-        return rst;
       },
     },
     mounted() {
-      this.loadFoodGodRule();
+      if ([5, 6, 0, 1].indexOf(new Date().getDay())) {
+        this.loadFoodGodRule();
+      }
       this.loadData();
       this.getUserData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
@@ -845,10 +856,12 @@ $(function() {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
             this.foodgodRule = rst.rules;
-            this.$message({
-              message: rst.tips,
-              showClose: true
-            });
+            if (!this.hiddenMessage) {
+              this.$message({
+                message: rst.tips,
+                showClose: true
+              });
+            }
           }
         });
       },
@@ -1457,6 +1470,14 @@ $(function() {
         this.calRepsAll = reps;
         this.calRepSort(i);
       },
+      changeSort() {
+        for (let key in this.calChef) {
+          if (this.calChef[key].id[0]) {
+            this.handlerChef(key);
+          }
+        }
+        this.setDefaultSort();
+      },
       setDefaultSort() {
         this.calRepsAll.sort(this.customSort(this.calSortMap[this.calSort].normal));
         let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
@@ -1518,9 +1539,10 @@ $(function() {
       },
       handleRepCntChange(key, limit) {
         let val = this.calRepCnt[key];
-        val = val.replace('.', '');
-        val = val.replace('-', '');
+        console.log(val);
+        val = val.replace(/\./g, '');
         val = Number(val);
+        console.log(val);
         val = val > limit ? limit : val;
         this.calRepCnt[key] = val;
       },
@@ -2151,12 +2173,14 @@ $(function() {
         myChart.setOption(chartOption);
       },
       handlePageSizeChange(val, prop) {
-        if (prop == 'quests') {
-          this.initQuests();
-        } else {
-          this[`${prop}CurPage`] = 1;
-          this[`${prop}Page`] = this[prop].slice(0, val);
-        }
+        setTimeout(() => {
+          if (prop == 'quests') {
+            this.initQuests();
+          } else {
+            this[`${prop}CurPage`] = 1;
+            this[`${prop}Page`] = this[prop].slice(0, val);
+          }
+        }, 50);
       },
       checkEquipSkillType(key, { obj, desc }) {
         if (key === 'AllSkill') {
@@ -2717,6 +2741,7 @@ $(function() {
           userUltimate: this.userUltimate,
           defaultEx: this.defaultEx,
           hideSuspend: this.hideSuspend,
+          hiddenMessage: this.hiddenMessage,
           repSkillGap: this.repSkillGap,
           chefSkillGap: this.chefSkillGap
         };
@@ -2725,7 +2750,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'hideSuspend', 'repSkillGap', 'chefSkillGap'];
+        const propName = ['defaultEx', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -3201,6 +3226,9 @@ $(function() {
         }
       },
       hideSuspend() {
+        this.saveUserData();
+      },
+      hiddenMessage() {
         this.saveUserData();
       },
       chefSkillGap() {

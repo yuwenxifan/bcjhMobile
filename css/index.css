@@ -187,7 +187,7 @@ section.header .right {
   margin: 0;
   flex-direction: column;
   justify-content: space-between;
-  height: 55px;
+  height: 85px;
   align-content: flex-start;
 }
 .aside .el-switch__label {
@@ -204,16 +204,16 @@ section.header .right {
 .aside .el-drawer:focus {
   outline: none;
 }
-.aside .input-box {
+.aside .el-dialog__body .input-box {
   display: flex;
   margin-bottom: 10px;
   align-items: center;
 }
-.aside .input-box .label {
+.aside .el-dialog__body .input-box .label {
   font-size: 14px;
   margin-right: 10px;
 }
-.aside .input-box .el-select {
+.aside .el-dialog__body .input-box .el-select {
   width: 120px;
 }
 .aside .el-select .el-input__inner:focus, .aside  .el-select .el-input.is-focus .el-input__inner {
@@ -1085,10 +1085,10 @@ input.hidden {
   flex-direction: column;
   flex-grow: 1;
   width: 33.34%;
-  padding-bottom: 50px;
+  padding-bottom: 60px;
 }
 .cal .rst-box.long {
-  padding-bottom: 20px;
+  padding-bottom: 30px;
 }
 .cal .rst-box .rst {
   width: 95%;
@@ -1416,13 +1416,16 @@ input.hidden {
 #muti-select .dropdown-list li.active {
   font-weight: bold;
   color: #409eff;
+  max-height: 999px;
 }
 #muti-select .dropdown-list li.red {
   color: #b71c1c;
+  max-height: 999px;
 }
 #muti-select .dropdown-list li.disable {
   color: #c0c4cc;
   cursor: not-allowed;
+  max-height: 999px;
 }
 #muti-select .dropdown-list li.disable:hover {
   background: #fff;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=11">
+  <link rel="stylesheet" href="./css/index.css?v=12">
   <link rel="stylesheet" href="./css/image.css?v=4">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -459,6 +459,15 @@
           <span>
             <el-switch
               style="display: block"
+              v-model="hiddenMessage"
+              active-color="#82a1b0"
+              active-text="关闭厨神计算器提醒"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
+          <span>
+            <el-switch
+              style="display: block"
               v-model="hideSuspend"
               active-color="#82a1b0"
               active-text="筛选浮球固定在顶栏"
@@ -827,7 +836,7 @@
                 size="mini"
                 v-if="!calHidden"
                 v-model="calSort"
-                @change="setDefaultSort"
+                @change="changeSort"
                 :disabled="calType.id[0] != 0 || calLoad"
               >
                 <el-option
@@ -959,10 +968,10 @@
                     <input
                       type="number"
                       class="input"
-                      v-model="calRepCnt[key]"
+                      v-model.lazy="calRepCnt[key]"
                       :max="calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit"
                       :min="0"
-                      @input="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
+                      @change="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
                     />
                     <span class="max">/ {{calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit}}</span>
                   </div>
@@ -976,7 +985,7 @@
                 <div
                   class="rst-box"
                   v-for="(arr, i) in calRepShow"
-                  :class="calType.id[0] == 0 ? 'long ' : ''"
+                  :class="calType.id[0] == 0 && !calLoad ? 'long ' : ''"
                 >
                   <div class="rst" v-for="item in arr">
                     <div class="show" v-if="item.id">
@@ -1016,7 +1025,7 @@
                         </div>
                       </div>
                       <div class="time-price">
-                        <div class="time" v-if="item.time_last && calType.id[0] == 0 && item.grade">
+                        <div class="time" v-if="item.time_last && calType.id[0] == 0 && !calLoad && item.grade">
                           <i class="el-icon-time" style="margin-right: 2px;"></i>{{item.time_last_show}}
                         </div>
                         <div class="price-box" :class="item.unknowBuff ? 'red' : ''">
@@ -1215,6 +1224,15 @@
             </div>
           </div>
           <div class="box-body">
+            <div class="contain-title">表格</div>
+            <div class="p">
+              分页的每页行数在设置里调整。
+            </div>
+            <div class="p">
+              表格最左侧的固定列不可滑动（横向竖向都不行）。
+            </div>
+          </div>
+          <div class="box-body">
             <div class="contain-title">设置</div>
             <div class="p">
               APP可能会因为缓存等原因更新有延迟，出现延迟时请尝试点击设置中的[重新加载页面]。
@@ -1284,7 +1302,12 @@
           <div class="title">致谢</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">感谢L的图鉴网，感谢Boketto提供的菜谱数据，感谢闲时和小熊提供的升阶贵客符文数据，感谢梨大只提供的数据。</div>
+            <div class="p">感谢L的图鉴网，感谢Boketto提供的菜谱数据，感谢试菜组提供的厨神规则，感谢闲时和小熊提供的升阶贵客符文数据，感谢梨大只提供的数据。</div>
+          </div>
+          <div class="title">最近更新</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="p">2020-08-24 手机版图鉴1.0</div>
           </div>
         </div>
       </div>
@@ -1294,6 +1317,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=11"></script>
+  <script src="./js/index.js?v=12"></script>
 </body>
 </html>
