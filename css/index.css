@@ -1402,14 +1402,19 @@ input.hidden {
   padding: 8px 10px;
   line-height: 18px;
   /* chrome 手机版，不设max-height会把字体调到奇大无比巨丑 */
-  max-height: 999px !important;
+  max-height: 100%;
   cursor: pointer;
 }
 
 #muti-select .dropdown-list li .sub-name {
   font-size: 11px;
   color: #909399;
-  max-height: 999px !important;
+  display: inline-block;
+  max-height: 100%;
+}
+#muti-select .dropdown-list li span {
+  display: inline-block;
+  max-height: 100%;
 }
 #muti-select .dropdown-list li:hover {
   background-color: #f5f7fa;
