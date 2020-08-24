@@ -1402,7 +1402,7 @@ input.hidden {
   padding: 8px 10px;
   line-height: 18px;
   /* chrome 手机版，不设max-height会把字体调到奇大无比巨丑 */
-  max-height: 999px;
+  max-height: 999px !important;
   cursor: pointer;
 }
 
