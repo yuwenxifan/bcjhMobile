@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=16">
+  <link rel="stylesheet" href="./css/index.css?v=17">
   <link rel="stylesheet" href="./css/image.css?v=4">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -455,6 +455,7 @@
             </el-option>
           </el-select>
         </div>
+        <div class="warning-tip" v-if="(navId < 6 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
         <span class="switch-box">
           <span>
             <el-switch
@@ -484,7 +485,7 @@
             </el-switch>
           </span>
         </span>
-        <span class="btn" @click="location.reload();">重新加载页面</span>
+        <!-- <span class="btn" @click="location.reload();">重新加载页面</span> -->
       </el-dialog>
       <div class="back" v-if="showBack" @click="navId = 7"><i class="el-icon-arrow-left"></i>返回</div>
     </aside>
@@ -493,7 +494,7 @@
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
       <span class="right">
-        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && cal))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
       </span>
     </section>
@@ -1005,7 +1006,7 @@
                             </div>
                           </div>
                         </div>
-                        <div class="buff-box" v-if="item.showBuff">
+                        <div class="buff-box" v-if="item.showBuff || item.unknowBuff">
                           <div class="buff" :class="item.unknowBuff ? 'red' : ''" v-if="item.buff_rule || item.unknowBuff">
                             <span class="label">规则</span>
                             <span class="val">{{ item.unknowBuff ? '未知' : (item.buff_rule + '%')}}</span>
