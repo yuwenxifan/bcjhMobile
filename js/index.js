@@ -864,7 +864,7 @@ $(function() {
     methods: {
       loadData() {
         $.ajax({
-          url: './data/data.min.json'
+          url: './data/data.min.json?v=1'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -872,7 +872,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json'
+          url: './data/foodgodRule.min.json?v=1'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1548,12 +1548,13 @@ $(function() {
                 }
               }
             }
-            let min = calRep[key].row[0].limit_origin;
+            const limit_arr = [0, 40, 30, 25, 20, 15];
+            let min = this.ulti[`MaxLimit_${calRep[key].row[0].rarity}`] + limit_arr[calRep[key].row[0].rarity];
             for (let m of calRep[key].row[0].materials) {
               let l = Math.floor(remain[m.material] / m.quantity);
               min = (min < l ? min : l);
             }
-            lim[key] = min
+            lim[key] = min;
           }
         }
         this.calRepLimit = lim;
@@ -2959,7 +2960,6 @@ $(function() {
           const rep = this.calRep[key].row[0];
           const cnt = this.calRepCnt[key];
           const limit_arr = [0, 40, 30, 25, 20, 15];
-          console.log(rep);
           if (rep) { // 有菜谱
             const limit = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
             if (cnt > limit) {
@@ -3378,6 +3378,9 @@ $(function() {
             this.getCalChefShow();
             this.recalLimit();
             setTimeout(() => {
+              if (this.calType.row[0] && this.calType.row[0].MaterialsLimit) {
+                this.getCalRepLimit();
+              }
               this.initCalRep();
             }, 50);
           }
