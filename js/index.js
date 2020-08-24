@@ -109,9 +109,9 @@ $(function() {
         return 'disable';
       },
       clickOther(e) {
-        // if (!this.$refs.mutiSelect.contains(e.target) && this.fold) {
-        //   this.show = false;
-        // }
+        if (!this.$refs.mutiSelect.contains(e.target) && this.fold) {
+          this.show = false;
+        }
       },
       handlerFocus() {
         const that = this;
@@ -2910,14 +2910,14 @@ $(function() {
         this.$refs.userSelf.clear();
       },
       clickOther(e) {
-        // let focus = false;
-        // this.$refs.chefBox.forEach(b => {
-        //   focus = focus || b.contains(e.target);
-        // });
-        // focus = focus || this.$refs.tool.contains(e.target);
-        // if (!focus) {
-        //   this.calFocus = false;
-        // }
+        let focus = false;
+        this.$refs.chefBox.forEach(b => {
+          focus = focus || b.contains(e.target);
+        });
+        focus = focus || this.$refs.tool.contains(e.target);
+        if (!focus) {
+          this.calFocus = false;
+        }
       },
       calCheck(key) {
         const arr = key.split('_');
