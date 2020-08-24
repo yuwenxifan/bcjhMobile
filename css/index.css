@@ -30,6 +30,9 @@ input::-webkit-inner-spin-button {
   appearance: none;
   margin: 0;
 }
+input {
+  -webkit-appearance: none;
+}
 /* 火狐 */
 input[type="number"]{
   -moz-appearance:textfield;
