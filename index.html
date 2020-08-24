@@ -455,7 +455,7 @@
             </el-option>
           </el-select>
         </div>
-        <div class="warning-tip" v-if="(navId < 6 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
+        <div class="warning-tip" v-if="([1, 2, 3, 4, 6].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
         <span class="switch-box">
           <span>
             <el-switch
