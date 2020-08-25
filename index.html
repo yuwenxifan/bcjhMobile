@@ -1191,7 +1191,7 @@
             <el-input
               type="textarea"
               :rows="10"
-              placeholder="请贴入备份的个人数据"
+              placeholder="请贴入备份的个人数据。（与L的网页版图鉴数据不是同一套，不能互通，首次使用需自行录入修炼/装饰数据。）"
               v-model="userDataText"
               @focus="scrollUser(530)"
             >
@@ -1227,13 +1227,13 @@
           <div class="box-body">
             <div class="contain-title">表格</div>
             <div class="p">
-              分页的每页行数在设置里调整。
+              分页的每页行数在设置里调整。不建议选[所有]，调整展示列/排序时重新渲染表格会很卡。
             </div>
             <div class="p">
               表格最左侧的固定列不可滑动（横向竖向都不行）。
             </div>
           </div>
-          <div class="box-body">
+          <!-- <div class="box-body">
             <div class="contain-title">设置</div>
             <div class="p">
               APP可能会因为缓存等原因更新有延迟，出现延迟时请尝试点击设置中的[重新加载页面]。
@@ -1241,7 +1241,7 @@
             <div class="p">
               仍未解决则尝试清除APP的缓存（清除存储空间前请备份个人数据）。
             </div>
-          </div>
+          </div> -->
           <div class="box-body">
             <div class="contain-title">菜谱</div>
             <div class="p">
@@ -1308,7 +1308,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-08-24 手机版图鉴1.0</div>
+            <div class="p">2020-08-25 尝试修复表格排序后固定列无法对齐的bug。</div>
           </div>
         </div>
       </div>
@@ -1318,6 +1318,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=15"></script>
+  <script src="./js/index.js?v=16"></script>
 </body>
 </html>

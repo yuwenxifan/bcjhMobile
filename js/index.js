@@ -1492,12 +1492,14 @@ $(function() {
         this.calRepSort(i);
       },
       changeSort() {
-        for (let key in this.calChef) {
-          if (this.calChef[key].id[0]) {
-            this.handlerChef(key);
+        setTimeout(() => {
+          for (let key in this.calChef) {
+            if (this.calChef[key].id[0]) {
+              this.handlerChef(key);
+            }
           }
-        }
-        this.setDefaultSort();
+          this.setDefaultSort();
+        }, 10);
       },
       setDefaultSort() {
         this.calRepsAll.sort(this.customSort(this.calSortMap[this.calSort].normal));
@@ -2304,6 +2306,9 @@ $(function() {
         this.recipesCurPage = 1;
         this.recipes.sort(this.customSort(sort));
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+        this.$nextTick(()=>{
+          this.$refs.recipesTable.doLayout();
+        });
       },
       handleCalRepSort(sort) {
         this.sort.calRep = sort;
@@ -2319,6 +2324,9 @@ $(function() {
         this.calRepsCurPage = 1;
         this.calReps.sort(this.customSort(sort));
         this.calRepsPage = this.calReps.slice(0, this.calRepsPageSize);
+        this.$nextTick(()=>{
+          this.$refs.calRepsTable.doLayout();
+        });
       },
       handleChefSort(sort) {
         this.sort.chef = sort;
@@ -2346,6 +2354,9 @@ $(function() {
         this.chefsCurPage = 1;
         this.chefs.sort(this.customSort(sort));
         this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
+        this.$nextTick(()=>{
+          this.$refs.chefsTable.doLayout();
+        });
       },
       handleEquipSort(sort) {
         this.sort.equip = sort;
@@ -2359,6 +2370,9 @@ $(function() {
         this.equipsCurPage = 1;
         this.equips.sort(this.customSort(sort));
         this.equipsPage = this.equips.slice(0, this.equipsPageSize);
+        this.$nextTick(()=>{
+          this.$refs.equipsTable.doLayout();
+        });
       },
       handleDecorationSort(sort) {
         this.sort.decoration = sort;
@@ -2389,6 +2403,9 @@ $(function() {
         this.decorationsPage = decorationsPage.map(r => {
           Object.assign(r, { checked: this.decoSelectId.indexOf(r.id) > -1 });
           return r;
+        });
+        this.$nextTick(()=>{
+          this.$refs.decorationsTable.doLayout();
         });
       },
       checkRow(curRow) {
@@ -2474,6 +2491,9 @@ $(function() {
           this.questsRegional.sort(this.customSort(sort));
           this.questsPage = this.questsRegional.slice(0, this.questsPageSize);
         }
+        this.$nextTick(()=>{
+          this.$refs.questsTable.doLayout();
+        });
       },
       customSort(sort) {
         const map = {
@@ -3006,7 +3026,7 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
-            this.$refs.recipesTable.doLayout();
+            this.$refs.calRepsTable.doLayout();
           });
         }
       },
@@ -3086,6 +3106,9 @@ $(function() {
         deep: true,
         handler() {
           this.saveUserData();
+          this.$nextTick(()=>{
+            this.$refs.decorationsTable.doLayout();
+          });
         }
       },
       decorationFilter: {
@@ -3110,6 +3133,9 @@ $(function() {
         deep: true,
         handler() {
           this.saveUserData();
+          this.$nextTick(()=>{
+            this.$refs.mapsTable.doLayout();
+          });
         }
       },
       userUltimate: {
