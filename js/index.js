@@ -1224,7 +1224,11 @@ $(function() {
           };
           if (rule.MaterialsLimit) {
             if (typeof rule.MaterialsLimit == 'object') {
-              this.materialsAll = rule.MaterialsLimit;
+              let all = {};
+              for (let m of this.data.materials) {
+                all[m.materialId] = rule.MaterialsLimit[m.materialId] || 0;
+              }
+              this.materialsAll = all;
             } else if (typeof rule.MaterialsLimit == 'number') {
               let all = {};
               for (let m of this.data.materials) {
@@ -1348,7 +1352,9 @@ $(function() {
           r.limit_origin = r.limit;
           if (rule.DisableMultiCookbook) {
             r.limit = 1;
-          } else if (rule.MaterialsLimit) { // 如果限制了食材数量
+            r.limit_origin = 1;
+          }
+          if (rule.MaterialsLimit) { // 如果限制了食材数量
             let min = r.limit_origin;
             for (let m of r.materials) {
               let lim = Math.floor(remain[m.material] / m.quantity);
@@ -1552,6 +1558,9 @@ $(function() {
             }
             const limit_arr = [0, 40, 30, 25, 20, 15];
             let min = this.ulti[`MaxLimit_${calRep[key].row[0].rarity}`] + limit_arr[calRep[key].row[0].rarity];
+            if (this.calType.row[0].DisableMultiCookbook) { // 如果限制一份
+              min = 1;
+            }
             for (let m of calRep[key].row[0].materials) {
               let l = Math.floor(remain[m.material] / m.quantity);
               min = (min < l ? min : l);
