@@ -872,7 +872,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=4'
+          url: './data/foodgodRule.min.json?v=5'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -2993,7 +2993,7 @@ $(function() {
       },
       initCalRepSearch() {
         this.calReps = this.calRepsAll.filter(item => {
-          return this.checkKeyword(this.calKeyword, item.name) || this.checkKeyword(this.calKeyword, item.materials_search);
+          return this.checkKeyword(this.calKeyword, item.name) || this.checkKeyword(this.calKeyword, item.materials_search) || this.checkKeyword(this.calKeyword, item.origin);
         });
         if (this.sort.calRep.order) {
           this.$refs.calRepsTable.sort(this.sort.calRep.prop, this.sort.calRep.order);
