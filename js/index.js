@@ -872,7 +872,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=1'
+          url: './data/foodgodRule.min.json?v=2'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1185,6 +1185,13 @@ $(function() {
         this.calLoading = true;
         setTimeout(() => {
           const rule = this.calType.row[0];
+          if (rule.message) {
+            this.$notify({
+              title: '提示',
+              message: rule.message,
+              duration: 0
+            });
+          }
           this.ChefNumLimit = this.calType.row[0].ChefNumLimit || 3;
           if (!this.calHidden) {
             for (let key in this.calChef) {
@@ -1422,6 +1429,13 @@ $(function() {
           let buff_skill = 0;
           let buff_equip = 0;
           chef.buff = r.buff;
+
+          if (rule.ChefTagEffect) { // 男厨/女厨倍数
+            const tag_buff = rule.ChefTagEffect[this.calChefShow[i].tag] ? rule.ChefTagEffect[this.calChefShow[i].tag] * 100 : 0;
+            chef.buff_rule += tag_buff;
+            chef.buff += tag_buff;
+          }
+
           for (let sk in r.skills) { // 判断品级
             let multi = Math.floor(this.calChefShow[i].skills_last[sk] / r.skills[sk]);
             if (this.calChefShow[i].skills_last[sk] < r.skills[sk]) {
