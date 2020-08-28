@@ -3217,7 +3217,7 @@ $(function() {
               });
               let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
               this.calRepDefaultSort = rep.map(r => {
-                r.subName = String(r[show]);
+                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
                 return r;
               });
               this.calRepsAll = rep;
@@ -3302,7 +3302,7 @@ $(function() {
               this.calRepsAll = calRepsAll;
               let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
               this.calRepDefaultSort = this.calRepsAll.map(r => {
-                r.subName = String(r[show]);
+                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
                 return r;
               });
               for (let key in this.calChefShow) { // 排序
