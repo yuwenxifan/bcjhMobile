@@ -20,7 +20,7 @@ $(function() {
           <li
             v-for="item in f_option"
             @click="checkOption(item.id, item.name)"
-            :class="(valueId.indexOf(item.id) > -1 ? 'active' : disableClass(item.id)) + ' ' + (item.isf ? 'red' : '')"
+            :class="(valueId.indexOf(item.id) > -1 ? 'active' : disableClass(item.id)) + ' ' + ((item.isf || item.unknowBuff) ? 'red' : '')"
           >
             <span>{{item.name}}</span>
             <span class="sub-name" v-if="item.subName">{{item.subName}}</span>
@@ -661,7 +661,7 @@ $(function() {
       calRepColName: {
         id: '编号',
         rarity: '星',
-        skills: '技能',
+        skills: '技法',
         materials: '材料',
         origin: '来源',
         limit: '份数',
@@ -872,7 +872,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=3'
+          url: './data/foodgodRule.min.json?v=4'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1525,7 +1525,7 @@ $(function() {
         this.calRepsAll.sort(this.customSort(this.calSortMap[this.calSort].normal));
         let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
         this.calRepDefaultSort = this.calRepsAll.map(r => {
-          r.subName = String(r[show]);
+          r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
           return r;
         });
         this.calRepSort();
@@ -1538,7 +1538,7 @@ $(function() {
           list.sort(this.customSort({ prop, order }));
           this.calReps_list[key] = list.map(r => {
             let show = this.calSortMap[this.calSort].chef.show || prop;
-            r.subName = r[show] + String(r[`chef_${key}`].subName);
+            r.subName = r[show] + (r.unknowBuff ? ' 规则未知' : '') + String(r[`chef_${key}`].subName);
             r.isf = r[`chef_${key}`].grade == 0 ? true : false; // 是否技法不足
             return r;
           });
