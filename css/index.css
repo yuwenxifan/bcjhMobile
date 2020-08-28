@@ -1462,3 +1462,13 @@ input.hidden {
 .cal .ctl-box #muti-select .dropdown-box {
   min-width: 210px;
 }
+
+.el-notification.right {
+  width: calc(100% - 32px) !important;
+  max-width: 350px !important;
+}
+.el-message {
+  width: calc(100% + 10px) !important;
+  min-width: 340px !important;
+  max-width: 380px !important;
+}
