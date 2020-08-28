@@ -1470,16 +1470,16 @@ $(function() {
           if (!rule.DisableEquipSkillEffect) {
             this.calChefShow[i].equip_effect.forEach(eff => { // 厨具技能
               if (eff.type == 'Gold_Gain') { // 金币加成
-                buff_equip += eff.value;
+                buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
               }
               if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
                 if (r.skills[eff.type.slice(3).toLowerCase()]) {
-                  buff_equip += eff.value;
+                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
                 }
               }
               if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
                 if (r.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                  buff_equip += eff.value;
+                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
                 }
               }
             });
@@ -1633,7 +1633,7 @@ $(function() {
             if (eff.type == 'OpenTime') {
               time_buff += eff.value;
             }
-            if (judgeEff(eff)) { // 对售价有影响的修炼技能效果
+            if (judgeEff(eff) && this.ulti.Self.id.indexOf(chef.uid) > -1) { // 对售价有影响的修炼技能效果
               sum_skill_effect.push(eff);
             }
           });
@@ -1650,6 +1650,7 @@ $(function() {
           if (chef.tag == 2) { // 女厨全技法
             value += this.ulti.Female;
           }
+          chef.MutiEquipmentSkill = 0;
           if (this.ulti.Self.id.indexOf(chef.uid) > -1) { // 已修炼的个人类修炼技能
             ultimate = true;
             chef.ultimate_effect.forEach(eff => {
@@ -1657,13 +1658,7 @@ $(function() {
                 value += eff.value;
               }
               if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent') { // 厨具技能加成
-                if (this.calEquip[position].row[0]) { // 装备厨具
-                  this.calEquip[position].row[0].effect.forEach(equ => {
-                    if (equ.type == key) {
-                      value += Math.ceil(equ.value * eff.value / 100);
-                    }
-                  });
-                }
+                chef.MutiEquipmentSkill += eff.value;
               }
             });
           }
@@ -1683,9 +1678,9 @@ $(function() {
             this.calEquip[position].row[0].effect.forEach(eff => {
               if (eff.type == key) {
                 if (eff.cal == 'Abs') {
-                  value += eff.value;
+                  value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
                 } else if (eff.cal == 'Percent') {
-                  value += Math.ceil(((chef.skills[lowKey] || 0) + value) * eff.value / 100)
+                  value += Math.ceil(((chef.skills[lowKey] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
                 }
               }
             });
