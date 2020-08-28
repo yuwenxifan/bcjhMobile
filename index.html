@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=19">
+  <link rel="stylesheet" href="./css/index.css?v=20">
   <link rel="stylesheet" href="./css/image.css?v=4">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -900,7 +900,7 @@
                     >
                       <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
                         <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
-                          <span class="cnt">{{calRepCnt[`${chef}-${rep}`]}}</span>
+                          <span class="cnt">{{calType.row[0].MaterialsLimit ? showRepCnt(calRepCnt[`${chef}-${rep}`], calRepLimit[`${chef}-${rep}`]) : calRepCnt[`${chef}-${rep}`]}}</span>
                           <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
                             <i class="el-icon-success"></i>
                           </span>
@@ -1308,7 +1308,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-08-28 优化了规则未知的提示。</div>
+            <div class="p">2020-08-28 计算器菜谱下拉框增加显示了菜谱技法，优化了份数余量的显示。</div>
           </div>
         </div>
       </div>
@@ -1318,6 +1318,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=22"></script>
+  <script src="./js/index.js?v=23"></script>
 </body>
 </html>

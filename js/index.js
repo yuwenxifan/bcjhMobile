@@ -1375,9 +1375,15 @@ $(function() {
           r.buff_rule_show = r.unknowBuff ? '未知' : (buff_rule ? `${buff_rule}%` : '');
           r.price_rule = r.price_total - (r.price_wipe_rule * r.limit);
 
+          const skills = [];
+          for (let key in item.skills) {
+            skills.push(`${this.skill_map[key]}${item.skills[key]}`);
+          }
+          r.name = item.name + '（' + skills.join(' ') + '）';
+
           let ext = {
             galleryId: item.galleryId,
-            name: item.name,
+            name_show: item.name,
             rarity: item.rarity,
             rarity_show: item.rarity_show,
             price: item.price,
@@ -1412,6 +1418,12 @@ $(function() {
           }
         }
         this.setDefaultSort();
+      },
+      showRepCnt(cnt, lim) {
+        if (lim > cnt) {
+          return `${cnt}/${lim}`
+        }
+        return cnt;
       },
       handlerChef(i) { // 厨子变化
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
@@ -1586,7 +1598,6 @@ $(function() {
       },
       handleRepCntChange(key, limit) {
         let val = this.calRepCnt[key];
-        console.log(val);
         val = val.replace(/\./g, '');
         val = val.replace(/\-/g, '');
         val = Number(val);
@@ -1711,7 +1722,7 @@ $(function() {
       showRep(rep, position) {
         let rst = {
           id: rep.id,
-          name: rep.name,
+          name: rep.name_show,
           rarity: rep.rarity,
           skills: rep.skills,
           materials: rep.materials,
