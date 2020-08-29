@@ -299,7 +299,7 @@ $(function() {
         guests: false,
         degree_guests: false,
         gift: false,
-        got: true,
+        got: false,
       },
       repColName: {
         id: '编号',
@@ -393,7 +393,7 @@ $(function() {
         origin: true,
         ultimateGoal: false,
         ultimateSkill: false,
-        got: true
+        got: false
       },
       chefColName: {
         id: '编号',
