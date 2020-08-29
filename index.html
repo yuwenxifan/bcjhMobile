@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=20">
+  <link rel="stylesheet" href="./css/index.css?v=21">
   <link rel="stylesheet" href="./css/image.css?v=4">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -138,6 +138,13 @@
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
               </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  :class="repFilter.got ? 'active' : ''"
+                  @click="repFilter.got = !repFilter.got"
+                >已有</span>
+              </div>
             </div>
           </div>
           <div v-show="navId === 2">
@@ -236,6 +243,13 @@
                   :class="val.flag ? 'active' : ''"
                   @click="chefFilter.sex[key].flag = !val.flag"
                 >{{val.name}}</span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  :class="chefFilter.got ? 'active' : ''"
+                  @click="chefFilter.got = !chefFilter.got"
+                >已有</span>
               </div>
             </div>
           </div>
@@ -388,7 +402,7 @@
         top="250px"
         :show-close="false"
         :visible.sync="settingVisible"
-        width="250px">
+        width="270px">
         <div class="input-box" v-show="navId==1">
           <span class="label">菜谱分页</span>
           <el-select size="mini" v-model="recipesPageSize" @change="handlePageSizeChange($event, 'recipes')">
@@ -484,10 +498,21 @@
               inactive-color="#ddd">
             </el-switch>
           </span>
+          <span>
+            <el-switch
+              style="display: block"
+              v-model="calShowGot"
+              active-color="#82a1b0"
+              active-text="计算器只展示已有厨师菜谱"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
         </span>
         <!-- <span class="btn" @click="location.reload();">重新加载页面</span> -->
       </el-dialog>
       <div class="back" v-if="showBack" @click="navId = 7"><i class="el-icon-arrow-left"></i>返回</div>
+      <div class="set-got" v-if="navId==1 && repCol.got" @click="setRepGot">全选</div>
+      <div class="set-got" v-if="navId==2 && chefCol.got" @click="setChefGot">全选</div>
     </aside>
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
@@ -548,6 +573,13 @@
           <el-table-column sortable="custom" prop="degree_guests" label="升阶贵客" min-width="110" v-if="repCol.degree_guests"></el-table-column>
           <el-table-column sortable="custom" prop="gift" label="神级符文" min-width="92" v-if="repCol.gift"></el-table-column>
           <el-table-column sortable="custom" v-for="item in repFilter.materialEff.row" :prop="'materialEff_' + item.id" :label="item.name" min-width="92"></el-table-column>
+          <el-table-column sortable="custom" prop="got" label="已有" min-width="68" v-if="repCol.got">
+            <template slot-scope="scope" v-if="repCol.got">
+              <div @click.stop="return;">
+                <el-checkbox v-model="scope.row.checked" @change="changeGot($event, 'repGot', scope.row.recipeId)"></el-checkbox>
+              </div>
+            </template>
+          </el-table-column>
           <div v-for="item in repChef.row">
             <el-table-column sortable="custom" :prop="'chef_grade_' + item.id" :label="item.name" :min-width="nameMinWidth(item.name)"></el-table-column>
             <el-table-column sortable="custom" :prop="'chef_eff_' + item.id" label="效率" min-width="65"></el-table-column>
@@ -602,6 +634,13 @@
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="chefCol.origin"></el-table-column>
           <el-table-column sortable="custom" prop="ultimateGoal" label="修炼任务" min-width="150" v-if="chefCol.ultimateGoal"></el-table-column>
           <el-table-column sortable="custom" prop="ultimateSkillShow" label="修炼技能" min-width="130" v-if="chefCol.ultimateSkill"></el-table-column>
+          <el-table-column sortable="custom" prop="got" label="已有" min-width="68" v-if="chefCol.got">
+              <template slot-scope="scope" v-if="chefCol.got">
+                <div @click.stop="return;">
+                  <el-checkbox v-model="scope.row.checked" @change="changeGot($event, 'chefGot', scope.row.chefId)"></el-checkbox>
+                </div>
+              </template>
+            </el-table-column>
           <div v-for="item in chefRep.row">
             <el-table-column sortable="custom" :prop="'rep_grade_' + item.id" :label="item.name" :min-width="nameMinWidth(item.name)"></el-table-column>
             <el-table-column sortable="custom" :prop="'rep_eff_' + item.id" label="效率" min-width="65"></el-table-column>
@@ -1245,7 +1284,7 @@
           <div class="box-body">
             <div class="contain-title">菜谱</div>
             <div class="p">
-              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 品阶、熟练、已有等个人数据列
+              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 品阶、熟练等个人数据列
             </div>
             <div class="p">
               <span class="add"><i class="el-icon-plus"></i> 新增</span> 技法、食材类型筛选新增[同时]按钮（例：[同时]按钮打开后选择炒、煮，则筛选同时使用了炒、煮技法的菜谱）。
@@ -1254,7 +1293,7 @@
           <div class="box-body">
             <div class="contain-title">厨师</div>
             <div class="p">
-              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 厨具、修炼、已有等个人数据列，修炼数据仅在【个人】页维护最终值。
+              <span class="remove"><i class="el-icon-minus"></i> 移除</span> 厨具、修炼等个人数据列，修炼数据仅在【个人】页维护最终值。
             </div>
           </div>
           <div class="box-body">
@@ -1308,7 +1347,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-08-29 14:50 计算器选菜为选厨师时提供分数预览（厨具技能只有选择厨师后才生效）。</div>
+            <div class="p">2020-08-29 23:36 厨师菜谱新增已有列。</div>
           </div>
         </div>
       </div>
@@ -1318,6 +1357,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=27"></script>
+  <script src="./js/index.js?v=28"></script>
 </body>
 </html>

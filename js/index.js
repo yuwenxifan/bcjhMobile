@@ -183,6 +183,9 @@ $(function() {
       calLoad: true,
       calLoading: false,
       calHidden: true,
+      chefGotChange: false,
+      repGot: {},
+      chefGot: {},
       reg: new RegExp( '<br>' , "g" ),
       page_list: [
         { id: 5, name: '5条/页' },
@@ -221,6 +224,7 @@ $(function() {
       navId: 1,
       calCode: 'cal',
       defaultEx: false,
+      calShowGot: false,
       tableHeight: window.innerHeight - 122,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
@@ -295,6 +299,7 @@ $(function() {
         guests: false,
         degree_guests: false,
         gift: false,
+        got: true,
       },
       repColName: {
         id: '编号',
@@ -316,6 +321,7 @@ $(function() {
         guests: '贵客',
         degree_guests: '升阶贵客',
         gift: '神级符文',
+        got: '已有'
       },
       repFilter: {
         rarity: {
@@ -344,6 +350,7 @@ $(function() {
         combo: false,
         price: '',
         materialEff: {},
+        got: false
       },
       repChef: { id: [], row: [] },
       chefRep: { id: [], row: [] },
@@ -385,7 +392,8 @@ $(function() {
         sex: false,
         origin: true,
         ultimateGoal: false,
-        ultimateSkill: false
+        ultimateSkill: false,
+        got: true
       },
       chefColName: {
         id: '编号',
@@ -397,7 +405,8 @@ $(function() {
         sex: '性别',
         origin: '来源',
         ultimateGoal: '修炼任务',
-        ultimateSkill: '修炼技能'
+        ultimateSkill: '修炼技能',
+        got: '已有'
       },
       chefFilter: {
         chefKeyword: '',
@@ -421,6 +430,7 @@ $(function() {
           female: { name: '女', flag: true },
           other: { name: '未知', flag: true }
         },
+        got: false
       },
       partial_skill: { id: [], row: [] },
       chefSkillGap: false,
@@ -637,9 +647,15 @@ $(function() {
       },
       lastBuffTime: 100,
       calFocus: null,
+      calChefs_origin: [],
       calChefs_list: [],
       calEquips_list: [],
       calReps_list: {
+        1: [],
+        2: [],
+        3: []
+      },
+      calReps_origin: {
         1: [],
         2: [],
         3: []
@@ -900,6 +916,8 @@ $(function() {
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.filter(r => { return r.recipeId > 5000 });
         this.data.recipes = this.data.recipes.map(item => {
+          this.repGot[item.recipeId] = this.repGot[item.recipeId] || false;
+          item.checked = this.repGot[item.recipeId];
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
           for (let i of skill_arr) {
@@ -970,6 +988,8 @@ $(function() {
         });
         this.initRep();
         this.data.chefs = this.data.chefs.map(item => {
+          this.chefGot[item.chefId] = this.chefGot[item.chefId] || false;
+          item.checked = this.chefGot[item.chefId];
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam', 'meat', 'veg', 'fish', 'creation'];
           for (let i of skill_arr) {
@@ -1286,7 +1306,17 @@ $(function() {
           }
         }
         chefs_list.sort(this.customSort({ prop: 'rarity', order: 'descending' }));
-        this.calChefs_list = chefs_list;
+        this.calChefs_origin = chefs_list;
+        this.initCalChefList();
+      },
+      initCalChefList() {
+        if (this.calShowGot) {
+          this.calChefs_list = this.calChefs_origin.filter(item => {
+            return this.chefGot[item.id];
+          });
+        } else {
+          this.calChefs_list = this.calChefs_origin.slice();
+        }
       },
       initCalEquip() {
         this.calEquips_list = this.data.equips.map(item => {
@@ -1551,16 +1581,39 @@ $(function() {
           let prop = this.calSortMap[this.calSort].chef.prop.replace('${i}', key);
           let order = this.calSortMap[this.calSort].chef.order;
           list.sort(this.customSort({ prop, order }));
-          this.calReps_list[key] = list.map(r => {
+          this.calReps_origin[key] = list.map(r => {
             let show = this.calSortMap[this.calSort].chef.show || prop;
             r.subName = r[show] + (r.unknowBuff ? ' 规则未知' : '') + String(r[`chef_${key}`].subName);
             r.isf = r[`chef_${key}`].grade < 1 ? true : false; // 是否技法不足
             return r;
           });
+          this.initCalRepList(key);
         } else {
           for (let i = 1; i < 4; i++) {
             if (!this.calChef[i].id[0]) {
-              this.calReps_list[i] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+              this.calReps_origin[i] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+            }
+          }
+          this.initCalRepList();
+        }
+      },
+      initCalRepList(key) {
+        if (key) {
+          if (this.calShowGot) {
+            this.calReps_list[key] = this.calReps_origin[key].filter(item => {
+              return this.repGot[item.id];
+            });
+          } else {
+            this.calReps_list[key] = this.calReps_origin[key].slice();
+          }
+        } else {
+          for (let i = 1; i < 4; i++) {
+            if (this.calShowGot) {
+              this.calReps_list[i] = this.calReps_origin[i].filter(item => {
+                return this.repGot[item.id];
+              });
+            } else {
+              this.calReps_list[i] = this.calReps_origin[i].slice();
             }
           }
         }
@@ -1810,6 +1863,7 @@ $(function() {
           const f_guest = !this.repFilter.guest || item.normal_guests;
           const f_combo = !this.repFilter.combo || item.combo;
           const f_price = item.price > this.repFilter.price;
+          const f_got = !this.repFilter.got || this.repGot[item.recipeId];
           let f_material_eff = true;
           const ext = {};
           const materialEff = this.repFilter.materialEff;
@@ -1823,7 +1877,7 @@ $(function() {
               f_material_eff = f_material_eff || Boolean(material);
             });
           }
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff) {
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff && f_got) {
             const chef_ext = {};
             this.repChef.row.forEach(chef => {
               let min = 4;
@@ -1868,6 +1922,7 @@ $(function() {
               chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
               chef_ext[`chef_grade_value_${chef.id}`] = min;
             });
+            item.checked = this.repGot[item.recipeId];
             this.recipes.push(Object.assign({}, item, ext, chef_ext));
           }
         }
@@ -1881,6 +1936,50 @@ $(function() {
           this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
         });
         this.loading = false;
+      },
+      changeGot(val, prop, id) {
+        this[prop][id] = val;
+        this.saveUserData();
+      },
+      setRepGot() {
+        const r = this.recipesPage.find(item => {
+          return item.checked == false;
+        });
+        let flag = r ? true : false;
+        this.$confirm(`确定要将当前页展示的所有菜谱置为${flag ? '已有' : '未拥有'}吗？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.recipesPage = this.recipesPage.map(item => {
+            item.checked = flag;
+            this.repGot[item.recipeId] = flag;
+            return item;
+          });
+          this.saveUserData();
+        }).catch(() => {
+          //
+        });
+      },
+      setChefGot() {
+        const r = this.chefsPage.find(item => {
+          return item.checked == false;
+        });
+        let flag = r ? true : false;
+        this.$confirm(`确定要将当前页展示的所有厨师置为${flag ? '已有' : '未拥有'}吗？`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          this.chefsPage = this.chefsPage.map(item => {
+            item.checked = flag;
+            this.chefGot[item.chefId] = flag;
+            return item;
+          });
+          this.saveUserData();
+        }).catch(() => {
+          //
+        });
       },
       initChef() {
         this.chefs = [];
@@ -1896,11 +1995,13 @@ $(function() {
         }
         let chefs_list = [];
         for (const item of this.data.chefs) {
+          item.checked = this.chefGot[item.chefId];
           const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
           const s_skill = this.checkKeyword(this.chefFilter.chefKeyword, item.skill);
           const s_origin = this.checkKeyword(this.chefFilter.chefKeyword, item.origin);
           const search = s_name || s_skill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
+          const f_got = !this.chefFilter.got || this.chefGot[item.chefId];
           const sex_check = [];
           for (key in this.chefFilter.sex) {
             if (this.chefFilter.sex[key].flag) {
@@ -1975,7 +2076,7 @@ $(function() {
             skills,
             effect
           });
-          if (search && f_rarity && f_skills && f_sex) {
+          if (search && f_rarity && f_skills && f_sex && f_got) {
             const rep_ext = {};
             this.chefRep.row.forEach(rep => {
               let min = 4;
@@ -2331,17 +2432,33 @@ $(function() {
         if (!sort.order) {
           this.initRep();
         }
-        sort.prop = map[sort.prop] || sort.prop;
-        let arr = sort.prop.split('_');
-        let id = arr[arr.length - 1];
-        if (sort.prop.indexOf('chef_diff_') > -1) {
-          sort.prop = 'chef_diff_value_' + id;
-        }
-        if (sort.prop.indexOf('chef_grade_') > -1) {
-          sort.prop = 'chef_grade_value_' + id;
+        if (sort.prop == 'got') {
+          const order_map = {
+            ascending: -1,
+            descending: 1,
+          }
+          this.recipes.sort((x, y) => {
+            if (!this.repGot[x.recipeId] && this.repGot[y.recipeId]) {
+              return order_map[sort.order];
+            } else if (this.repGot[x.recipeId] && !this.repGot[y.recipeId]) {
+              return 0 - order_map[sort.order];
+            } else {
+              return 0;
+            }
+          });
+        } else {
+          sort.prop = map[sort.prop] || sort.prop;
+          let arr = sort.prop.split('_');
+          let id = arr[arr.length - 1];
+          if (sort.prop.indexOf('chef_diff_') > -1) {
+            sort.prop = 'chef_diff_value_' + id;
+          }
+          if (sort.prop.indexOf('chef_grade_') > -1) {
+            sort.prop = 'chef_grade_value_' + id;
+          }
+          this.recipes.sort(this.customSort(sort));
         }
         this.recipesCurPage = 1;
-        this.recipes.sort(this.customSort(sort));
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
         this.$nextTick(()=>{
           this.$refs.recipesTable.doLayout();
@@ -2379,17 +2496,33 @@ $(function() {
         if (!sort.order) {
           this.initChef();
         }
-        let arr = sort.prop.split('_');
-        let id = arr[arr.length - 1];
-        if (sort.prop.indexOf('rep_diff_') > -1) {
-          sort.prop = 'rep_diff_value_' + id;
+        if (sort.prop == 'got') {
+          const order_map = {
+            ascending: -1,
+            descending: 1,
+          }
+          this.chefs.sort((x, y) => {
+            if (!this.chefGot[x.chefId] && this.chefGot[y.chefId]) {
+              return order_map[sort.order];
+            } else if (this.chefGot[x.chefId] && !this.chefGot[y.chefId]) {
+              return 0 - order_map[sort.order];
+            } else {
+              return 0;
+            }
+          });
+        } else {
+          let arr = sort.prop.split('_');
+          let id = arr[arr.length - 1];
+          if (sort.prop.indexOf('rep_diff_') > -1) {
+            sort.prop = 'rep_diff_value_' + id;
+          }
+          if (sort.prop.indexOf('rep_grade_') > -1) {
+            sort.prop = 'rep_grade_value_' + id;
+          }
+          sort.prop = map[sort.prop] || sort.prop;
+          this.chefs.sort(this.customSort(sort));
         }
-        if (sort.prop.indexOf('rep_grade_') > -1) {
-          sort.prop = 'rep_grade_value_' + id;
-        }
-        sort.prop = map[sort.prop] || sort.prop;
         this.chefsCurPage = 1;
-        this.chefs.sort(this.customSort(sort));
         this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
         this.$nextTick(()=>{
           this.$refs.chefsTable.doLayout();
@@ -2820,17 +2953,20 @@ $(function() {
           mapCol: this.mapCol,
           userUltimate: this.userUltimate,
           defaultEx: this.defaultEx,
+          calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
           hiddenMessage: this.hiddenMessage,
           repSkillGap: this.repSkillGap,
-          chefSkillGap: this.chefSkillGap
+          chefSkillGap: this.chefSkillGap,
+          repGot: this.repGot,
+          chefGot: this.chefGot
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -3001,7 +3137,8 @@ $(function() {
       },
       initCalRepSearch() {
         this.calReps = this.calRepsAll.filter(item => {
-          return this.checkKeyword(this.calKeyword, item.name) || this.checkKeyword(this.calKeyword, item.materials_search) || this.checkKeyword(this.calKeyword, item.origin);
+          let f_got = !this.calShowGot || this.repGot[item.id];
+          return f_got && (this.checkKeyword(this.calKeyword, item.name) || this.checkKeyword(this.calKeyword, item.materials_search) || this.checkKeyword(this.calKeyword, item.origin));
         });
         if (this.sort.calRep.order) {
           this.$refs.calRepsTable.sort(this.sort.calRep.prop, this.sort.calRep.order);
@@ -3264,12 +3401,18 @@ $(function() {
           this.calHidden = true;
         }
       },
+      calRep: {
+        deep: true,
+        handler() {
+          this.getCalRepShow();
+        }
+      },
       calRepCnt: {
         deep: true,
         handler(val) { // 如果份数发生变化，重新计算最大份数
           this.getCalRepShow();
           const rule = this.calType.row[0];
-          if (rule.MaterialsLimit) {
+          if (rule.MaterialsLimit) { // 如果有食材数量限制
             this.getCalRepLimit();
             let remain = JSON.parse(JSON.stringify(this.materialsAll));
             let reps = {};
@@ -3308,11 +3451,20 @@ $(function() {
                 r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
                 return r;
               });
-              for (let key in this.calChefShow) { // 排序
-                if (this.calChefShow[key].id) {
-                  this.calRepSort(key);
-                } else {
-                  this.calReps_list[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+              for (let key of [1, 2, 3]) { // 排序
+                let flag = false;
+                for (let j of [1, 2, 3]) {
+                  if (!this.calRep[`${key}-${j}`].id[0]) {
+                    flag = true;
+                  }
+                }
+                if (flag) {
+                  if (this.calChef[key].id[0]) {
+                    this.calRepSort(key);
+                  } else {
+                    this.calReps_origin[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                    this.initCalRepList(key);
+                  }
                 }
               }
             }, 50);
@@ -3442,6 +3594,23 @@ $(function() {
               this.initCalRep();
             }, 50);
           }
+          if (this.chefGotChange && !this.calHidden && this.chefGot) {
+            this.initCalChefList();
+          }
+        }
+      },
+      calShowGot(val) {
+        this.saveUserData();
+        if (!this.calHidden) {
+          this.initCalRepList();
+          this.initCalRepSearch();
+          this.initCalChefList();
+        }
+      },
+      chefGot: {
+        deep: true,
+        handler() {
+          this.chefGotChange = true;
         }
       }
     }

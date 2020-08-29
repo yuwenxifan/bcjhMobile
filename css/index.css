@@ -190,7 +190,7 @@ section.header .right {
   margin: 0;
   flex-direction: column;
   justify-content: space-between;
-  height: 85px;
+  height: 120px;
   align-content: flex-start;
 }
 .aside .el-switch__label {
@@ -349,6 +349,7 @@ section.header .right {
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   margin-right: 5px;
+  cursor: pointer;
 }
 .btn:focus {
   outline: none;
@@ -1471,4 +1472,23 @@ input.hidden {
   width: calc(100% + 10px) !important;
   min-width: 340px !important;
   max-width: 380px !important;
+}
+
+.set-got {
+  cursor: pointer;
+  position: absolute;
+  background: #82a1b0;
+  z-index: 900;
+  color: #fff;
+  top: 68px;
+  right: 20px;
+  padding: 2px 8px 4px 8px;
+  border-radius: 4px;
+  font-size: 15px;
+  box-shadow: 1px 1px 5px rgba(96, 125, 139, 0.7);
+}
+
+.el-message-box {
+  width: calc(100% - 40px) !important;
+  max-width: 420px !important;
 }
