@@ -3342,7 +3342,8 @@ $(function() {
                 if (val[key].id) {
                   this.handlerChef(key);
                 } else {
-                  this.calReps_list[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                  this.calReps_origin[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                  this.initCalRepList(key);
                 }
               }
             }
@@ -3371,7 +3372,8 @@ $(function() {
                 if (val[key].id) {
                   this.calRepSort(key);
                 } else {
-                  this.calReps_list[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                  this.calReps_origin[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                  this.initCalRepList(key);
                 }
               }
             }
