@@ -647,6 +647,7 @@ $(function() {
       calRepCol: {
         id: false,
         rarity: false,
+        skills_sim: false,
         skills: false,
         materials: false,
         origin: false,
@@ -661,7 +662,8 @@ $(function() {
       calRepColName: {
         id: '编号',
         rarity: '星',
-        skills: '技法',
+        skills_sim: '技法（简）',
+        skills: '技法（全）',
         materials: '材料',
         origin: '来源',
         limit: '份数',
@@ -1379,7 +1381,8 @@ $(function() {
           for (let key in item.skills) {
             skills.push(`${this.skill_map[key]}${item.skills[key]}`);
           }
-          r.name = item.name + '（' + skills.join(' ') + '）';
+          r.skills_show = skills.join(' ');
+          r.name = item.name + '（' + r.skills_show + '）';
 
           let ext = {
             galleryId: item.galleryId,
@@ -1601,7 +1604,6 @@ $(function() {
         val = val.replace(/\./g, '');
         val = val.replace(/\-/g, '');
         val = Number(val);
-        console.log(val);
         val = val > limit ? limit : val;
         this.calRepCnt[key] = val;
       },
@@ -1720,6 +1722,7 @@ $(function() {
         this.calRepShow = rst;
       },
       showRep(rep, position) {
+        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule'];
         let rst = {
           id: rep.id,
           name: rep.name_show,
@@ -1737,23 +1740,28 @@ $(function() {
         let chefId = position.slice(0, 1);
         if (!this.calChef[position.slice(0, 1)].id[0]) { // 如果没有选厨子
           rst.chef = false;
-          rst.price_total = 0;
-          rst.time = 0;
-          rst.time_last = 0;
-          rst.showBuff = false;
+          prop_arr.forEach(key => {
+            rst[key] = rep[key];
+          });
+          rst.price_buff = Math.ceil(rst.price * rst.buff / 100);
+          rst.price_total = rst.price_buff * rst.cnt;
+          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
+          rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
+          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
+          rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
+          rst.price_origin_total = rst.price * rst.cnt;
           return rst;
         }
-        rst.grade = rep[`chef_${chefId}`].grade;
+        rst.grade = rep[`chef_${chefId}`] ? rep[`chef_${chefId}`].grade : 0;
         rst.grade_show = rst.grade < 0 ? '' : ' 可优特神'.slice(rst.grade, rst.grade + 1);
         if (rst.grade < 1) { // 如果技法不足
           rst.price_total = 0;
           rst.time = 0;
           rst.time_last = 0;
           rst.showBuff = false;
-          rst.gap = rep[`chef_${chefId}`].subName;
+          rst.gap = rep[`chef_${chefId}`] ? rep[`chef_${chefId}`].subName : '';
           return rst;
         }
-        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule'];
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
@@ -3232,12 +3240,6 @@ $(function() {
             }
             this.calChefShowLast = JSON.parse(JSON.stringify(val));
           }, 100);
-        }
-      },
-      calRep: {
-        deep: true,
-        handler() {
-          this.getCalRepShow();
         }
       },
       calRepEx: {
