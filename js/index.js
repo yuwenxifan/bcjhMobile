@@ -1507,7 +1507,7 @@ $(function() {
           chef.price_total = chef.price_buff * r.limit;
 
           chef.subName = '';
-          if (min == 0) {
+          if (min < 1) {
             chef.subName += ' ' + inf.join(' ');
           }
           if (this.calType.id[0] == 0) { // 正常营业算效率
@@ -1551,7 +1551,7 @@ $(function() {
           this.calReps_list[key] = list.map(r => {
             let show = this.calSortMap[this.calSort].chef.show || prop;
             r.subName = r[show] + (r.unknowBuff ? ' 规则未知' : '') + String(r[`chef_${key}`].subName);
-            r.isf = r[`chef_${key}`].grade == 0 ? true : false; // 是否技法不足
+            r.isf = r[`chef_${key}`].grade < 1 ? true : false; // 是否技法不足
             return r;
           });
         } else {
@@ -1744,8 +1744,8 @@ $(function() {
           return rst;
         }
         rst.grade = rep[`chef_${chefId}`].grade;
-        rst.grade_show = '!可优特神'.slice(rst.grade, rst.grade + 1);
-        if (rst.grade == 0) { // 如果技法不足
+        rst.grade_show = rst.grade < 0 ? '' : ' 可优特神'.slice(rst.grade, rst.grade + 1);
+        if (rst.grade < 1) { // 如果技法不足
           rst.price_total = 0;
           rst.time = 0;
           rst.time_last = 0;
@@ -1854,9 +1854,9 @@ $(function() {
                   buff += eff.value;
                 }
               });
-              chef_ext[`chef_grade_${chef.id}`] = ' 可优特神'.slice(min, min + 1);
+              chef_ext[`chef_grade_${chef.id}`] = min < 0 ? '' : ' 可优特神'.slice(min, min + 1);
               chef_ext[`chef_diff_${chef.id}`] = diff.join('\n');
-              chef_ext[`chef_eff_${chef.id}`] = min == 0 ? '' : Math.floor(Math.ceil(item.price * buff / 100) * 3600 / item.time);
+              chef_ext[`chef_eff_${chef.id}`] = min < 1 ? '' : Math.floor(Math.ceil(item.price * buff / 100) * 3600 / item.time);
               chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
               chef_ext[`chef_grade_value_${chef.id}`] = min;
             });
@@ -2007,9 +2007,9 @@ $(function() {
                   }
                 });
               }
-              rep_ext[`rep_grade_${rep.id}`] = ' 可优特神'.slice(min, min + 1);
+              rep_ext[`rep_grade_${rep.id}`] = min < 0 ? '' : ' 可优特神'.slice(min, min + 1);
               rep_ext[`rep_diff_${rep.id}`] = diff.join('\n');
-              rep_ext[`rep_eff_${rep.id}`] = min == 0 ? '' : Math.floor(Math.ceil(rep.price * buff / 100) * 3600 / rep.time);
+              rep_ext[`rep_eff_${rep.id}`] = min < 1 ? '' : Math.floor(Math.ceil(rep.price * buff / 100) * 3600 / rep.time);
               rep_ext[`rep_diff_value_${rep.id}`] = diff_sum;
               rep_ext[`rep_grade_value_${rep.id}`] = min;
             });
@@ -3259,6 +3259,7 @@ $(function() {
             this.calSort = 1;
           }
           this.calLoad = true;
+          this.calHidden = true;
         }
       },
       calRepCnt: {
