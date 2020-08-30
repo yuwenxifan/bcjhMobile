@@ -1935,6 +1935,12 @@ $(function() {
         this.$nextTick(() => {
           this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
         });
+        if (this.repCol.got) { // 丑陋的解决方式
+          this.repCol.got = false;
+          setTimeout(() => {
+            this.repCol.got = true;
+          }, 10);
+        }
         this.loading = false;
       },
       changeGot(val, prop, id) {
@@ -2131,6 +2137,12 @@ $(function() {
         } else {
           this.chefsCurPage = 1;
           this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
+        }
+        if (this.chefCol.got) { // 丑陋的解决方式
+          this.chefCol.got = false;
+          setTimeout(() => {
+            this.chefCol.got = true;
+          }, 10);
         }
         this.$nextTick(() => {
           this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
