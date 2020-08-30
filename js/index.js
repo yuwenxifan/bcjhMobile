@@ -1939,9 +1939,11 @@ $(function() {
           this.repCol.got = false;
           setTimeout(() => {
             this.repCol.got = true;
-          }, 10);
+          }, 100);
         }
-        this.loading = false;
+        setTimeout(() => {
+          this.loading = false;
+        }, 150);
       },
       changeGot(val, prop, id) {
         this[prop][id] = val;
@@ -2142,7 +2144,7 @@ $(function() {
           this.chefCol.got = false;
           setTimeout(() => {
             this.chefCol.got = true;
-          }, 10);
+          }, 100);
         }
         this.$nextTick(() => {
           this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
