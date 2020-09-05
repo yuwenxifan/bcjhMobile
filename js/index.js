@@ -890,7 +890,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=9'
+          url: './data/foodgodRule.min.json?v=10'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
