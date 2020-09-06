@@ -890,7 +890,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=10'
+          url: './data/foodgodRule.min.json?v=11'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1494,7 +1494,7 @@ $(function() {
 
           if (!rule.DisableChefSkillEffect) {
             this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
-              if (eff.type == 'Gold_Gain') { // 金币加成
+              if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
                 buff_skill += eff.value;
               }
               if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
@@ -1514,7 +1514,7 @@ $(function() {
 
           if (!rule.DisableEquipSkillEffect) {
             this.calChefShow[i].equip_effect.forEach(eff => { // 厨具技能
-              if (eff.type == 'Gold_Gain') { // 金币加成
+              if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
                 buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
               }
               if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
