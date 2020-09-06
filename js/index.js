@@ -1236,6 +1236,17 @@ $(function() {
             2: { id: [], row: [] },
             3: { id: [], row: [] }
           };
+          this.calRepCnt = {
+            '1-1': null,
+            '1-2': null,
+            '1-3': null,
+            '2-1': null,
+            '2-2': null,
+            '2-3': null,
+            '3-1': null,
+            '3-2': null,
+            '3-3': null,
+          };
           this.calRep = {
             '1-1': { id: [], row: [] },
             '1-2': { id: [], row: [] },
@@ -1269,6 +1280,7 @@ $(function() {
           this.initCalChef();
           this.initCalEquip();
           this.initCalRep();
+
           let rst = {};
           for (let key in this.calRepEx) {
             rst[key] = this.defaultEx;
@@ -1276,7 +1288,7 @@ $(function() {
           this.calRepEx = rst;
           this.calHidden = false;
           this.calLoad = false;
-          this.calLoading = false
+          this.calLoading = false;
         }, 50);
       },
       initCalChef() {
