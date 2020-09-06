@@ -2018,8 +2018,9 @@ $(function() {
           item.checked = this.chefGot[item.chefId];
           const s_name = this.checkKeyword(this.chefFilter.chefKeyword, item.name);
           const s_skill = this.checkKeyword(this.chefFilter.chefKeyword, item.skill);
+          const s_ultiSkill = this.checkKeyword(this.chefFilter.chefKeyword, item.ultimateSkillShow);
           const s_origin = this.checkKeyword(this.chefFilter.chefKeyword, item.origin);
-          const search = s_name || s_skill || s_origin;
+          const search = s_name || s_skill || s_ultiSkill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
           const f_got = !this.chefFilter.got || this.chefGot[item.chefId];
           const sex_check = [];
