@@ -2850,6 +2850,9 @@ $(function() {
         } else {
           this.initRep();
         }
+        this.$nextTick(()=>{
+          this.$refs.recipesTable.doLayout();
+        });
       },
       changeEquipRadio(val) {
         if (val) {
@@ -2867,6 +2870,9 @@ $(function() {
             this.equipFilter.skillType = skill;
           }
         }
+        this.$nextTick(()=>{
+          this.$refs.equipsTable.doLayout();
+        });
       },
       changeEquipConcurrent(val) {
         if (val) {
@@ -2888,6 +2894,9 @@ $(function() {
         } else {
           this.initEquip();
         }
+        this.$nextTick(()=>{
+          this.$refs.equipsTable.doLayout();
+        });
       },
       changeDecorationRadio(val) {
         if (val) {
@@ -3545,9 +3554,15 @@ $(function() {
       },
       repKeyword() {
         this.initRep();
+        this.$nextTick(()=>{
+          this.$refs.recipesTable.doLayout();
+        });
       },
       guestKeyword() {
         this.initRep();
+        this.$nextTick(()=>{
+          this.$refs.recipesTable.doLayout();
+        });
       },
       questsType() {
         this.initQuests();
