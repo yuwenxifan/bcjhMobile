@@ -882,7 +882,7 @@ $(function() {
     methods: {
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=2'
+          url: './data/data.min.json?v=3'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2714,12 +2714,14 @@ $(function() {
         this.questsMain = [];
         this.questsRegional = [];
         for (let item of this.data.quests) {
+          item.rewards = item.rewards || [];
           const rewards = item.rewards.map(r => {
             return r.quantity ? `${r.name} * ${r.quantity}` : r.name;
           });
           item.rewards_show = rewards.join('\n');
           const search = String(item.questId).indexOf(key) > -1 || item.goal.indexOf(key) > -1 || item.rewards_show.indexOf(key) > -1;
           if (item.type === '主线任务' && search) {
+            item.questIdDisp = item.questId;
             this.questsMain.push(item);
           } else if (item.type === '支线任务' && search) {
             this.questsRegional.push(item);
