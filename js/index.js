@@ -1002,7 +1002,9 @@ $(function() {
           item.skill_obj = skill;
           item.sex = item.tags ? (item.tags[0] == 1 ? '男' : '女') : '';
           item.origin = item.origin.replace(this.reg, '\n');
-          item.ultimateGoal = item.ultimateGoal.join('\n');
+          item.ultimateGoal = item.ultimateGoal.map(qId => {
+            return this.data.quests.find(q => { return q.questId == qId }).goal;
+          }).join('\n');
           const ultimateSkill = this.data.skills.find(s => {
             return s.skillId === item.ultimateSkill;
           });
