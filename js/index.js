@@ -839,10 +839,13 @@ $(function() {
                   return i;
                 }
               }
-              return 3;
+              return line.length;
             }
             let passLine = this.calType.row[0].PassLine;
             let tips = ['高保', '中保', '低保', '分享保'];
+            if (passLine.length == 1) {
+              tips = ['过线', '未过线'];
+            }
             let index = getGrade(passLine, price);
             tips = tips.slice(index)[0];
             this.lineTips = tips;
@@ -863,6 +866,7 @@ $(function() {
     },
     mounted() {
       this.loadFoodGodRule();
+      this.loadTaskRule();
       this.loadData();
       this.getUserData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
@@ -901,6 +905,16 @@ $(function() {
                 showClose: true
               });
             }
+          }
+        });
+      },
+      loadTaskRule() {
+        $.ajax({
+          url: './data/taskRule.min.json?v=1'
+        }).then(rst => {
+          const now = new Date();
+          if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
+            this.foodgodRule = this.foodgodRule.concat(rst.rules);
           }
         });
       },
