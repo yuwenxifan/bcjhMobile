@@ -910,7 +910,7 @@ $(function() {
       },
       loadTaskRule() {
         $.ajax({
-          url: './data/taskRule.min.json?v=1'
+          url: './data/taskRule.min.json?v=2'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
