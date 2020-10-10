@@ -866,7 +866,6 @@ $(function() {
     },
     mounted() {
       this.loadFoodGodRule();
-      this.loadTaskRule();
       this.loadData();
       this.getUserData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
@@ -894,7 +893,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=22'
+          url: './data/foodgodRule.min.json?v=23'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -906,11 +905,12 @@ $(function() {
               });
             }
           }
+          this.loadTaskRule();
         });
       },
       loadTaskRule() {
         $.ajax({
-          url: './data/taskRule.min.json?v=2'
+          url: './data/taskRule.min.json?v=3'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
