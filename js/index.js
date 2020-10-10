@@ -897,7 +897,7 @@ $(function() {
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
-            this.foodgodRule = rst.rules;
+            this.foodgodRule = rst.rules.concat(this.foodgodRule);
             if (!this.hiddenMessage) {
               this.$message({
                 message: rst.tips,
