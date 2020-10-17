@@ -1333,7 +1333,19 @@ $(function() {
             });
           }
         }
-        chefs_list.sort(this.customSort({ prop: 'rarity', order: 'descending' }));
+        chefs_list.sort((x, y) => {
+          if (x.rarity < y.rarity) {
+            return 1;
+          } else if (x.rarity > y.rarity) {
+            return -1;
+          } else {
+            if (x.chefId < y.chefId) {
+              return 1;
+            } else {
+              return -1;
+            }
+          }
+        });
         this.calChefs_origin = chefs_list;
         this.initCalChefList();
       },
