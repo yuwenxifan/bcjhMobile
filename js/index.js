@@ -909,7 +909,7 @@ $(function() {
       },
       loadTaskRule() {
         $.ajax({
-          url: './data/taskRule.min.json?v=4'
+          url: './data/taskRule.min.json?v=5'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1405,6 +1405,12 @@ $(function() {
                 buff_rule += (rule.RepriceEffect[r.id] * 100)
               } else {
                 r.unknowBuff = true;
+              }
+            } else if (rule.SkillEffect) {
+              for (let skillCode in rule.SkillEffect) {
+                if (item[skillCode]) {
+                  buff_rule += (rule.SkillEffect[skillCode] * 100);
+                }
               }
             }
           }
