@@ -892,7 +892,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=28'
+          url: './data/foodgodRule.min.json?v=29'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1418,6 +1418,9 @@ $(function() {
               } else {
                 r.unknowBuff = true;
               }
+              if (rule.NotSure) {
+                r.NotSure = rule.NotSure.indexOf(r.id) > -1;
+              }
             } else if (rule.SkillEffect) {
               for (let skillCode in rule.SkillEffect) {
                 if (item[skillCode]) {
@@ -1616,7 +1619,7 @@ $(function() {
         this.calRepsAll.sort(this.customSort(this.calSortMap[this.calSort].normal));
         let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
         this.calRepDefaultSort = this.calRepsAll.map(r => {
-          r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
+          r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '') + (r.NotSure ? ' 倍数可能不对' : '');
           return r;
         });
         this.calRepSort();
@@ -1629,7 +1632,7 @@ $(function() {
           list.sort(this.customSort({ prop, order }));
           this.calReps_origin[key] = list.map(r => {
             let show = this.calSortMap[this.calSort].chef.show || prop;
-            r.subName = r[show] + (r.unknowBuff ? ' 规则未知' : '') + String(r[`chef_${key}`].subName);
+            r.subName = r[show] + (r.unknowBuff ? ' 规则未知' : '') + (r.NotSure ? ' 倍数可能不对' : '') + String(r[`chef_${key}`].subName);
             r.isf = r[`chef_${key}`].grade < 1 ? true : false; // 是否技法不足
             return r;
           });
@@ -1829,6 +1832,7 @@ $(function() {
           skills: rep.skills,
           materials: rep.materials,
           unknowBuff: rep.unknowBuff,
+          NotSure: rep.NotSure,
           cnt: this.calRepCnt[position],
           time: rep.time * this.calRepCnt[position],
           time_last: rep.time_last * this.calRepCnt[position],
@@ -3435,7 +3439,7 @@ $(function() {
               });
               let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
               this.calRepDefaultSort = rep.map(r => {
-                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
+                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '') + (r.NotSure ? ' 倍数可能不对' : '');
                 return r;
               });
               this.calRepsAll = rep;
@@ -3522,7 +3526,7 @@ $(function() {
               this.calRepsAll = calRepsAll;
               let show = this.calSortMap[this.calSort].normal.show || this.calSortMap[this.calSort].normal.prop;
               this.calRepDefaultSort = this.calRepsAll.map(r => {
-                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '');
+                r.subName = String(r[show]) + (r.unknowBuff ? ' 规则未知' : '') + (r.NotSure ? ' 倍数可能不对' : '');
                 return r;
               });
               for (let key of [1, 2, 3]) { // 排序
