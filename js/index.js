@@ -882,6 +882,9 @@ $(function() {
       };
     },
     methods: {
+      getUrlKey(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
+      },
       loadData() {
         $.ajax({
           url: './data/data.min.json?v=5'
@@ -891,30 +894,23 @@ $(function() {
         });
       },
       loadFoodGodRule() {
+        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
+        time = JSON.parse(JSON.stringify(time));
         $.ajax({
-          url: './data/foodgodRule.min.json?v=32'
+          url: `http://129.211.28.110:7001/get_rule?time=${time}`
         }).then(rst => {
-          const now = new Date();
-          if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
+          if (rst) {
             this.foodgodRule = rst.rules;
-            if (!this.hiddenMessage) {
+            if (rst.tips && !this.hiddenMessage) {
               this.$message({
                 message: rst.tips,
                 showClose: true
               });
             }
           }
-          this.loadTaskRule();
-        });
-      },
-      loadTaskRule() {
-        $.ajax({
-          url: './data/taskRule.min.json?v=5'
-        }).then(rst => {
-          const now = new Date();
-          if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
-            this.foodgodRule = this.foodgodRule.concat(rst.rules);
-          }
+          this.loadData();
+        }).fail(err => {
+          this.$message.error('获取厨神规则失败');
           this.loadData();
         });
       },
@@ -1412,9 +1408,9 @@ $(function() {
                   buff_rule += (m.Effect * 100);
                 }
               });
-            } else if (rule.RepriceEffect) {
-              if (rule.RepriceEffect[r.id] != null) {
-                buff_rule += (rule.RepriceEffect[r.id] * 100)
+            } else if (rule.RecipeEffect) {
+              if (rule.RecipeEffect[r.id] != null) {
+                buff_rule += (rule.RecipeEffect[r.id] * 100)
               } else {
                 r.unknowBuff = true;
               }
