@@ -892,7 +892,7 @@ $(function() {
       },
       loadFoodGodRule() {
         $.ajax({
-          url: './data/foodgodRule.min.json?v=33'
+          url: './data/foodgodRule.min.json?v=34'
         }).then(rst => {
           const now = new Date();
           if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
@@ -1412,9 +1412,9 @@ $(function() {
                   buff_rule += (m.Effect * 100);
                 }
               });
-            } else if (rule.RepriceEffect) {
-              if (rule.RepriceEffect[r.id] != null) {
-                buff_rule += (rule.RepriceEffect[r.id] * 100)
+            } else if (rule.RecipeEffect) {
+              if (rule.RecipeEffect[r.id] != null) {
+                buff_rule += (rule.RecipeEffect[r.id] * 100)
               } else {
                 r.unknowBuff = true;
               }
