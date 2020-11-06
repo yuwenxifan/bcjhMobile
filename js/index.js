@@ -882,6 +882,9 @@ $(function() {
       };
     },
     methods: {
+      getUrlKey(name) {
+        return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
+      },
       loadData() {
         $.ajax({
           url: './data/data.min.json?v=5'
@@ -891,30 +894,23 @@ $(function() {
         });
       },
       loadFoodGodRule() {
+        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
+        time = JSON.parse(JSON.stringify(time));
         $.ajax({
-          url: './data/foodgodRule.min.json?v=35'
+          url: `https://bcjh.xyz/api/get_rule?time=${time}`
         }).then(rst => {
-          const now = new Date();
-          if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
+          if (rst) {
             this.foodgodRule = rst.rules;
-            if (!this.hiddenMessage) {
+            if (rst.tips && !this.hiddenMessage) {
               this.$message({
                 message: rst.tips,
                 showClose: true
               });
             }
           }
-          this.loadTaskRule();
-        });
-      },
-      loadTaskRule() {
-        $.ajax({
-          url: './data/taskRule.min.json?v=5'
-        }).then(rst => {
-          const now = new Date();
-          if (new Date(rst.startTime) <= now && new Date(rst.endTime) >= now) {
-            this.foodgodRule = this.foodgodRule.concat(rst.rules);
-          }
+          this.loadData();
+        }).fail(err => {
+          this.$message.error('获取厨神规则失败');
           this.loadData();
         });
       },
