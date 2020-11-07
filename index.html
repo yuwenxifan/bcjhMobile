@@ -551,6 +551,7 @@
           style="width: 100%"
           ref='recipesTable'
           @sort-change="handleRepSort"
+          v-if="tableShow"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="repCol.id"></el-table-column>
           <el-table-column fixed label="" width="50" v-if="repCol.img">
@@ -619,6 +620,7 @@
           style="width: 100%"
           ref='chefsTable'
           @sort-change="handleChefSort"
+          v-if="tableShow"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="chefCol.id"></el-table-column>
           <el-table-column fixed label="" width="60" v-if="chefCol.img">
@@ -680,6 +682,7 @@
           style="width: 100%"
           ref='equipsTable'
           @sort-change="handleEquipSort"
+          v-if="tableShow"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="equipCol.id"></el-table-column>
           <el-table-column fixed label="" width="45" v-if="equipCol.img">
@@ -738,6 +741,7 @@
           :default-sort = "{ prop: 'effAvg', order: 'descending' }"
           highlight-current-row
           @row-click = "checkRow"
+          v-if="tableShow"
           :height="tableHeight">
           <el-table-column fixed sortable="custom" prop="checkbox" width="35" v-if="decorationCol.checkbox">
             <template slot-scope="scope">
@@ -838,6 +842,7 @@
         <el-table
           :data="questsPage"
           style="width: 100%"
+          v-if="tableShow"
           :height="tableHeight"
           @sort-change="handleQuestsSort"
           ref="questsTable"
@@ -1102,6 +1107,7 @@
               ref='calRepsTable'
               :default-sort="sort.calRep"
               @sort-change="handleCalRepSort"
+              v-if="tableShow"
               :height="tableHeight - 6">
               <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="calRepCol.id"></el-table-column>
               <el-table-column fixed sortable="custom" prop="name_show" label="菜谱名" width="80"></el-table-column>
@@ -1357,6 +1363,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=79"></script>
+  <script src="./js/index.js?v=80"></script>
 </body>
 </html>

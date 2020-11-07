@@ -225,7 +225,8 @@ $(function() {
       calCode: 'cal',
       defaultEx: false,
       calShowGot: false,
-      tableHeight: null,
+      tableHeight: window.innerHeight - 122,
+      tableShow: false,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
       chartWidth: window.innerWidth,
@@ -1980,7 +1981,9 @@ $(function() {
           this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
         }
         this.$nextTick(() => {
-          this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
+          if (this.tableShow) {
+            this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
+          }
         });
         if (this.repCol.got) { // 丑陋的解决方式
           this.repCol.got = false;
@@ -1990,6 +1993,8 @@ $(function() {
         }
         setTimeout(() => {
           this.loading = false;
+          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
+          this.tableShow = true;
         }, 20);
       },
       changeGot(val, prop, id) {
@@ -2195,7 +2200,9 @@ $(function() {
           }, 10);
         }
         this.$nextTick(() => {
-          this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
+          if (this.tableShow) {
+            this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
+          }
         });
       },
       initEquip() {
@@ -2525,7 +2532,9 @@ $(function() {
         this.recipesCurPage = 1;
         this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
         this.$nextTick(()=>{
-          this.$refs.recipesTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.recipesTable.doLayout();
+          }
         });
       },
       handleCalRepSort(sort) {
@@ -2543,7 +2552,9 @@ $(function() {
         this.calReps.sort(this.customSort(sort));
         this.calRepsPage = this.calReps.slice(0, this.calRepsPageSize);
         this.$nextTick(()=>{
-          this.$refs.calRepsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.calRepsTable.doLayout();
+          }
         });
       },
       handleChefSort(sort) {
@@ -2589,7 +2600,9 @@ $(function() {
         this.chefsCurPage = 1;
         this.chefsPage = this.chefs.slice(0, this.chefsPageSize);
         this.$nextTick(()=>{
-          this.$refs.chefsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.chefsTable.doLayout();
+          }
         });
       },
       handleEquipSort(sort) {
@@ -2605,7 +2618,9 @@ $(function() {
         this.equips.sort(this.customSort(sort));
         this.equipsPage = this.equips.slice(0, this.equipsPageSize);
         this.$nextTick(()=>{
-          this.$refs.equipsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.equipsTable.doLayout();
+          }
         });
       },
       handleDecorationSort(sort) {
@@ -2639,7 +2654,9 @@ $(function() {
           return r;
         });
         this.$nextTick(()=>{
-          this.$refs.decorationsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.decorationsTable.doLayout();
+          }
         });
       },
       checkRow(curRow) {
@@ -2891,7 +2908,9 @@ $(function() {
           this.initRep();
         }
         this.$nextTick(()=>{
-          this.$refs.recipesTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.recipesTable.doLayout();
+          }
         });
       },
       changeEquipRadio(val) {
@@ -2911,7 +2930,9 @@ $(function() {
           }
         }
         this.$nextTick(()=>{
-          this.$refs.equipsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.equipsTable.doLayout();
+          }
         });
       },
       changeEquipConcurrent(val) {
@@ -2935,7 +2956,9 @@ $(function() {
           this.initEquip();
         }
         this.$nextTick(()=>{
-          this.$refs.equipsTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.equipsTable.doLayout();
+          }
         });
       },
       changeDecorationRadio(val) {
@@ -3060,9 +3083,6 @@ $(function() {
           }
         }
         this.extraHeight = localStorage.getItem('extraHeight') ? Number(localStorage.getItem('extraHeight')) : 0;
-        setTimeout(() => {
-          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
-        }, 100);
       },
       exportUserDataText() {
         this.saveUserData();
@@ -3274,7 +3294,9 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.recipesTable.doLayout();
+          }
           });
         }
       },
@@ -3295,7 +3317,9 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.calRepsTable.doLayout();
+          }
           });
         }
       },
@@ -3304,7 +3328,9 @@ $(function() {
         handler() {
           this.initRep();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.recipesTable.doLayout();
+          }
           });
         }
       },
@@ -3313,7 +3339,9 @@ $(function() {
         handler() {
           this.initRep();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.recipesTable.doLayout();
+          }
           });
         }
       },
@@ -3322,7 +3350,9 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
-            this.$refs.chefsTable.doLayout();
+            if (this.tableShow) {
+              this.$refs.chefsTable.doLayout();
+            }
           });
         }
       },
@@ -3331,7 +3361,9 @@ $(function() {
         handler() {
           this.initChef();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.chefsTable.doLayout();
+          }
           });
         }
       },
@@ -3340,7 +3372,9 @@ $(function() {
         handler() {
           this.initChef();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.chefsTable.doLayout();
+          }
           });
         }
       },
@@ -3349,7 +3383,9 @@ $(function() {
         handler() {
           this.initChef();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.chefsTable.doLayout();
+          }
           });
         }
       },
@@ -3358,7 +3394,9 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
           });
         }
       },
@@ -3367,7 +3405,9 @@ $(function() {
         handler() {
           this.initEquip();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
           });
         }
       },
@@ -3376,7 +3416,9 @@ $(function() {
         handler() {
           this.saveUserData();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.decorationsTable.doLayout();
+          }
           });
         }
       },
@@ -3385,7 +3427,9 @@ $(function() {
         handler() {
           this.initDecoration();
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.decorationsTable.doLayout();
+          }
           });
         }
       },
@@ -3616,13 +3660,17 @@ $(function() {
       repKeyword() {
         this.initRep();
         this.$nextTick(()=>{
-          this.$refs.recipesTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.recipesTable.doLayout();
+          }
         });
       },
       guestKeyword() {
         this.initRep();
         this.$nextTick(()=>{
-          this.$refs.recipesTable.doLayout();
+          if (this.tableShow) {
+            this.$refs.recipesTable.doLayout();
+          }
         });
       },
       questsType() {
@@ -3644,9 +3692,13 @@ $(function() {
             this.initChef();
           }
           this.$nextTick(()=>{
+            if (this.tableShow) {
             this.$refs.recipesTable.bodyWrapper.scrollTop = 0;
+          }
             this.$refs.recipesTable.bodyWrapper.scrollLeft = 0;
+            if (this.tableShow) {
             this.$refs.recipesTable.doLayout();
+          }
           });
         } else if (val == 2) {
           if (this.chefs.length == 0 || (this.chefUltimate && !this.chefUseAllUltimate && this.userUltimateChange)) {
@@ -3654,9 +3706,11 @@ $(function() {
             this.initChef();
           }
           this.$nextTick(()=>{
-            this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
-            this.$refs.chefsTable.bodyWrapper.scrollLeft = 0;
-            this.$refs.chefsTable.doLayout();
+            if (this.tableShow) {
+              this.$refs.chefsTable.bodyWrapper.scrollTop = 0;
+              this.$refs.chefsTable.bodyWrapper.scrollLeft = 0;
+              this.$refs.chefsTable.doLayout();
+            }
           });
         } else if (val == 3) {
           if (this.equips.length == 0) {
@@ -3665,7 +3719,9 @@ $(function() {
           this.$nextTick(()=>{
             this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
             this.$refs.equipsTable.bodyWrapper.scrollLeft = 0;
+            if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
           });
         } else if (val == 4) {
           if (this.decorations.length == 0) {
@@ -3674,7 +3730,9 @@ $(function() {
           this.$nextTick(()=>{
             this.$refs.decorationsTable.bodyWrapper.scrollTop = 0;
             this.$refs.decorationsTable.bodyWrapper.scrollLeft = 0;
+            if (this.tableShow) {
             this.$refs.decorationsTable.doLayout();
+          }
           });
         } else if (val === 5) {
           if (this.maps.length === 0) {
