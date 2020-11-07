@@ -225,10 +225,11 @@ $(function() {
       calCode: 'cal',
       defaultEx: false,
       calShowGot: false,
-      tableHeight: window.innerHeight - 122,
+      tableHeight: null,
       boxHeight: window.innerHeight - 50,
       chartHeight: window.innerHeight - 390,
       chartWidth: window.innerWidth,
+      extraHeight: 0,
       data: [],
       materials_list: [],
       chefs_list: [],
@@ -2393,7 +2394,9 @@ $(function() {
           ],
           series
         };
+        this.chartOption = chartOption;
         const myChart = echarts.init(document.getElementById('chart'));
+        this.myChart = myChart;
         myChart.setOption(chartOption);
       },
       handlePageSizeChange(val, prop) {
@@ -3056,6 +3059,7 @@ $(function() {
             });
           }
         }
+        this.extraHeight = localStorage.getItem('extraHeight') ? Number(localStorage.getItem('extraHeight')) : 0;
       },
       exportUserDataText() {
         this.saveUserData();
@@ -3241,9 +3245,25 @@ $(function() {
           this.isOriginHei = false;
         } else {
           this.isOriginHei = true;
-          this.tableHeight = window.innerHeight - 122;
-          this.boxHeight = window.innerHeight - 50;
-          this.chartHeight = window.innerHeight - 390;
+          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
+          this.boxHeight = window.innerHeight - 50 - this.extraHeight;
+          this.chartHeight = window.innerHeight - 390 - this.extraHeight;
+        }
+      },
+      extraHeight(val) {
+        localStorage.setItem('extraHeight', val);
+        $('.extra-header').css('height', val);
+        $('.left-bar-header').css('padding-top', val + 5);
+        $('.right-bar-body').css('padding-top', val + 10);
+        this.tableHeight = window.innerHeight - 122 - val;
+        this.boxHeight = window.innerHeight - 50 - val;
+        this.chartHeight = window.innerHeight - 390 - val;
+      },
+      leftBar(val) {
+        if (val) {
+          setTimeout(() => {
+            $('.left-bar-header').css('padding-top', this.extraHeight + 5);
+          }, 10);
         }
       },
       repCol: {
@@ -3582,6 +3602,7 @@ $(function() {
       rightBar(val) {
         if (val) {
           setTimeout(() => {
+            $('.right-bar-body').css('padding-top', this.extraHeight + 10);
             $('.el-drawer__body').scrollTop(0);
           }, 100);
         }
