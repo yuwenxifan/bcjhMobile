@@ -3060,6 +3060,9 @@ $(function() {
           }
         }
         this.extraHeight = localStorage.getItem('extraHeight') ? Number(localStorage.getItem('extraHeight')) : 0;
+        setTimeout(() => {
+          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
+        }, 100);
       },
       exportUserDataText() {
         this.saveUserData();
