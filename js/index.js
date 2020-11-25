@@ -208,6 +208,15 @@ $(function() {
         2: 10,
         3: 30,
         4: 50,
+        5: 100,
+      },
+      condimentMap: {
+        Sweet: '甜',
+        Sour: '酸',
+        Spicy: '辣',
+        Salty: '咸',
+        Bitter: '苦',
+        Tasty: '鲜',
       },
       userData: null,
       nav: [
@@ -286,6 +295,7 @@ $(function() {
         img: false,
         rarity: false,
         skills: false,
+        condiment: false,
         materials: false,
         price: true,
         exPrice: false,
@@ -308,6 +318,7 @@ $(function() {
         img: '图',
         rarity: '星级',
         skills: '技法',
+        condiment: '调料',
         materials: '材料',
         price: '单价',
         exPrice: '熟练加价',
@@ -323,7 +334,7 @@ $(function() {
         guests: '贵客',
         degree_guests: '升阶贵客',
         gift: '神级符文',
-        got: '已有'
+        got: '已有',
       },
       repFilter: {
         rarity: {
@@ -340,6 +351,14 @@ $(function() {
           fry: { name: '炸', flag: true },
           bake: { name: '烤', flag: true },
           steam: { name: '蒸', flag: true },
+        },
+        condiment: {
+          Sweet: { name: '甜', flag: true },
+          Sour: { name: '酸', flag: true },
+          Spicy: { name: '辣', flag: true },
+          Salty: { name: '咸', flag: true },
+          Bitter: { name: '苦', flag: true },
+          Tasty: { name: '鲜', flag: true },
         },
         material: {
           vegetable: { name: '菜', flag: true },
@@ -376,6 +395,7 @@ $(function() {
         },
       ],
       skill_radio: false,
+      condiment_radio: false,
       skill_type: false,
       repKeyword: '',
       guestKeyword: '',
@@ -391,6 +411,7 @@ $(function() {
         skills: true,
         skill: true,
         gather: false,
+        condiment: false,
         sex: false,
         origin: true,
         ultimateGoal: false,
@@ -404,6 +425,7 @@ $(function() {
         skills: '技法',
         skill: '技能',
         gather: '采集',
+        condiment: '调料',
         sex: '性别',
         origin: '来源',
         ultimateGoal: '修炼任务',
@@ -412,6 +434,7 @@ $(function() {
       },
       chefFilter: {
         chefKeyword: '',
+        condiment_radio: false,
         rarity: {
           1: true,
           2: true,
@@ -426,6 +449,14 @@ $(function() {
           fry: { name: '炸', val: '' },
           bake: { name: '烤', val: '' },
           steam: { name: '蒸', val: '' },
+        },
+        condiment: {
+          sweet: { name: '甜', flag: true },
+          sour: { name: '酸', flag: true },
+          spicy: { name: '辣', flag: true },
+          salty: { name: '咸', flag: true },
+          bitter: { name: '苦', flag: true },
+          tasty: { name: '鲜', flag: true },
         },
         sex: {
           male: { name: '男', flag: true },
@@ -967,6 +998,7 @@ $(function() {
           item.total_time = item.time * item.limit;
           item.total_time_show = this.formatTime(item.total_time);
           item.material_eff = ~~(3600 / item.time * materials_cnt);
+          item.condiment_show = this.condimentMap[item.condiment];
           item.combo = [];
           for (const i of this.data.combos) {
             if (i.recipes.indexOf(item.recipeId) > -1) {
@@ -1023,6 +1055,16 @@ $(function() {
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
           item.ultimateSkill = ultimateSkill;
           item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
+          const condiment_arr = [];
+          let condiment_value = 0;
+          for (let key in this.condimentMap) {
+            if (item[key.toLowerCase()] > 0) {
+              condiment_arr.push(`${this.condimentMap[key]}-${item[key.toLowerCase()]}`);
+              condiment_value += item[key.toLowerCase()];
+            }
+          }
+          item.condiment_value = condiment_value;
+          item.condiment_show = condiment_arr.join(' ');
           return item;
         });
         this.data.equips = this.data.equips.map(item => {
@@ -1459,7 +1501,7 @@ $(function() {
             skills.push(`${this.skill_map[key]}${item.skills[key]}`);
           }
           r.skills_show = skills.join(' ');
-          r.name = item.name + '（' + r.skills_show + '）';
+          r.name = `${item.name}（${r.skills_show} [${item.condiment_show}]）`;
 
           let ext = {
             galleryId: item.galleryId,
@@ -1484,7 +1526,9 @@ $(function() {
             time_show: item.time_show,
             gold_eff: item.gold_eff,
             materials_type: item.materials_type,
-            materials_search: item.materials_search
+            materials_search: item.materials_search,
+            condiment: item.condiment,
+            condiment_show: item.condiment_show,
           };
           Object.assign(ext, r);
           if (item.rarity <= (rule.CookbookRarityLimit || 6)) {
@@ -1507,13 +1551,14 @@ $(function() {
       },
       handlerChef(i) { // 厨子变化
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
+        const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         const reps = this.calRepsAll.map(r => {
           let chef = {};
           const rule = this.calType.row[0];
           chef.buff_rule = r.buff_rule;
 
-          let min = 4;
+          let min = 5;
           if (rule.DisableCookbookRank) { // 无菜品加成
             min = 1;
           }
@@ -1571,6 +1616,11 @@ $(function() {
               }
               if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
                 if (r.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
+                }
+              }
+              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+                if (r.condiment === eff.type.slice(3)) {
                   buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
                 }
               }
@@ -1830,6 +1880,7 @@ $(function() {
           skills: rep.skills,
           materials: rep.materials,
           unknowBuff: rep.unknowBuff,
+          condiment_show: rep.condiment_show,
           NotSure: rep.NotSure,
           cnt: this.calRepCnt[position],
           time: rep.time * this.calRepCnt[position],
@@ -1854,7 +1905,7 @@ $(function() {
           return rst;
         }
         rst.grade = rep[`chef_${chefId}`] ? rep[`chef_${chefId}`].grade : 0;
-        rst.grade_show = rst.grade < 0 ? '' : ' 可优特神'.slice(rst.grade, rst.grade + 1);
+        rst.grade_show = rst.grade < 0 ? '' : ' 可优特神传'.slice(rst.grade, rst.grade + 1);
         if (rst.grade < 1) { // 如果技法不足
           rst.price_total = 0;
           rst.time = 0;
@@ -1912,6 +1963,7 @@ $(function() {
           const f_combo = !this.repFilter.combo || item.combo;
           const f_price = item.price > this.repFilter.price;
           const f_got = !this.repFilter.got || this.repGot[item.recipeId];
+          const f_condiment = this.repFilter.condiment[item.condiment].flag;
           let f_material_eff = true;
           const ext = {};
           const materialEff = this.repFilter.materialEff;
@@ -1925,10 +1977,10 @@ $(function() {
               f_material_eff = f_material_eff || Boolean(material);
             });
           }
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff && f_got) {
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff && f_got && f_condiment) {
             const chef_ext = {};
             this.repChef.row.forEach(chef => {
-              let min = 4;
+              let min = 5;
               const diff = [];
               let diff_sum = 0;
               let buff = 100;
@@ -1964,7 +2016,7 @@ $(function() {
                   buff += eff.value;
                 }
               });
-              chef_ext[`chef_grade_${chef.id}`] = min < 0 ? '' : ' 可优特神'.slice(min, min + 1);
+              chef_ext[`chef_grade_${chef.id}`] = min < 0 ? '' : ' 可优特神传'.slice(min, min + 1);
               chef_ext[`chef_diff_${chef.id}`] = diff.join('\n');
               chef_ext[`chef_eff_${chef.id}`] = min < 1 ? '' : Math.floor(Math.ceil(item.price * buff / 100) * 3600 / item.time);
               chef_ext[`chef_diff_value_${chef.id}`] = diff_sum;
@@ -2063,6 +2115,12 @@ $(function() {
           const search = s_name || s_skill || s_ultiSkill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
           const f_got = !this.chefFilter.got || this.chefGot[item.chefId];
+          let f_condiment = false;
+          for (key in this.chefFilter.condiment) {
+            if (item[key] > 0 && this.chefFilter.condiment[key].flag) {
+              f_condiment = true;
+            }
+          }
           const sex_check = [];
           for (key in this.chefFilter.sex) {
             if (this.chefFilter.sex[key].flag) {
@@ -2137,10 +2195,10 @@ $(function() {
             skills,
             effect
           });
-          if (search && f_rarity && f_skills && f_sex && f_got) {
+          if (search && f_rarity && f_skills && f_sex && f_got && f_condiment) {
             const rep_ext = {};
             this.chefRep.row.forEach(rep => {
-              let min = 4;
+              let min = 5;
               const diff = [];
               let diff_sum = 0;
               let buff = 100;
@@ -2177,7 +2235,7 @@ $(function() {
                   }
                 });
               }
-              rep_ext[`rep_grade_${rep.id}`] = min < 0 ? '' : ' 可优特神'.slice(min, min + 1);
+              rep_ext[`rep_grade_${rep.id}`] = min < 0 ? '' : ' 可优特神传'.slice(min, min + 1);
               rep_ext[`rep_diff_${rep.id}`] = diff.join('\n');
               rep_ext[`rep_eff_${rep.id}`] = min < 1 ? '' : Math.floor(Math.ceil(rep.price * buff / 100) * 3600 / rep.time);
               rep_ext[`rep_diff_value_${rep.id}`] = diff_sum;
@@ -2567,6 +2625,7 @@ $(function() {
           Bake_show: 'Bake_last',
           Fry_show: 'Fry_last',
           Steam_show: 'Steam_last',
+          condiment_show: 'condiment_value',
         };
         if (!sort.order) {
           this.initChef();
@@ -2802,6 +2861,30 @@ $(function() {
             skill[key].flag = flag;
           }
           this.repFilter.skill = skill;
+        } else if (obj === 'repFilter.condiment') {
+          this.condiment_radio = false;
+          const condiment = JSON.parse(JSON.stringify(this.repFilter.condiment));
+          for (const key in condiment) {
+            if (!condiment[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in condiment) {
+            condiment[key].flag = flag;
+          }
+          this.repFilter.condiment = condiment;
+        } else if (obj === 'chefFilter.condiment') {
+          this.chefFilter.condiment_radio = false;
+          const condiment = JSON.parse(JSON.stringify(this.chefFilter.condiment));
+          for (const key in condiment) {
+            if (!condiment[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in condiment) {
+            condiment[key].flag = flag;
+          }
+          this.chefFilter.condiment = condiment;
         } else if (obj === 'equipFilter.skillType') {
           this.equip_radio = false;
           this.equip_concurrent = false;
@@ -2855,6 +2938,36 @@ $(function() {
           this.repFilter.skill[key].flag = !this.repFilter.skill[key].flag;
         }
       },
+      checkCondiment(key) {
+        if (this.condiment_radio) {
+          const condiment = JSON.parse(JSON.stringify(this.repFilter.condiment));
+          for (const k in condiment) {
+            if (k === key) {
+              condiment[k].flag = !condiment[k].flag;
+            } else {
+              condiment[k].flag = false;
+            }
+          }
+          this.repFilter.condiment = condiment;
+        } else {
+          this.repFilter.condiment[key].flag = !this.repFilter.condiment[key].flag;
+        }
+      },
+      checkChefCondiment(key) {
+        if (this.chefFilter.condiment_radio) {
+          const condiment = JSON.parse(JSON.stringify(this.chefFilter.condiment));
+          for (const k in condiment) {
+            if (k === key) {
+              condiment[k].flag = !condiment[k].flag;
+            } else {
+              condiment[k].flag = false;
+            }
+          }
+          this.chefFilter.condiment = condiment;
+        } else {
+          this.chefFilter.condiment[key].flag = !this.chefFilter.condiment[key].flag;
+        }
+      },
       checkSkillType(key) {
         if (this.equip_radio) {
           const skill = JSON.parse(JSON.stringify(this.equipFilter.skillType));
@@ -2884,6 +2997,40 @@ $(function() {
               skill[key].flag = false;
             }
             this.repFilter.skill = skill;
+          }
+        }
+      },
+      changeCondimentRadio(val) {
+        if (val) {
+          const condiment = JSON.parse(JSON.stringify(this.repFilter.condiment));
+          let cnt = 0;
+          for (const key in condiment) {
+            if (condiment[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in condiment) {
+              condiment[key].flag = false;
+            }
+            this.repFilter.condiment = condiment;
+          }
+        }
+      },
+      changeChefCondimentRadio(val) {
+        if (val) {
+          const condiment = JSON.parse(JSON.stringify(this.chefFilter.condiment));
+          let cnt = 0;
+          for (const key in condiment) {
+            if (condiment[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in condiment) {
+              condiment[key].flag = false;
+            }
+            this.chefFilter.condiment = condiment;
           }
         }
       },
@@ -3005,6 +3152,7 @@ $(function() {
         }
         if (this.navId === 1) {
           this.skill_radio = false;
+          this.condiment_radio = false;
           this.skill_type = false;
           this.repKeyword = '';
           this.guestKeyword = '';

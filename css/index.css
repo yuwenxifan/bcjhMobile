@@ -342,7 +342,7 @@ section.header .right {
 
 .right-bar footer {
   position: absolute;
-  z-index: 999;
+  z-index: 2000;
   bottom: 0;
   padding: 0px 0px 20px 15px;
 }
@@ -1193,6 +1193,22 @@ input.hidden {
 .rst .skill-box .val {
   font-size: 8px;
 }
+.rst .condiment {
+  display: inline-block;
+  position: absolute;
+  font-size: 11px;
+  top: -2px;
+  right: 0px;
+  height: 13px;
+  width: 15px;
+  text-align: center;
+  line-height: 15px;
+  color: #7c5f51;
+  background: #fdf6ee;
+  font-weight: 600;
+  border-radius: 1px;
+  box-shadow: rgba(19, 12, 12, 0.3) 1px 2px 1px;
+}
 .rst .grade {
   position: absolute;
   top: -2px;
@@ -1224,6 +1240,10 @@ input.hidden {
 .rst .grade.grade-4 {
   border-color: #78280f;
   background: linear-gradient(to bottom, #d45623, #ba3d27);
+}
+.rst .grade.grade-5 {
+  border-color: #562949;
+  background: linear-gradient(to bottom, #a7619f, #6b1f4a);
 }
 .rst .buff {
   display: flex;

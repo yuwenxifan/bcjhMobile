@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=22">
-  <link rel="stylesheet" href="./css/image.css?v=6">
+  <link rel="stylesheet" href="./css/index.css?v=23">
+  <link rel="stylesheet" href="./css/image.css?v=7">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -44,6 +44,7 @@
                 :class="repCol[key] ? 'active' : ''"
                 @click="repCol[key] = !repCol[key]"
               >{{val}}</span>
+              <br/>
               <span class="select-box" style="width: 130px; position: relative; z-index: 1002;">
                 <muti-select
                   :option="chefs_list"
@@ -90,6 +91,23 @@
                   active-color="#82a1b0"
                   active-text="同时"
                   @change="changeSkillType"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in repFilter.condiment"
+                  :class="val.flag ? 'active' : ''"
+                  @click="checkCondiment(key)"
+                >{{val.name}}</span>
+                <br/>
+                <span class="checkbox" @click="selectAll('repFilter.condiment')">全选</span>
+                <el-switch
+                  v-model="condiment_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeCondimentRadio"
                   inactive-color="#ddd">
                 </el-switch>
               </div>
@@ -237,6 +255,23 @@
                 <span class="checkbox clear" @click="clearFilterSkills">
                   清<br/>空
                 </span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in chefFilter.condiment"
+                  :class="val.flag ? 'active' : ''"
+                  @click="checkChefCondiment(key)"
+                >{{val.name}}</span>
+                <br/>
+                <span class="checkbox" @click="selectAll('chefFilter.condiment')">全选</span>
+                <el-switch
+                  v-model="chefFilter.condiment_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeChefCondimentRadio"
+                  inactive-color="#ddd">
+                </el-switch>
               </div>
               <div class="checkbox-contain">
                 <span
@@ -567,6 +602,7 @@
           <el-table-column sortable="custom" prop="fry" label="炸" min-width="48" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="bake" label="烤" min-width="48" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="steam" label="蒸" min-width="48" v-if="repCol.skills"></el-table-column>
+          <el-table-column sortable="custom" prop="condiment_show" label="调料" min-width="64" v-if="repCol.condiment"></el-table-column>
           <el-table-column sortable="custom" prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
           <el-table-column sortable="custom" prop="price" min-width="64" label="单价" v-if="repCol.price"></el-table-column>
           <el-table-column sortable="custom" prop="exPrice" min-width="64" label="熟练" v-if="repCol.exPrice"></el-table-column>
@@ -641,6 +677,7 @@
           <el-table-column sortable="custom" prop="creation" label="面" min-width="48" v-if="chefCol.gather"></el-table-column>
           <el-table-column sortable="custom" prop="veg" label="菜" min-width="48" v-if="chefCol.gather"></el-table-column>
           <el-table-column sortable="custom" prop="fish" label="鱼" min-width="48" v-if="chefCol.gather"></el-table-column>
+          <el-table-column sortable="custom" prop="condiment_show" label="调料" min-width="64" v-if="chefCol.condiment"></el-table-column>
           <el-table-column sortable="custom" prop="sex" min-width="64" label="性别" v-if="chefCol.sex"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="chefCol.origin"></el-table-column>
           <el-table-column sortable="custom" prop="ultimateGoal" label="修炼任务" min-width="150" v-if="chefCol.ultimateGoal"></el-table-column>
@@ -1051,6 +1088,9 @@
                             <span class="grade" :class="'grade-' + item.grade" v-show="item.grade > 0">
                               {{item.grade_show}}
                             </span>
+                            <span class="condiment">
+                              {{item.condiment_show}}
+                            </span>
                             <div class="skill-box">
                               <div class="skill" v-for="(val, key) in item.skills">
                                 <span class="label">{{skill_map[key]}}</span>
@@ -1353,7 +1393,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-11-10 13:20 更新菜谱-休闲蛋糕。</div>
+            <div class="p">2020-11-26 00:50 更新不夜城奖池相关菜谱，更新部分新系统相关，计算器加调料什么的小鱼已经四分之三死了。</div>
           </div>
         </div>
       </div>
@@ -1363,6 +1403,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=81"></script>
+  <script src="./js/index.js?v=82"></script>
 </body>
 </html>
