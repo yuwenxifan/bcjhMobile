@@ -920,7 +920,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=6'
+          url: './data/data.min.json?v=7'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1963,7 +1963,7 @@ $(function() {
           const f_combo = !this.repFilter.combo || item.combo;
           const f_price = item.price > this.repFilter.price;
           const f_got = !this.repFilter.got || this.repGot[item.recipeId];
-          const f_condiment = this.repFilter.condiment[item.condiment].flag;
+          const f_condiment = this.repFilter.condiment[item.condiment] && this.repFilter.condiment[item.condiment].flag;
           let f_material_eff = true;
           const ext = {};
           const materialEff = this.repFilter.materialEff;
