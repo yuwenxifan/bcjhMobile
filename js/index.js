@@ -517,6 +517,12 @@ $(function() {
           Creation: { name: '面采集', flag: true },
           Vegetable: { name: '菜采集', flag: true },
           Fish: { name: '鱼采集', flag: true },
+          UseSweet: { name: '甜售价', flag: true },
+          UseSour: { name: '酸售价', flag: true },
+          UseSpicy: { name: '辣售价', flag: true },
+          UseSalty: { name: '咸售价', flag: true },
+          UseBitter: { name: '苦售价', flag: true },
+          UseTasty: { name: '鲜售价', flag: true },
           Gold_Gain: { name: '金币获得', flag: true },
           GuestApearRate: { name: '稀有客人', flag: true },
           OpenTime: { name: '开业时间', flag: true },
@@ -2105,6 +2111,12 @@ $(function() {
             userUltimate[key] = JSON.parse(JSON.stringify(this.userUltimate[key]));
           }
         }
+        let is_all = true;
+        for (let key in this.chefFilter.condiment) {
+          if (!this.chefFilter.condiment[key].flag) {
+            is_all = false;
+          }
+        }
         let chefs_list = [];
         for (const item of this.data.chefs) {
           item.checked = this.chefGot[item.chefId];
@@ -2115,7 +2127,7 @@ $(function() {
           const search = s_name || s_skill || s_ultiSkill || s_origin;
           const f_rarity = this.chefFilter.rarity[item.rarity];
           const f_got = !this.chefFilter.got || this.chefGot[item.chefId];
-          let f_condiment = false;
+          let f_condiment = is_all;
           for (key in this.chefFilter.condiment) {
             if (item[key] > 0 && this.chefFilter.condiment[key].flag) {
               f_condiment = true;
