@@ -954,11 +954,12 @@ $(function() {
           this.loadData();
         }).fail(err => {
           if ('https:' == document.location.protocol) {
-            this.$message({
-              message: '后端api的域名因为没有网站备案被制裁了，不知道什么时候能弄好，期间会影响APP的自动更新，厨神/限时计算器，其他不影响，要使用厨神/限时计算器的请移步到 http://bcjh.gitee.io (网址的https换成http，个人数据需要手动转移)',
-              showClose: true,
-              duration: 0,
-            });
+            // this.$message({
+            //   message: '后端api的域名因为没有网站备案被制裁了，不知道什么时候能弄好，期间会影响APP的自动更新，厨神/限时计算器，其他不影响，要使用厨神/限时计算器的请移步到 http://bcjh.gitee.io (网址的https换成http，个人数据需要手动转移)',
+            //   showClose: true,
+            //   duration: 0,
+            // });
+            this.$message.error('获取厨神规则失败');
           } else {
             this.$message.error('获取厨神规则失败');
           }
