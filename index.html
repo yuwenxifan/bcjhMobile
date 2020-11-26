@@ -107,7 +107,7 @@
                   v-model="condiment_radio"
                   active-color="#82a1b0"
                   active-text="单选"
-                  @change="changeCondimentRadio"
+                  @change="changeRepCondimentRadio"
                   inactive-color="#ddd">
                 </el-switch>
               </div>
@@ -346,6 +346,54 @@
               </div>
             </div>
           </div>
+          <div v-show="navId === 10">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('condimentCol')">全选</span>
+              <span
+                v-for="(val, key) in condimentColName"
+                class="checkbox"
+                :class="condimentCol[key] ? 'active' : ''"
+                @click="condimentCol[key] = !condimentCol[key]"
+              >{{val}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">筛选</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in condimentFilter.rarity"
+                  :class="val ? 'active' : ''"
+                  @click="condimentFilter.rarity[key] = !val"
+                >{{key}}星</span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in condimentFilter.skillType"
+                  :class="val.flag ? 'active' : ''"
+                  @click="checkCondiSkillType(key)"
+                >{{val.name}}</span>
+                <span class="checkbox" @click="selectAll('condimentFilter.skillType')">全选</span>
+                <el-switch
+                  v-model="condiment_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeCondimentRadio"
+                  inactive-color="#ddd">
+                </el-switch>
+                <el-switch
+                  v-model="condiment_concurrent"
+                  active-color="#82a1b0"
+                  active-text="同时"
+                  @change="changeCondimentConcurrent"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+            </div>
+          </div>
           <div v-show="navId === 4">
             <div class="box">
               <div class="box-title">展示列</div>
@@ -432,7 +480,7 @@
           </footer>
         </div>
       </el-drawer>
-      <div v-if="(navId < 6 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="(navId < 6 || (navId == 7 && calCode == 'rep') || navId == 10) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -465,6 +513,17 @@
         <div class="input-box" v-show="navId==3">
           <span class="label">厨具分页</span>
           <el-select size="mini" v-model="equipsPageSize" @change="handlePageSizeChange($event, 'equips')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==10">
+          <span class="label">装修分页</span>
+          <el-select size="mini" v-model="condimentsPageSize" @change="handlePageSizeChange($event, 'condiments')">
             <el-option
               v-for="item in page_list"
               :key="item.id"
@@ -506,7 +565,7 @@
             </el-option>
           </el-select>
         </div>
-        <div class="warning-tip" v-if="([1, 2, 3, 4, 6].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
+        <div class="warning-tip" v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
         <span class="switch-box">
           <span>
             <el-switch
@@ -563,7 +622,7 @@
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
       <span class="right">
-        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && calCode == 'rep') || navId == 10)" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
       </span>
     </section>
@@ -901,6 +960,43 @@
           :total="questsType === 1 ? questsMain.length : questsRegional.length">
         </el-pagination>
       </div>
+      </div>
+      <div v-show="navId === 10">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 技能 来源" v-model="condimentFilter.condimentKeyword">
+          </el-input>
+        </div>
+        <el-table
+          :data="condimentsPage"
+          style="width: 100%"
+          ref='condimentsTable'
+          @sort-change="handleCondimentSort"
+          v-if="tableShow"
+          :height="tableHeight">
+          <el-table-column fixed sortable="custom" prop="condimentId" label="No." width="55" v-if="condimentCol.id"></el-table-column>
+          <el-table-column fixed label="" width="45" v-if="condimentCol.img">
+            <template slot-scope="scope">
+              <div class="icon-condiment" :class="'condiment_' + scope.row.condimentId"></div>
+            </template>
+          </el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="55" v-if="condimentCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="skill" label="技能" min-width="155" v-if="condimentCol.skill"></el-table-column>
+          <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="condimentCol.origin"></el-table-column>
+          <el-table-column label="" min-width="1"></el-table-column>
+        </el-table>
+        <div class="pagination">
+          <el-pagination
+            background
+            small
+            :page-size="condimentsPageSize"
+            :current-page.sync="condimentsCurPage"
+            @current-change="handleCurrentChange"
+            :pager-count="5"
+            layout="total, prev, pager, next"
+            :total="condiments.length">
+          </el-pagination>
+        </div>
       </div>
       <div v-show="navId === 7">
         <div class="cal-box">
@@ -1403,6 +1499,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=87"></script>
+  <script src="./js/index.js?v=88"></script>
 </body>
 </html>

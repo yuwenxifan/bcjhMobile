@@ -225,6 +225,7 @@ $(function() {
         { id: 3, name: '厨具', icon: 'el-icon-knife-fork' },
         { id: 4, name: '装修', icon: 'el-icon-refrigerator' },
         { id: 5, name: '采集', icon: 'el-icon-chicken' },
+        { id: 10, name: '调料', icon: 'el-icon-ice-tea' },
         { id: 6, name: '任务', icon: 'el-icon-document' },
         { id: 7, name: '计算器', icon: 'el-icon-set-up' },
         { id: 8, name: '个人', icon: 'el-icon-user' },
@@ -283,6 +284,7 @@ $(function() {
         },
         chef: {},
         equip: {},
+        condiment: {},
         decoration: {
           prop: 'effAvg',
           order: 'descending'
@@ -544,6 +546,49 @@ $(function() {
       originEquipFilter: {},
       equipsCurPage: 1,
       equipsPageSize: 20,
+      condiments: [],
+      condimentsPage: [],
+      condimentCol: {
+        id: false,
+        img: false,
+        rarity: true,
+        skill: true,
+        origin: true
+      },
+      condimentColName: {
+        id: '编号',
+        img: '图',
+        rarity: '星',
+        skill: '技能',
+        origin: '来源'
+      },
+      condimentFilter: {
+        condimentKeyword: '',
+        rarity: {
+          1: true,
+          2: true,
+          3: true
+        },
+        skillType: {
+          UseStirfry: { name: '炒售价', flag: true },
+          UseBoil: { name: '煮售价', flag: true },
+          UseKnife: { name: '切售价', flag: true },
+          UseFry: { name: '炸售价', flag: true },
+          UseBake: { name: '烤售价', flag: true },
+          UseSteam: { name: '蒸售价', flag: true },
+          UseSweet: { name: '甜售价', flag: true },
+          UseSour: { name: '酸售价', flag: true },
+          UseSpicy: { name: '辣售价', flag: true },
+          UseSalty: { name: '咸售价', flag: true },
+          UseBitter: { name: '苦售价', flag: true },
+          UseTasty: { name: '鲜售价', flag: true },
+        }
+      },
+      condiment_concurrent: false,
+      condiment_radio: false,
+      originCondimentFilter: {},
+      condimentsCurPage: 1,
+      condimentsPageSize: 20,
       decorations: [],
       decorationsPage: [],
       decorationCol: {
@@ -1093,6 +1138,31 @@ $(function() {
           return item;
         });
         this.data.equips = this.data.equips.map(item => {
+          item.rarity_show = '★★★'.slice(0, item.rarity);
+          const skill = this.data.skills.filter(s => {
+            return item.skill.indexOf(s.skillId) > -1;
+          });
+          let effect = [];
+          skill.forEach(s => {
+            effect = effect.concat(s.effect);
+          })
+          item.effect = effect;
+          item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
+          let skillType = {};
+          for (const s of skill) {
+            for (const i of s.effect) {
+              if (i.type == 'OpenTime') {
+                skillType[i.type] = i.value < 0 ? 'buff' : 'debuff';
+              } else {
+                skillType[i.type] = i.value > 0 ? 'buff' : 'debuff';
+              }
+            }
+          }
+          item.skill_type = skillType;
+          item.origin = item.origin.replace(this.reg, '\n');
+          return item;
+        });
+        this.data.condiments = this.data.condiments.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
           const skill = this.data.skills.filter(s => {
             return item.skill.indexOf(s.skillId) > -1;
@@ -2332,6 +2402,44 @@ $(function() {
           this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
         });
       },
+      initCondiment() {
+        this.condiments = [];
+        for (const item of this.data.condiments) {
+          const s_name = this.checkKeyword(this.condimentFilter.condimentKeyword, item.name);
+          const s_skill = this.checkKeyword(this.condimentFilter.condimentKeyword, item.skill);
+          const s_origin = this.checkKeyword(this.condimentFilter.condimentKeyword, item.origin);
+          const search = s_name || s_skill || s_origin;
+          const f_rarity = this.condimentFilter.rarity[item.rarity];
+          let f_skill = this.condiment_concurrent;
+          for (const key in this.condimentFilter.skillType) {
+            if (this.condimentFilter.skillType[key].flag) {
+              if (this.condiment_concurrent) {
+                f_skill = f_skill && this.checkCondimentSkillType(key, {
+                  obj: item.skill_type,
+                  desc: item.skill
+                });
+              } else {
+                f_skill = f_skill || this.checkCondimentSkillType(key, {
+                  obj: item.skill_type,
+                  desc: item.skill
+                });
+              }
+            }
+          }
+          if (search && f_rarity && f_skill) {
+            this.condiments.push(item);
+          }
+        }
+        if (this.sort.condiment.order) {
+          this.handleCondimentSort(this.sort.condiment);
+        } else {
+          this.condimentsCurPage = 1;
+          this.condimentsPage = this.condiments.slice(0, this.condimentsPageSize);
+        }
+        this.$nextTick(() => {
+          this.$refs.condimentsTable.bodyWrapper.scrollTop = 0;
+        });
+      },
       initDecoration() {
         this.decorations = [];
         const position_arr = this.decorationFilter.position.filter(p => { return p.flag }).map(p => p.name);
@@ -2514,6 +2622,9 @@ $(function() {
           return this.equipFilter.buff ? obj[key] === 'buff' : Boolean(obj[key]);
         }
       },
+      checkCondimentSkillType(key, { obj, desc }) {
+        return this.equipFilter.buff ? obj[key] === 'buff' : Boolean(obj[key]);
+      },
       checkKeyword(keyword, str) {
         if (!keyword) {
           return true;
@@ -2557,7 +2668,8 @@ $(function() {
           2: 'chefs',
           3: 'equips',
           4: 'decorations',
-          7: 'calReps'
+          7: 'calReps',
+          10: 'condiments',
         }
         const nav = this.navId;
         if (nav === 6) {
@@ -2710,6 +2822,24 @@ $(function() {
         this.$nextTick(()=>{
           if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
+        });
+      },
+      handleCondimentSort(sort) {
+        this.sort.condiment = sort;
+        const map = {
+          rarity_show: 'rarity',
+        };
+        if (!sort.order) {
+          this.initCondiment();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.condimentsCurPage = 1;
+        this.condiments.sort(this.customSort(sort));
+        this.condimentsPage = this.condiments.slice(0, this.condimentsPageSize);
+        this.$nextTick(()=>{
+          if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
           }
         });
       },
@@ -2929,6 +3059,19 @@ $(function() {
             skillType[key].flag = flag;
           }
           this.equipFilter.skillType = skillType;
+        } else if (obj === 'condimentFilter.skillType') {
+          this.condiment_radio = false;
+          this.condiment_concurrent = false;
+          const skillType = JSON.parse(JSON.stringify(this.condimentFilter.skillType));
+          for (const key in skillType) {
+            if (!skillType[key].flag) {
+              flag = true;
+            }
+          }
+          for (const key in skillType) {
+            skillType[key].flag = flag;
+          }
+          this.condimentFilter.skillType = skillType;
         } else if (obj === 'decorationFilter.position') {
           this.decoration_radio = false;
           const position = JSON.parse(JSON.stringify(this.decorationFilter.position));
@@ -3014,6 +3157,21 @@ $(function() {
           this.equipFilter.skillType[key].flag = !this.equipFilter.skillType[key].flag;
         }
       },
+      checkCondiSkillType(key) {
+        if (this.condiment_radio) {
+          const skill = JSON.parse(JSON.stringify(this.condimentFilter.skillType));
+          for (const k in skill) {
+            if (k === key) {
+              skill[k].flag = !skill[k].flag;
+            } else {
+              skill[k].flag = false;
+            }
+          }
+          this.condimentFilter.skillType = skill;
+        } else {
+          this.condimentFilter.skillType[key].flag = !this.condimentFilter.skillType[key].flag;
+        }
+      },
       changeSkillRadio(val) {
         if (val) {
           const skill = JSON.parse(JSON.stringify(this.repFilter.skill));
@@ -3031,7 +3189,7 @@ $(function() {
           }
         }
       },
-      changeCondimentRadio(val) {
+      changeRepCondimentRadio(val) {
         if (val) {
           const condiment = JSON.parse(JSON.stringify(this.repFilter.condiment));
           let cnt = 0;
@@ -3136,6 +3294,54 @@ $(function() {
         this.$nextTick(()=>{
           if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
+        });
+      },
+      changeCondimentRadio(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.condimentFilter.skillType));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 1) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.condimentFilter.skillType = skill;
+          }
+        }
+        this.$nextTick(()=>{
+          if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
+          }
+        });
+      },
+      changeCondimentConcurrent(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.condimentFilter.skillType));
+          let cnt = 0;
+          for (const key in skill) {
+            if (skill[key].flag) {
+              cnt++;
+            }
+          }
+          if (cnt > 2) {
+            for (const key in skill) {
+              skill[key].flag = false;
+            }
+            this.condimentFilter.skillType = skill;
+          } else {
+            this.initCondiment();
+          }
+        } else {
+          this.initCondiment();
+        }
+        this.$nextTick(()=>{
+          if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
           }
         });
       },
@@ -3590,6 +3796,28 @@ $(function() {
           });
         }
       },
+      condimentCol: {
+        deep: true,
+        handler() {
+          this.saveUserData();
+          this.$nextTick(()=>{
+            if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
+          }
+          });
+        }
+      },
+      condimentFilter: {
+        deep: true,
+        handler() {
+          this.initCondiment();
+          this.$nextTick(()=>{
+            if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
+          }
+          });
+        }
+      },
       decorationCol: {
         deep: true,
         handler() {
@@ -3900,6 +4128,17 @@ $(function() {
             this.$refs.equipsTable.bodyWrapper.scrollLeft = 0;
             if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
+          });
+        } else if (val == 10) {
+          if (this.condiments.length == 0) {
+            this.initCondiment();
+          }
+          this.$nextTick(()=>{
+            this.$refs.condimentsTable.bodyWrapper.scrollTop = 0;
+            this.$refs.condimentsTable.bodyWrapper.scrollLeft = 0;
+            if (this.tableShow) {
+            this.$refs.condimentsTable.doLayout();
           }
           });
         } else if (val == 4) {
