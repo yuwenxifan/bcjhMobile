@@ -977,7 +977,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=7'
+          url: './data/data.min.json?v=8'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -991,9 +991,12 @@ $(function() {
           url = 'https://bcjh.xyz/api/get_rule';
         }
         $.ajax({
-          url: `${url}?time=${time}`
+          // url: `${url}?time=${time}`
+          url: 'data/foodRule.min.json?v=1'
         }).then(rst => {
-          if (rst) {
+          // if (rst) {
+          const now = new Date().valueOf();
+          if (new Date(rst.startTime).valueOf() <= now && new Date(rst.endTime).valueOf() >= now) {
             this.foodgodRule = rst.rules;
             if (rst.tips && !this.hiddenMessage) {
               this.$message({
@@ -3432,6 +3435,7 @@ $(function() {
           calRepCol: this.calRepCol,
           chefCol: this.chefCol,
           equipCol: this.equipCol,
+          condimentCol: this.condimentCol,
           decorationCol: this.decorationCol,
           mapCol: this.mapCol,
           userUltimate: this.userUltimate,
@@ -3448,7 +3452,7 @@ $(function() {
       },
       getUserData() {
         let userData = localStorage.getItem('data');
-        const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'decorationCol', 'mapCol', 'userUltimate'];
+        const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
         const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot'];
         if (userData) {
           try {
