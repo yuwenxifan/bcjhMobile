@@ -992,7 +992,7 @@ $(function() {
         }
         $.ajax({
           // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=1'
+          url: 'data/foodRule.min.json?v=2'
         }).then(rst => {
           // if (rst) {
           const now = new Date().valueOf();
