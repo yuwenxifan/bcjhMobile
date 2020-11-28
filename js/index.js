@@ -696,6 +696,11 @@ $(function() {
         2: { id: [], row: [] },
         3: { id: [], row: [] }
       },
+      calCondiment: {
+        1: { id: [], row: [] },
+        2: { id: [], row: [] },
+        3: { id: [], row: [] }
+      },
       calRep: {
         '1-1': { id: [], row: [] },
         '1-2': { id: [], row: [] },
@@ -729,6 +734,17 @@ $(function() {
         '3-2': false,
         '3-3': false,
       },
+      calRepCondi: { // 加料
+        '1-1': true,
+        '1-2': true,
+        '1-3': true,
+        '2-1': true,
+        '2-2': true,
+        '2-3': true,
+        '3-1': true,
+        '3-2': true,
+        '3-3': true,
+      },
       calRepShow: [[], [], []],
       calChefShowLast: {
         1: {},
@@ -740,6 +756,7 @@ $(function() {
       calChefs_origin: [],
       calChefs_list: [],
       calEquips_list: [],
+      calCondiments_list: [],
       calReps_list: {
         1: [],
         2: [],
@@ -852,9 +869,43 @@ $(function() {
       calChefShow: {},
       lineTips: 0,
       lastCalResultTotal: 0,
-      hiddenMessage: false
+      hiddenMessage: false,
+      oldCalRep: {
+        '1-1': 0,
+        '1-2': 0,
+        '1-3': 0,
+        '2-1': 0,
+        '2-2': 0,
+        '2-3': 0,
+        '3-1': 0,
+        '3-2': 0,
+        '3-3': 0,
+      }
     },
     computed: {
+      showCondiment() {
+        let result = false;
+        for (let i = 1; i < 4; i++) {
+          if (this.calChef[i] && this.calCondiment[i] && this.calChef[i].row[0] && this.calCondiment[i].row[0]) result = true;
+        }
+        return result;
+      },
+      condiCnt() {
+        const cnt = {
+          1: 0,
+          2: 0,
+          3: 0
+        };
+        for (const k in cnt) {
+          for (let i = 1; i < 4; i++) {
+            const key = `${k}-${i}`;
+            if (this.calRep[key].row[0] && this.calRepCondi[key]) {
+              cnt[k] += this.calRep[key].row[0].rarity * this.calRepCnt[key];
+            }
+          }
+        }
+        return cnt
+      },
       skillWidth() {
         return (this.showLastSkill || !this.chefUltimate) ? 48 : 68;
       },
@@ -992,12 +1043,11 @@ $(function() {
         }
         $.ajax({
           // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=2'
+          url: 'data/foodRule.min.json?v=3'
         }).then(rst => {
           // if (rst) {
           const now = new Date().valueOf();
           if (new Date(rst.startTime).valueOf() <= now && new Date(rst.endTime).valueOf() >= now) {
-            this.foodgodRule = rst.rules;
             if (rst.tips && !this.hiddenMessage) {
               this.$message({
                 message: rst.tips,
@@ -1005,6 +1055,9 @@ $(function() {
               });
             }
           }
+          this.foodgodRule = rst.rules.filter(r => {
+            return new Date(r.start_time).valueOf() <= now && new Date(r.end_time).valueOf() >= now
+          });
           this.loadData();
         }).fail(err => {
           if ('https:' == document.location.protocol) {
@@ -1390,6 +1443,11 @@ $(function() {
             2: { id: [], row: [] },
             3: { id: [], row: [] }
           };
+          this.calCondiment = {
+            1: { id: [], row: [] },
+            2: { id: [], row: [] },
+            3: { id: [], row: [] }
+          };
           this.calRepCnt = {
             '1-1': null,
             '1-2': null,
@@ -1433,6 +1491,7 @@ $(function() {
           }
           this.initCalChef();
           this.initCalEquip();
+          this.initCalCondiment();
           this.initCalRep();
 
           let rst = {};
@@ -1501,6 +1560,16 @@ $(function() {
           return {
             id: item.equipId,
             name: item.name,
+            subName: item.skill,
+            effect: item.effect
+          }
+        });
+      },
+      initCalCondiment() {
+        this.calCondiments_list = this.data.condiments.map(item => {
+          return {
+            id: item.condimentId,
+            name: `${item.name} ${item.rarity_show}`,
             subName: item.skill,
             effect: item.effect
           }
@@ -1663,6 +1732,7 @@ $(function() {
           let inf = [];
           let buff_skill = 0;
           let buff_equip = 0;
+          let buff_condiment = 0;
           chef.buff = r.buff;
 
           if (rule.ChefTagEffect) { // 男厨/女厨倍数
@@ -1726,6 +1796,23 @@ $(function() {
           }
           chef.buff_equip = buff_equip;
           chef.buff += buff_equip;
+
+          if (!rule.DisableCondimentSkillEffect) {
+            this.calChefShow[i].condiment_effect.forEach(eff => { // 厨具技能
+              if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+                if (r.skills[eff.type.slice(3).toLowerCase()]) {
+                  buff_condiment += eff.value;
+                }
+              }
+              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+                if (r.condiment === eff.type.slice(3)) {
+                  buff_condiment += eff.value;
+                }
+              }
+            });
+          }
+          chef.buff_condiment = buff_condiment;
+          chef.buff += buff_condiment;
 
           let ex = 0;
           if (this.defaultEx) {
@@ -1814,6 +1901,12 @@ $(function() {
         }
       },
       handleCalRepChange(row, key) {
+        if (!row[0]) {
+          this.oldCalRep[key] = 0;
+        } else if (this.oldCalRep[key] != row[0].id) {
+          this.calRepCondi[key] = true;
+          this.oldCalRep[key] = row[0].id;
+        }
         if (this.calRepCnt[key] == null || !row[0]) {
           this.calRepCnt[key] = (row[0] ? row[0].limit : null);
         }
@@ -1868,6 +1961,7 @@ $(function() {
         const skills_show = {};
         const skills_last = {};
         let equip_effect = [];
+        let condiment_effect = [];
         let sum_skill_effect = [];
         let time_buff = 0;
         function judgeEff(eff) {
@@ -1880,6 +1974,9 @@ $(function() {
             }
             return judgeEff(eff);
           });
+        }
+        if (this.calCondiment[position].row[0]) { // 调料
+          condiment_effect = this.calCondiment[position].row[0].effect.slice();
         }
         chef.skill_effect.forEach(eff => {
           if (eff.type == 'OpenTime') {
@@ -1900,6 +1997,7 @@ $(function() {
           });
         }
         chef.equip_effect = equip_effect;
+        chef.condiment_effect = condiment_effect;
         chef.sum_skill_effect = sum_skill_effect;
         skill_type.forEach(key => {
           const lowKey = key.toLowerCase();
@@ -1970,7 +2068,7 @@ $(function() {
         this.calRepShow = rst;
       },
       showRep(rep, position) {
-        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule'];
+        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule', 'buff_condiment'];
         let rst = {
           id: rep.id,
           name: rep.name_show,
@@ -1997,7 +2095,6 @@ $(function() {
           rst.price_total = rst.price_buff * rst.cnt;
           rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
           rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
-          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
           rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
           rst.price_origin_total = rst.price * rst.cnt;
           return rst;
@@ -2015,8 +2112,9 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
-        rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
-        rst.price_buff = Math.ceil(rst.price * rst.buff / 100);
+        rst.buff_condiment = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
+        rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment || 0)) / 100);
         rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
@@ -3701,6 +3799,12 @@ $(function() {
           this.getCalChefShow();
         }
       },
+      calCondiment: {
+        deep: true,
+        handler() {
+          this.getCalChefShow();
+        }
+      },
       calRepCol: {
         deep: true,
         handler() {
@@ -3932,6 +4036,12 @@ $(function() {
         }
       },
       calRepEx: {
+        deep: true,
+        handler() {
+          this.getCalRepShow();
+        }
+      },
+      calRepCondi: {
         deep: true,
         handler() {
           this.getCalRepShow();

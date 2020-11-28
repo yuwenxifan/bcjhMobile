@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=23">
+  <link rel="stylesheet" href="./css/index.css?v=24">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -1040,29 +1040,39 @@
                 <div ref="chefBox" class="chef-box" v-for="chef in [1, 2, 3]" :class="chef > ChefNumLimit ? 'disable' : ''">
                   <div
                     class="chef"
-                    :class="calFocus == `Chef_${chef}` ? 'focus' : ''"
+                    :class="
+                      (calFocus == `Chef_${chef}` ? 'focus' : '') +
+                      (showCondiment ? ' condiment' : '')
+                    "
                     @click="calCheck(`Chef_${chef}`)"
                   >
                     <div v-if="calChef[chef].row[0]" class="show">
-                      <div class="name-img">
-                        <span class="name">{{calChefShow[chef].name}}</span>
-                        <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
-                          <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
+                      <div class="show-chef">
+                        <div class="name-img">
+                          <span class="name">{{calChefShow[chef].name}}</span>
+                          <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
+                            <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
+                          </div>
+                        </div>
+                        <div class="skill-box">
+                          <div
+                            v-for="(val, key) in calChefShow[chef].skills_last"
+                            v-show="val"
+                          >
+                            <span class="label">{{skill_map[key]}}</span>
+                            <span class="val">{{val}}</span>
+                          </div>
                         </div>
                       </div>
-                      <div class="skill-box">
-                        <div
-                          v-for="(val, key) in calChefShow[chef].skills_last"
-                          v-show="val"
-                        >
-                          <span class="label">{{skill_map[key]}}</span>
-                          <span class="val">{{val}}</span>
-                        </div>
+                      <div v-if="calCondiment[chef].row[0]" class="show-condiment">
+                        <span>{{calCondiment[chef].row[0].name}}</span>
+                        <span class="condi-cnt">× {{condiCnt[chef]}}</span>
                       </div>
                     </div>
+
                     <div class="chef-empty" v-else>
                       <i class="el-icon-plus"></i>
-                      <span place-holder>选择厨师</span>
+                      <span>选择厨师&调料</span>
                     </div>
                   </div>
                   <div
@@ -1101,12 +1111,23 @@
               </div>
               <div ref="tool" class="tool" v-show="calFocus">
                 <div v-for="(val, key) in calChef" v-show="calFocus == `Chef_${key}`">
-                  <span class="select-box" style="width: calc(100% - 10px);">
+                  <span class="select-box" style="width: calc(50% - 7.5px);">
                     <muti-select
                       :ref="`calChef_${key}`"
                       placeholder="请选择厨师"
                       :option="calChefs_list"
                       v-model="calChef[key]"
+                      :max="1"
+                      :disable="disable"
+                      @focus="calScroll(300)"
+                    ></muti-select>
+                  </span>
+                  <span class="select-box" style="width: calc(50% - 7.5px); padding-left: 0;">
+                    <muti-select
+                      :ref="`calCondiment_${key}`"
+                      placeholder="请选择调料"
+                      :option="calCondiments_list"
+                      v-model="calCondiment[key]"
                       :max="1"
                       :disable="disable"
                       @focus="calScroll(300)"
@@ -1126,41 +1147,53 @@
                   </span>
                 </div>
                 <div v-for="(val, key) in calRep" v-show="calFocus == `Rep_${key}`" class="tool-rep">
-                  <span class="select-box" style="width: calc(100% - 10px);" v-show="!calRep[key].row[0]">
-                    <muti-select
-                      :ref="`calRep_${key}`"
-                      placeholder="请选择菜谱"
-                      :option="calReps_list[key.slice(0, 1)]"
-                      v-model="calRep[key]"
-                      :max="1"
-                      :disable="disableRep"
-                      @change="handleCalRepChange($event, key)"
-                      @focus="calScroll(300)"
-                    ></muti-select>
-                  </span>
-                  <div v-if="calRep[key].row[0]" class="material-box">
-                    <span v-for="item in calRep[key].row[0].materials" class="material">
-                      <span class="label">{{item.name}}</span>
-                      <span class="quantity" v-show="calType.row[0].MaterialsLimit">{{materialsRemain[item.material] + '/' + item.quantity}}</span>
-                      <span class="quantity" v-show="!calType.row[0].MaterialsLimit">{{item.quantity * calRepCnt[key]}}</span>
+                  <div>
+                    <span class="select-box" style="width: calc(100% - 10px);" v-show="!calRep[key].row[0]">
+                      <muti-select
+                        :ref="`calRep_${key}`"
+                        placeholder="请选择菜谱"
+                        :option="calReps_list[key.slice(0, 1)]"
+                        v-model="calRep[key]"
+                        :max="1"
+                        :disable="disableRep"
+                        @change="handleCalRepChange($event, key)"
+                        @focus="calScroll(300)"
+                      ></muti-select>
                     </span>
+                    <div v-if="calRep[key].row[0]" class="material-box">
+                      <span v-for="item in calRep[key].row[0].materials" class="material">
+                        <span class="label">{{item.name}}</span>
+                        <span class="quantity" v-show="calType.row[0].MaterialsLimit">{{materialsRemain[item.material] + '/' + item.quantity}}</span>
+                        <span class="quantity" v-show="!calType.row[0].MaterialsLimit">{{item.quantity * calRepCnt[key]}}</span>
+                      </span>
+                    </div>
+                    <div v-if="calRep[key].row[0]" class="control">
+                      <el-switch
+                        v-model="calRepEx[key]"
+                        active-color="#82a1b0"
+                        active-text="专精"
+                        inactive-color="#ddd">
+                      </el-switch>
+                      <input
+                        type="number"
+                        class="input"
+                        v-model.lazy="calRepCnt[key]"
+                        :max="calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit"
+                        :min="0"
+                        @change="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
+                      />
+                      <span class="max">/ {{calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit}}</span>
+                    </div>
                   </div>
-                  <div v-if="calRep[key].row[0]" class="control">
+                  <div class="tool-condiment" v-if="calRep[key].row[0] && calChef[key.split('-')[0]].row[0] && calCondiment[key.split('-')[0]].row[0]">
+                    <span>{{calCondiment[key.split('-')[0]].row[0].name}}</span>
+                    <span class="cnt">×{{calRep[key].row[0].rarity * calRepCnt[key]}}</span>
                     <el-switch
-                      v-model="calRepEx[key]"
+                      v-model="calRepCondi[key]"
                       active-color="#82a1b0"
-                      active-text="专精"
+                      active-text="加料"
                       inactive-color="#ddd">
                     </el-switch>
-                    <input
-                      type="number"
-                      class="input"
-                      v-model.lazy="calRepCnt[key]"
-                      :max="calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit"
-                      :min="0"
-                      @change="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
-                    />
-                    <span class="max">/ {{calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit}}</span>
                   </div>
                 </div>
               </div>
@@ -1174,9 +1207,9 @@
                   v-for="(arr, i) in calRepShow"
                   :class="calType.id[0] == 0 && !calLoad ? 'long ' : ''"
                 >
-                  <div class="rst" v-for="item in arr">
+                  <div class="rst" v-for="(item, j) in arr">
                     <div class="show" v-if="item.id">
-                      <span class="name" :class="item.unknowBuff || item.NotSure ? 'red' : ''">{{item.name}}</span>
+                      <span class="name" :class="item.unknowBuff || item.NotSure ? 'red' : ''">{{item.name + (calRepCondi[`${i+1}-${j+1}`] && calCondiment[i+1].row[0] ? '[料]' : '')}}</span>
                       <div class="top" :class="!item.showBuff ? 'center' : ''">
                         <div class="top-left">
                           <div class="img-box">
@@ -1489,7 +1522,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-11-27 23:30 更新11月27日江浙大赛御前&非御前计算器。</div>
+            <div class="p">2020-11-28 17:52 计算器更新调料相关，非御前倍数更新。</div>
           </div>
         </div>
       </div>
@@ -1499,6 +1532,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=91"></script>
+  <script src="./js/index.js?v=92"></script>
 </body>
 </html>

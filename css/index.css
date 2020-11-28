@@ -793,6 +793,9 @@ input.hidden {
   width: 95%;
   height: 92px;
 }
+.chef-box .chef.condiment {
+  height: 112px;
+}
 .chef-box .equip {
   width: 95%;
   height: 26px;
@@ -838,6 +841,11 @@ input.hidden {
   width: 100%;
   color: #c0c4cc;
 }
+.equip-empty>span {
+  font-size: 13px;
+  display: inline;
+  line-height: 40px;
+}
 .chef-empty i, .equip-empty i, .rep-empty i {
   font-size: 32px;
   color: #dcdfe6;
@@ -857,12 +865,13 @@ input.hidden {
 .cal .tool {
   background: #f5f7fa;
   width: calc(100% - 4px);
-  height: 46px;
   margin: 0 auto;
   margin-top: 3px;
+  white-space: nowrap;
   border-radius: 4px;
 }
 .tool .select-box {
+  white-space: normal;
   padding: 10px 5px;
   margin: 0;
 }
@@ -887,7 +896,25 @@ input.hidden {
 }
 .cal .chef .show {
   display: flex;
+  flex-direction: column;
   justify-content: space-around;
+}
+.cal .chef .show-chef {
+  display: flex;
+  justify-content: space-around;
+}
+.cal .chef .show-condiment {
+  display: flex;
+  height: 20px;
+  font-size: 13px;
+  justify-content: center;
+  white-space: nowrap;
+}
+.cal .chef .show-condiment .condi-cnt {
+  font-size: 12px;
+  padding-left: 5px;
+  align-self: flex-end;
+  line-height: 17px;
 }
 .cal .equip .show {
   display: flex;
@@ -977,11 +1004,14 @@ input.hidden {
   background: #fff;
 }
 .tool-rep {
-  display: flex;
   height: 100%;
+  padding-left: 5px;
+}
+.tool-rep>div {
+  height: 46px;
+  display: flex;
   justify-content: space-between;
   align-items: center;
-  padding-left: 5px;
 }
 .tool-rep .select-box {
   display: block;
@@ -1010,6 +1040,21 @@ input.hidden {
 .tool-rep .max {
   font-size: 13px;
   padding-left: 5px;
+}
+.tool-rep .tool-condiment {
+  padding-bottom: 5px;
+  height: 25px;
+  font-size: 13px;
+  justify-content: left;
+}
+.tool-rep .tool-condiment>span {
+  margin-left: 3px;
+}
+.tool-rep .tool-condiment .cnt {
+  font-size: 12px;
+  margin-right: 10px;
+  line-height: 19px;
+  align-self: flex-end;
 }
 .slider-box {
   display: block;
