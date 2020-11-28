@@ -1157,22 +1157,16 @@ input.hidden {
   flex-direction: column;
   flex-grow: 1;
   width: 33.34%;
-  padding-bottom: 60px;
-}
-.cal .rst-box.long {
   padding-bottom: 30px;
 }
 .cal .rst-box .rst {
   width: 95%;
-  height: 105px;
+  height: 115px;
   background: #f5f7fa;
   margin: 3px 2px;
   border-radius: 4px;
   display: flex;
   flex-grow: 1;
-}
-.cal .rst-box.long .rst {
-  height: 115px;
 }
 .rst .show {
   width: 100%;
@@ -1203,16 +1197,16 @@ input.hidden {
 }
 .rst .img-box {
   width: 50px;
-  height: 56px;
+  height: 58px;
   position: relative;
-  margin: 0 auto;
+  margin: auto;
 }
 .rst .img {
   width: 50px;
   zoom: 1.25;
   position: absolute;
   left: 50%;
-  bottom: 10px;
+  bottom: 12px;
   transform: translateX(-50%);
 }
 .rst .img-box .skill-box {

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=24">
+  <link rel="stylesheet" href="./css/index.css?v=25">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -1245,6 +1245,10 @@
                             <span class="label">厨具</span>
                             <span class="val">{{item.buff_equip}}%</span>
                           </div>
+                          <div class="buff" v-if="item.buff_condiment">
+                            <span class="label">调料</span>
+                            <span class="val">{{item.buff_condiment}}%</span>
+                          </div>
                         </div>
                       </div>
                       <div class="time-price">
@@ -1532,6 +1536,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=92"></script>
+  <script src="./js/index.js?v=93"></script>
 </body>
 </html>

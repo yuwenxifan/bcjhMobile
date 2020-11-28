@@ -2112,9 +2112,10 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
-        rst.buff_condiment = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
-        rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment || 0)) / 100);
+        rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) / 100);
         rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
