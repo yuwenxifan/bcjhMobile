@@ -69,8 +69,12 @@ $(function() {
           this.valueId = valueId;
           this.names = names;
         }
+        const keyword = this.keyword.split(' ');
         this.f_option = this.option.filter(item => {
-          return item.name.indexOf(this.keyword) > -1;
+          for (const k of keyword) {
+            if (k && item.name.indexOf(k) < 0) return false;
+          }
+          return true;
         });
       },
       checkOption(val, name) {
@@ -155,8 +159,13 @@ $(function() {
         }
       },
       keyword(val) {
+        const keyword = val.split(' ');
         this.f_option = this.option.filter(item => {
-          return item.name.indexOf(val) > -1 || (item.subName && item.subName.indexOf(val) > -1);
+          for (const k of keyword) {
+            const rst = item.name.indexOf(k) > -1 || (item.subName && item.subName.indexOf(k) > -1);
+            if (!rst) return false;
+          }
+          return true;
         });
       },
       show(val) {
@@ -1043,7 +1052,7 @@ $(function() {
         }
         $.ajax({
           // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=3'
+          url: 'data/foodRule.min.json?v=4'
         }).then(rst => {
           // if (rst) {
           const now = new Date().valueOf();
@@ -1181,16 +1190,6 @@ $(function() {
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
           item.ultimateSkill = ultimateSkill;
           item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
-          const condiment_arr = [];
-          let condiment_value = 0;
-          for (let key in this.condimentMap) {
-            if (item[key.toLowerCase()] > 0) {
-              condiment_arr.push(`${this.condimentMap[key]}-${item[key.toLowerCase()]}`);
-              condiment_value += item[key.toLowerCase()];
-            }
-          }
-          item.condiment_value = condiment_value;
-          item.condiment_show = condiment_arr.join(' ');
           return item;
         });
         this.data.equips = this.data.equips.map(item => {
@@ -2112,8 +2111,8 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
-        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
         rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) / 100);
         rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
@@ -2334,10 +2333,10 @@ $(function() {
           const skill_arr = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
           const ultimate = {};
           const skills = {};
+          const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
           skill_arr.forEach(key => {
             if (this.chefUltimate) {
               let value = 0;
-              const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
               const effect = item.ultimateSkill ? item.ultimateSkill.effect : [];
               const partial_skill = this.partial_skill.row;
               if (this.chefUseAllUltimate) {
@@ -2386,6 +2385,32 @@ $(function() {
             const lastKey = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
             f_skills = f_skills && (ultimate[lastKey] >= this.chefFilter.skills[key].val);
           }
+
+          const condiment_arr = [];
+          const eff = item.ultimateSkill ? item.ultimateSkill.effect : [];
+          let condiment_value = 0;
+          for (let key in this.condimentMap) {
+            let ulti = 0;
+            if (this.chefUltimate) { // 修炼开
+              for (let e of eff) {
+                if (this.chefUseAllUltimate) { // 全修炼
+                  if (this.allUltimate.Self.id.indexOf(partial_id) > -1 && e.type == key && e.cal == 'Abs') { // 给自己加的修炼技能
+                    ulti += e.value;
+                  }
+                } else { // 已修炼
+                  if (userUltimate.Self.id.indexOf(partial_id) > -1 && e.type == key && e.cal == 'Abs') {
+                    ulti = e.value;
+                  }
+                }
+              }
+            }
+            if (item[key.toLowerCase()] > 0 || ulti) {
+              condiment_arr.push(`${this.condimentMap[key]}-${item[key.toLowerCase()] + ulti}`);
+              condiment_value += (item[key.toLowerCase()] + ulti);
+            }
+          }
+          item.condiment_value = condiment_value;
+          item.condiment_show = condiment_arr.join(' ');
 
           let effect = item.skill_obj.effect;
           const uId = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
