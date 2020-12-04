@@ -1047,12 +1047,13 @@ $(function() {
         let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
         time = JSON.parse(JSON.stringify(time));
         let url = 'http://bcjh.xyz:7001/get_rule';
+        // url = 'http://129.211.28.110:7001/get_rule';
         if ('https:' == document.location.protocol) {
           url = 'https://bcjh.xyz/api/get_rule';
         }
         $.ajax({
           // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=4'
+          url: 'data/foodRule.min.json?v=5'
         }).then(rst => {
           // if (rst) {
           const now = new Date().valueOf();
