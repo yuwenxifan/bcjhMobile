@@ -1053,7 +1053,7 @@ $(function() {
         }
         $.ajax({
           // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=5'
+          url: 'data/foodRule.min.json?v=6'
         }).then(rst => {
           // if (rst) {
           const now = new Date().valueOf();
