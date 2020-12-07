@@ -257,6 +257,7 @@ $(function() {
       self_skill_list: [],
       reps_list: [],
       userDataText: '',
+      LDataText: '',
       userUltimateChange: false,
       userUltimate: {
         decoBuff: '',
@@ -3626,6 +3627,158 @@ $(function() {
           });
         }
       },
+      trans(arr, key) {
+        const result = {};
+        for (const item of arr) {
+          result[item.id] = (item[key] == '是');
+        }
+        return result;
+      },
+      setUlti(chefUlt) {
+        const partial_skill = [];
+        const self_skill = [];
+        let allUltimate = {
+          Partial: { id: [], row: []},
+          Self: { id: [], row: []},
+        };
+        const skill_obj = {
+          Stirfry: 0,
+          Boil: 0,
+          Knife: 0,
+          Fry: 0,
+          Bake: 0,
+          Steam: 0
+        };
+        const global_obj = {
+          Male: 0,
+          Female: 0,
+          All: 0,
+        }
+        const price_obj = {
+          PriceBuff_1: 0,
+          PriceBuff_2: 0,
+          PriceBuff_3: 0,
+          PriceBuff_4: 0,
+          PriceBuff_5: 0,
+        };
+        const limit_obj = {
+          MaxLimit_1: 0,
+          MaxLimit_2: 0,
+          MaxLimit_3: 0,
+          MaxLimit_4: 0,
+          MaxLimit_5: 0,
+        };
+        this.data.chefs.forEach(item => {
+          if (chefUlt[item.chefId]) {
+            const id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
+            if (item.ultimateSkillCondition == 'Partial') {
+              allUltimate.Partial.id.push(id);
+              allUltimate.Partial.row.push({
+                id,
+                name: item.name,
+                subName: item.ultimateSkillShow,
+                type: item.ultimateSkill.effect[0].type,
+                value: item.ultimateSkill.effect[0].value,
+              });
+              partial_skill.push({
+                id,
+                name: item.name,
+                subName: item.ultimateSkillShow,
+                type: item.ultimateSkill.effect[0].type,
+                value: item.ultimateSkill.effect[0].value,
+              });
+            }
+            if (item.ultimateSkillCondition == 'Self') {
+              const effect = item.ultimateSkill.effect.filter(eff => {
+                return eff.type != 'Material_Gain' && eff.type != 'GuestDropCount';
+              });
+              if (effect.length > 0) {
+                allUltimate.Self.id.push(id);
+                allUltimate.Self.row.push({
+                  id,
+                  name: item.name,
+                  subName: item.ultimateSkillShow,
+                  effect
+                });
+                self_skill.push({
+                  id,
+                  name: item.name,
+                  subName: item.ultimateSkillShow,
+                  effect
+                });
+              }
+            }
+            if (item.ultimateSkill && item.ultimateSkill.effect.length == 1) {
+              const effect = item.ultimateSkill.effect[0];
+              for (const key in skill_obj) {
+                if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
+                  skill_obj[key] += effect.value;
+                }
+              }
+              for (let i = 1; i < 6; i++) {
+                if (effect.type == 'UseAll' && effect.rarity == i) {
+                  price_obj[`PriceBuff_${i}`] += effect.value;
+                }
+                if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                  limit_obj[`MaxLimit_${i}`] += effect.value;
+                }
+              }
+            }
+            if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
+              const effect = item.ultimateSkill.effect[0];
+              if (effect.tag == 1) {
+                global_obj.Male += effect.value;
+              } else if (effect.tag == 2) {
+                global_obj.Female += effect.value;
+              } else {
+                global_obj.All += effect.value;
+              }
+            }
+          }
+        });
+        return Object.assign({}, allUltimate, skill_obj, global_obj, price_obj, limit_obj);
+      },
+      importLDataText() {
+        let data;
+        try {
+          data = JSON.parse(this.LDataText);
+          let userData = localStorage.getItem('data');
+          userData = userData ? JSON.parse(userData) : {};
+          userData.repGot = this.trans(data.recipes, 'got');
+          userData.chefGot = this.trans(data.chefs, 'got');
+          userData.chefUlt = this.trans(data.chefs, 'ult');
+          const decoBuff = data.decorationEffect;
+          userData.userUltimate = Object.assign({ decoBuff }, this.setUlti(userData.chefUlt));
+
+          localStorage.setItem('data', JSON.stringify(userData));
+          this.getUserData();
+          setTimeout(() => {
+            if (userData.userUltimate.Partial.id.length > 0) {
+              this.$refs.userPartial.initOption();
+            } else {
+              this.$refs.userPartial.clear();
+            }
+            if (userData.userUltimate.Self.id.length > 0) {
+              this.$refs.userSelf.initOption();
+            } else {
+              this.$refs.userSelf.clear();
+            }
+          }, 50);
+          this.LDataText = '';
+          this.$message({
+            showClose: true,
+            message: '导入成功',
+            type: 'success'
+          });
+        } catch(e) {
+          console.log(e);
+          this.$message({
+            showClose: true,
+            message: '导入失败',
+            type: 'error'
+          });
+        }
+      },
       exportUserData() {
         this.saveUserData();
         let dataText = localStorage.getItem('data');
@@ -3639,8 +3792,11 @@ $(function() {
       openFile() {
         $('#file').click();
       },
+      openLFile() {
+        $('#Lfile').click();
+      },
       importUserData(e) {
-        const input = event.target;
+        const input = e.target;
         const reader = new FileReader();
         const that = this;
         reader.onload = function() {
@@ -3661,6 +3817,50 @@ $(function() {
           }
         };
         reader.readAsText(input.files[0]);
+        e.target.value = null;
+      },
+      importLData(e) {
+        const input = e.target;
+        const reader = new FileReader();
+        const that = this;
+        reader.onload = function() {
+          if(reader.result) {
+            let data;
+            try {
+              data = JSON.parse(reader.result);
+              console.log(data)
+              let userData = localStorage.getItem('data');
+              userData = userData ? JSON.parse(userData) : {};
+              userData.repGot = that.trans(data.recipes, 'got');
+              userData.chefGot = that.trans(data.chefs, 'got');
+              userData.chefUlt = that.trans(data.chefs, 'ult');
+              const decoBuff = data.decorationEffect;
+              userData.userUltimate = Object.assign({ decoBuff }, that.setUlti(userData.chefUlt));
+
+              localStorage.setItem('data', JSON.stringify(userData));
+              that.getUserData();
+              console.log(userData)
+              setTimeout(() => {
+                if (userData.userUltimate.Partial.id.length > 0) {
+                  that.$refs.userPartial.initOption();
+                } else {
+                  that.$refs.userPartial.clear();
+                }
+                if (userData.userUltimate.Self.id.length > 0) {
+                  that.$refs.userSelf.initOption();
+                } else {
+                  that.$refs.userSelf.clear();
+                }
+              }, 50);
+              that.$message.success('导入成功');
+            } catch(e) {
+              console.log(e)
+              that.$message.error('导入失败');
+            }
+          }
+        };
+        reader.readAsText(input.files[0]);
+        e.target.value = null;
       },
       putUserCol(key) {
         const col = {};

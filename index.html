@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=25">
+  <link rel="stylesheet" href="./css/index.css?v=26">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -979,7 +979,7 @@
               <div class="icon-condiment" :class="'condiment_' + scope.row.condimentId"></div>
             </template>
           </el-table-column>
-          <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="名字" width="65"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="55" v-if="condimentCol.rarity"></el-table-column>
           <el-table-column sortable="custom" prop="skill" label="技能" min-width="155" v-if="condimentCol.skill"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="condimentCol.origin"></el-table-column>
@@ -1434,7 +1434,30 @@
             <div class="btn-box" style="margin-top: 10px;">
               <span class="btn" @click="exportUserData">下载个人数据文件</span>
               <span class="btn" @click="openFile">导入个人数据文件</span>
-              <input id="file" style="display: none" type="file" accept="text/plain" @change="importUserData(event)">
+              <input id="file" style="display: none" type="file" accept="text/plain" @input="importUserData(event)">
+            </div>
+          </div>
+          <div class="title">L版图鉴数据转移-手动复制版</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <el-input
+              type="textarea"
+              :rows="10"
+              placeholder="请贴入L版图鉴的个人数据。"
+              v-model="LDataText"
+              @focus="scrollUser(1000)"
+            >
+            </el-input>
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="importLDataText">导入L版图鉴数据</span>
+            </div>
+          </div>
+          <div class="title">L版图鉴数据转移-文件版</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="openLFile">导入L版图鉴数据文件</span>
+              <input id="Lfile" style="display: none" type="file" accept="text/plain" @input="importLData(event)">
             </div>
           </div>
         </div>
@@ -1526,7 +1549,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-12-06 15:45 更新了村级大赛么得鸭子的bug。</div>
+            <div class="p">2020-12-07 23:20 个人数据增加L版数据导入功能。</div>
           </div>
         </div>
       </div>
@@ -1536,6 +1559,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=97"></script>
+  <script src="./js/index.js?v=98"></script>
 </body>
 </html>
