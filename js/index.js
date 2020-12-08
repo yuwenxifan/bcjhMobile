@@ -1047,28 +1047,19 @@ $(function() {
       loadFoodGodRule() {
         let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
         time = JSON.parse(JSON.stringify(time));
-        let url = 'http://bcjh.xyz:7001/get_rule';
-        // url = 'http://129.211.28.110:7001/get_rule';
-        if ('https:' == document.location.protocol) {
-          url = 'https://bcjh.xyz/api/get_rule';
-        }
+        const url = 'https://bcjh.xyz/api/get_rule';
         $.ajax({
-          // url: `${url}?time=${time}`
-          url: 'data/foodRule.min.json?v=7'
+          url: `${url}?time=${time}`
         }).then(rst => {
-          // if (rst) {
-          const now = new Date().valueOf();
-          if (new Date(rst.startTime).valueOf() <= now && new Date(rst.endTime).valueOf() >= now) {
+          if (rst) {
             if (rst.tips && !this.hiddenMessage) {
               this.$message({
                 message: rst.tips,
                 showClose: true
               });
             }
+            this.foodgodRule = rst.rules;
           }
-          this.foodgodRule = rst.rules.filter(r => {
-            return new Date(r.start_time).valueOf() <= now && new Date(r.end_time).valueOf() >= now
-          });
           this.loadData();
         }).fail(err => {
           if ('https:' == document.location.protocol) {
