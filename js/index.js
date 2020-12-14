@@ -182,6 +182,7 @@ $(function() {
     el: '#main',
     data: {
       count: 0,
+      location: window.location.origin,
       leftBar: false,
       rightBar: false,
       hideSuspend: false,
@@ -890,7 +891,9 @@ $(function() {
         '3-1': 0,
         '3-2': 0,
         '3-3': 0,
-      }
+      },
+      etcRules: [],
+      etcRule: { id: [], row: [] }
     },
     computed: {
       showCondiment() {
@@ -1016,6 +1019,7 @@ $(function() {
       },
     },
     mounted() {
+      if (this.getUrlKey('time')) this.navId = 7
       this.loadFoodGodRule();
       this.getUserData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
@@ -1038,18 +1042,18 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=9'
+          url: './data/data.min.json?v=10'
         }).then(rst => {
           this.data = rst;
           this.initData();
         });
       },
-      loadFoodGodRule() {
+      async loadFoodGodRule() {
         let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
         time = JSON.parse(JSON.stringify(time));
-        const url = 'https://bcjh.xyz/api/get_rule';
+        const url = 'https://bcjh.xyz/api';
         $.ajax({
-          url: `${url}?time=${time}`
+          url: `${url}/get_rule?time=${time}`
         }).then(rst => {
           if (rst) {
             if (rst.tips && !this.hiddenMessage) {
@@ -1060,6 +1064,17 @@ $(function() {
             }
             this.foodgodRule = rst.rules;
           }
+          return $.ajax({
+            url: `${url}/get_etc_rule`
+          });
+        }).then(rst => {
+          this.etcRules = rst.map((r, i) => {
+            return {
+              id: i,
+              name: r.tag,
+              start_time: r.start_time
+            };
+          });
           this.loadData();
         }).fail(err => {
           if ('https:' == document.location.protocol) {
@@ -4262,7 +4277,9 @@ $(function() {
       calRepCondi: {
         deep: true,
         handler() {
-          this.getCalRepShow();
+          setTimeout(() => {
+            this.getCalRepShow();
+          }, 10);
         }
       },
       calRepsAll: {

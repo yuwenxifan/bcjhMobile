@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=26">
+  <link rel="stylesheet" href="./css/index.css?v=27">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -1004,6 +1004,7 @@
             <el-tabs v-model="calCode">
               <el-tab-pane label="计算器" name="cal"></el-tab-pane>
               <el-tab-pane label="菜谱" name="rep"></el-tab-pane>
+              <el-tab-pane label="历史计算器" name="etc_cal"></el-tab-pane>
             </el-tabs>
           </div>
           <div class="cal" v-show="calCode == 'cal'" :style="'height: '+ (boxHeight - 50) + 'px;'">
@@ -1320,6 +1321,22 @@
               </el-pagination>
             </div>
           </div>
+          <div class="etc_cal" v-show="calCode == 'etc_cal'">
+            <span class="select-box" class="cal-type" style="width: calc(100% - 6px);">
+              <muti-select
+                ref="etcRule"
+                placeholder="请选择规则"
+                :option="etcRules"
+                v-model="etcRule"
+                :max="1"
+                :empty="false"
+              ></muti-select>
+            </span>
+            <div v-if = "etcRule.row[0]" class="url-box">
+              点击链接或复制到浏览器打开：<br/>
+              <a :href="location + '?time=' + etcRule.row[0].start_time">{{location + '?time=' + etcRule.row[0].start_time}}</a>
+            </div>
+          </div>
         </div>
       </div>
       <div v-show="navId === 8">
@@ -1468,7 +1485,7 @@
           <div class="hr"></div>
           <div class="box-body">
             <div class="p">
-              本网页为<a href="https://foodgame.gitee.io">爆炒江湖图鉴网</a> by L 的手机版，开发者 小鱼，页面功能、数据等均参照原图鉴网（L神yyds！）。
+              本网页为<a href="https://foodgame.gitee.io">爆炒江湖图鉴网</a> by L 的精简手机版，开发者 小鱼，页面功能、数据等均参照原图鉴网（L神yyds！）。
             </div>
             <div class="p">
               本网页大部分功能与原图鉴网保持一致，不一致的部分会在下面的页面详情里详细说明。
@@ -1481,6 +1498,15 @@
             </div>
             <div class="p">
               表格最左侧的固定列不可滑动（横向竖向都不行）。
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">关键字搜索</div>
+            <div class="p">
+              表格 多个关键字搜索用空格隔开，满足其中一个关键字的会搜索出来。
+            </div>
+            <div class="p">
+              下拉框 多个关键字搜索用空格隔开，多个关键字同时满足的才会搜索出来。
             </div>
           </div>
           <div class="box-body">
@@ -1532,7 +1558,8 @@
             <div class="contain-title">个人</div>
             <div class="p">本站仅保存用户上一次在【菜谱】【厨师】等页选择的[展示列]，与修炼的最终值。</div>
             <div class="p">个人修炼数据在【个人】页维护，依照游戏中名厨录里的修炼加成数据填入即可（如果在意比丢的话，就分别填男厨/女厨/全体）。</div>
-            <div class="p">本网站的数据与图鉴网的不互通，首次使用需手动填入数据。</div>
+            <div class="p">本网站可以将L版图鉴的数据在【个人】页使用 [L版图鉴数据转移] 功能导入，会导入已有厨师菜谱与汇总后的厨师修炼数据，导入后无法转回L版图鉴数据。</div>
+            <div class="p">如果没有L版图鉴的数据，首次使用本网站需手动填入数据。</div>
             <div class="p">个人数据保存在本地，正常情况不会丢失，如需更换浏览器/设备等可使用备份功能。</div>
             <div class="p">个人备份数据文件版部分浏览器不支持（APP也不支持，好像只有chrome支持_(:з」∠)_），推荐使用手动复制版。</div>
           </div>
@@ -1549,7 +1576,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-12-08 11:30 网站备案好啦( •̀ ω •́ )y。</div>
+            <div class="p">2020-12-14 增加了历史计算器的选择。</div>
           </div>
         </div>
       </div>
@@ -1559,6 +1586,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=99"></script>
+  <script src="./js/index.js?v=100"></script>
 </body>
 </html>
