@@ -1049,11 +1049,13 @@ $(function() {
         });
       },
       async loadFoodGodRule() {
-        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : new Date();
-        time = JSON.parse(JSON.stringify(time));
+        let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : null;
+        const data = {};
+        time ? data.time = JSON.parse(JSON.stringify(time)): null;
         const url = 'https://bcjh.xyz/api';
         $.ajax({
-          url: `${url}/get_rule?time=${time}`
+          url: `${url}/get_rule`,
+          data,
         }).then(rst => {
           if (rst) {
             if (rst.tips && !this.hiddenMessage) {
