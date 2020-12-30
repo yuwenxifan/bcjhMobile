@@ -1079,16 +1079,7 @@ $(function() {
           });
           this.loadData();
         }).fail(err => {
-          if ('https:' == document.location.protocol) {
-            // this.$message({
-            //   message: '后端api的域名因为没有网站备案被制裁了，不知道什么时候能弄好，期间会影响APP的自动更新，厨神/限时计算器，其他不影响，要使用厨神/限时计算器的请移步到 http://bcjh.gitee.io (网址的https换成http，个人数据需要手动转移)',
-            //   showClose: true,
-            //   duration: 0,
-            // });
-            this.$message.error('获取厨神规则失败');
-          } else {
-            this.$message.error('获取厨神规则失败');
-          }
+          this.$message.error('获取厨神规则失败');
           this.loadData();
         });
       },
@@ -1502,6 +1493,7 @@ $(function() {
           this.initCalEquip();
           this.initCalCondiment();
           this.initCalRep();
+          this.calUltimateChange = false;
 
           let rst = {};
           for (let key in this.calRepEx) {
@@ -1997,7 +1989,7 @@ $(function() {
         });
         if (chef.ultimate_effect) {
           chef.ultimate_effect.forEach(eff => {
-            if (eff.type == 'OpenTime') {
+            if (eff.type == 'OpenTime' && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) {
               time_buff += eff.value;
             }
             if (judgeEff(eff) && this.ulti.Self.id.indexOf(chef.uid) > -1) { // 对售价有影响的修炼技能效果
@@ -4516,6 +4508,7 @@ $(function() {
             this.tabBox = true;
           }
           if (this.calUltimateChange && !this.calHidden) {
+            this.calUltimateChange = false;
             this.getCalChefShow();
             this.recalLimit();
             setTimeout(() => {
@@ -4523,6 +4516,7 @@ $(function() {
                 this.getCalRepLimit();
               }
               this.initCalRep();
+              this.lastBuffTime = 100;
             }, 50);
           }
           if (this.chefGotChange && !this.calHidden && this.chefGot) {
