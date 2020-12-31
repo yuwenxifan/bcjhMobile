@@ -1418,6 +1418,7 @@ $(function() {
             this.$notify({
               title: '提示',
               message: rule.message,
+              dangerouslyUseHTMLString: true,
               duration: 0
             });
           }
