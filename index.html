@@ -20,7 +20,7 @@
         <div class="left-bar-header">
           <div class="header">
             <img class="img-header" src="./images/saltFish.png" alt="咸公主">
-            <div class="title" @click="navId = 0">白菜菊花图鉴</div>
+            <div class="title" @click="checkNav(0)">白菜菊花图鉴</div>
             <div class="sub-title">by 小鱼、L</div>
           </div>
         </div>
@@ -638,7 +638,7 @@
       </span>
     </section>
     <section class="body">
-      <div v-show="navId === 0" class="info-box" :style="'height: '+ boxHeight + 'px; padding: 0px;'">
+      <div v-if="navId === 0" class="info-box" :style="'height: '+ boxHeight + 'px; padding: 0px;'">
         <div style="padding: 15px 10px 0 10px">
           <div class="title-box">
             <div class="img-title"><img src="./images/saltFish.png" alt="咸公主"></div>
@@ -651,7 +651,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2020-01-02 02:53 增加首页，优化计算器等页在电脑上的显示效果，装修增加按冷却时间筛选。</div>
+            <div class="p">2021-01-02 03:20 增加首页，优化计算器等页在电脑上的显示效果，装修增加按冷却时间筛选。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -677,7 +677,7 @@
               <p>A: 装备调料之后，选择菜谱，可以单独设置每道菜是否<span class="code">加料</span>。</p>
             </div>
             <div class="p">
-              <p>Q: 怎么让计算器自动算分？<br/></p>
+              <p>Q: 怎么让计算器全自动算分？<br/></p>
               <p>A: 鱼菜，做不了，告辞。</p>
             </div>
             <div class="title">建议/需求</div>
@@ -1400,7 +1400,7 @@
           </div>
         </div>
       </div>
-      <div v-show="navId === 8">
+      <div v-if="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
           <div class="title">个人装饰/修炼数据配置</div>
           <div class="hr"></div>
@@ -1540,7 +1540,7 @@
           </div>
         </div>
       </div>
-      <div v-show="navId === 9">
+      <div v-if="navId === 9">
         <div class="info-box" :style="'height: '+ boxHeight + 'px;'">
           <div class="title">说明</div>
           <div class="hr"></div>
