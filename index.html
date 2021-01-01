@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=27">
+  <link rel="stylesheet" href="./css/index.css?v=28">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -20,7 +20,7 @@
         <div class="left-bar-header">
           <div class="header">
             <img class="img-header" src="./images/saltFish.png" alt="咸公主">
-            <div class="title">白菜菊花图鉴</div>
+            <div class="title" @click="navId = 0">白菜菊花图鉴</div>
             <div class="sub-title">by 小鱼、L</div>
           </div>
         </div>
@@ -410,6 +410,17 @@
               <div class="box-title">筛选</div>
               <div class="hr"></div>
               <div class="checkbox-contain">
+                <span class="select-box" style="width: 130px; position: relative; z-index: 1002;">
+                  <muti-select
+                    ref="decoTime"
+                    :option="decoTime_list"
+                    placeholder="选择冷却时间"
+                    v-model="decorationFilter.time"
+                    @focus="scroll(126)"
+                  ></muti-select>
+                </span>
+              </div>
+              <div class="checkbox-contain" style="margin-bottom: 210px;">
                 <span
                   v-for="(item, i) in decorationFilter.position"
                   class="checkbox"
@@ -480,7 +491,7 @@
           </footer>
         </div>
       </el-drawer>
-      <div v-if="(navId < 6 || (navId == 7 && calCode == 'rep') || navId == 10) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -622,11 +633,61 @@
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
       <span class="right">
-        <i v-if="hideSuspend && (navId < 6 || (navId == 7 && calCode == 'rep') || navId == 10)" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && ([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
       </span>
     </section>
     <section class="body">
+      <div v-show="navId === 0" class="info-box" :style="'height: '+ boxHeight + 'px; padding: 0px;'">
+        <div style="padding: 15px 10px 0 10px">
+          <div class="title-box">
+            <div class="img-title"><img src="./images/saltFish.png" alt="咸公主"></div>
+            <div class="ng-contain">
+              <h2 class="ng-title">白菜菊花图鉴</h2>
+              <div class="ng-author">by 小鱼、L</div>
+              <div class="ng-content">欢迎使用，请点击左上角 <i class="el-icon-s-operation"></i> 键选择相应功能使用。</div>
+            </div>
+          </div>
+          <div class="title">常见问题</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="p">
+              <p>Q: iOS有APP吗，APP在哪里下载？<br/></p>
+              <p>A: iOS没有APP；安卓下载地址：<a href="https://wws.lanzous.com/iElVAi4xzid">点击下载APP</a>，密码：bcjh。</p>
+            </div>
+            <div class="p">
+              <p>Q: 我的计算器里为什么没有厨子、菜谱可以选？<br/></p>
+              <p>A: 点击右上角的 <i class="el-icon-s-tools"></i>，关掉<span class="code">计算器仅展示已有厨师菜谱</span></p>
+            </div>
+            <div class="p">
+              <p>Q: 我要怎么把我有的菜谱、厨师导入到图鉴里呢？<br/></p>
+              <p>A: 【菜谱】【厨师】页里，点右下角的 <i class="el-icon-search"></i>，将<span class="code">展示列</span>里的<span class="code">已有</span>点亮，然后就可以在表格里勾选你有的厨师菜谱，还可以根据来源搜索后点击<span class="code">全选</span>。</p>
+            </div>
+            <div class="p">
+              <p>Q: 为什么我计算器算出来的分数和游戏里不一样？<br/></p>
+              <p>A: 检查厨师修炼、菜谱专精是不是填正确了，菜谱份数是否一致。是不是用了<span class="code">规则未知</span><span class="code">倍数可能不对</span>的菜谱。如果都没错，欢迎找我反馈（需提供游戏厨神、修炼等截图）。</p>
+            </div>
+            <div class="p">
+              <p>Q: 计算器可以一个厨子只给两个菜调料吗？<br/></p>
+              <p>A: 装备调料之后，选择菜谱，可以单独设置每道菜是否<span class="code">加料</span>。</p>
+            </div>
+            <div class="p">
+              <p>Q: 怎么让计算器自动算分？<br/></p>
+              <p>A: 鱼菜，做不了，告辞。</p>
+            </div>
+            <div class="title">最近更新</div>
+            <div class="hr"></div>
+            <div class="box-body">
+              <div class="p">2020-01-02 01:22 增加首页，优化计算器等页在电脑上的显示效果，装修增加按冷却时间筛选。</div>
+            </div>
+            <div class="title">建议/需求</div>
+            <div class="hr"></div>
+            <div class="box-body">
+              <div class="p">任意官群/贴吧二群找@游啊游啊小小鱼，或联系任意官群管理转达。</div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div v-show="navId === 1">
         <div class="search-box">
           <el-row>
@@ -1565,27 +1626,17 @@
           </div>
           <div class="box-body">
             <div class="contain-title">个人</div>
-            <div class="p">本站仅保存用户上一次在【菜谱】【厨师】等页选择的[展示列]，与修炼的最终值。</div>
+            <div class="p">本站仅保存用户上一次在【菜谱】【厨师】等页选择的[展示列]与已有数据，与个人页填入的修炼最终值。</div>
             <div class="p">个人修炼数据在【个人】页维护，依照游戏中名厨录里的修炼加成数据填入即可（如果在意比丢的话，就分别填男厨/女厨/全体）。</div>
             <div class="p">本网站可以将L版图鉴的数据在【个人】页使用 [L版图鉴数据转移] 功能导入，会导入已有厨师菜谱与汇总后的厨师修炼数据，导入后无法转回L版图鉴数据。</div>
             <div class="p">如果没有L版图鉴的数据，首次使用本网站需手动填入数据。</div>
             <div class="p">个人数据保存在本地，正常情况不会丢失，如需更换浏览器/设备等可使用备份功能。</div>
-            <div class="p">个人备份数据文件版部分浏览器不支持（APP也不支持，好像只有chrome支持_(:з」∠)_），推荐使用手动复制版。</div>
-          </div>
-          <div class="title">联系</div>
-          <div class="hr"></div>
-          <div class="box-body">
-            <div class="p">任意官群/贴吧二群找@游啊游啊小小鱼，或联系任意官群管理转达。</div>
+            <div class="p">个人备份数据文件版部分浏览器不支持（APP可以上传不能下载，好像只有chrome支持_(:з」∠)_），推荐使用手动复制版。</div>
           </div>
           <div class="title">致谢</div>
           <div class="hr"></div>
           <div class="box-body">
             <div class="p">感谢L的图鉴网，感谢Boketto提供的菜谱数据，感谢试菜组提供的厨神规则，感谢闲时和小熊提供的升阶贵客符文数据，感谢梨大只提供的数据。</div>
-          </div>
-          <div class="title">最近更新</div>
-          <div class="hr"></div>
-          <div class="box-body">
-            <div class="p">2020-12-31 18:50 计算器的提示支持html。</div>
           </div>
         </div>
       </div>
@@ -1595,6 +1646,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=103"></script>
+  <script src="./js/index.js?v=104"></script>
 </body>
 </html>

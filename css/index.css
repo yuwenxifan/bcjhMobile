@@ -244,6 +244,7 @@ section.header .right {
   right: 16px;
   top: 30px;
   font-size: 18px;
+  cursor: pointer;
 }
 .left-bar .sub-title {
   position: absolute;
@@ -724,6 +725,25 @@ input.hidden {
   color: #357500;
 }
 
+@media(min-width:669px) {
+  .info-box .box-body {
+    font-size: 14px;
+  }
+  .info-box .title {
+    font-size: 17px;
+  }
+  .info-box .box-body .p {
+    font-size: 15px;
+  }
+  .contain-title {
+    font-size: 15px;
+  }
+  .info-box>div, .ultimate-box>div {
+    max-width: 1100px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
 .tab-box {
   padding: 0 10px;
 }
@@ -1337,11 +1357,81 @@ input.hidden {
 
 @media(min-width: 398px) {
   .cal-contain, .total-result, .result {
-    width: 370px;
+    width: 430px;
     margin: 0 auto;
   }
   .cal .tool {
-    width: 364px;
+    width: 424px;
+  }
+  .chef-box .chef {
+    height: 102px;
+  }
+  .chef-box .chef.condiment {
+    height: 122px;
+  }
+  .chef-box .equip {
+    height: 27px;
+    line-height: 27px;
+  }
+  .rep-box .rep {
+    height: 37px;
+  }
+  .chef .img {
+    zoom: 1.2;
+  }
+  .cal .chef .show-condiment {
+    height: 21px;
+    font-size: 14px;
+  }
+  .cal .chef .show-condiment .condi-cnt {
+    font-size: 13px;
+    line-height: 18px;
+  }
+  .chef .name {
+    font-size: 15px;
+  }
+  .chef .show .name-img {
+    width: 60px;
+  }
+  .chef .skill-box .label {
+    font-size: 13px;
+    line-height: 16px;
+  }
+  .chef .skill-box .val {
+    font-size: 12px;
+    line-height: 13px;
+  }
+  .rep .img {
+    width: 40px;
+    zoom: 0.8;
+  }
+  .cal .name {
+    font-size: 14px;
+  }
+  .rst .img-box {
+    width: 70px;
+    height: 58px;
+  }
+  .rst .img-box .skill-box .skill span {
+    zoom: 0.95;
+  }
+  .rst .img-box .skill-box .skill span.label {
+    font-size: 13px;
+  }
+  .rst .img-box .skill-box .skill span.val {
+    font-size: 12px;
+  }
+  .rst .buff .label {
+    font-size: 12px;
+  }
+  .rst .buff .val {
+    font-size: 12px;
+  }
+  .rst .grade, .rst .condiment {
+    transform: scale(1.05);
+  }
+  .rst .condiment {
+    right: 3px;
   }
 }
 #muti-select {
@@ -1581,4 +1671,55 @@ input.hidden {
 .el-message-box {
   width: calc(100% - 40px) !important;
   max-width: 420px !important;
+}
+
+@media(min-width: 900px) {
+  .cal-box .tab-box, .cal .ctl-box, .cal .tips, .etc_cal {
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .cal .tips {
+    font-size: 12px;
+  }
+}
+
+.info-box .title-box {
+  display: flex;
+  font-size: 13px;
+}
+.title-box .img-title img {
+  width: 8em;
+  margin-right: 1em;
+}
+.ng-title {
+  font-size: 1.5em;
+  margin: 0.8em 0;
+  color: #444;
+}
+.ng-author {
+  font-size: 1em;
+  margin-bottom: 1em;
+  color: #444;
+  font-weight: 500;
+}
+.title-box {
+  margin-bottom: 2em;
+}
+span.code {
+  display: inline-block;
+  background-color: #f5f7fa;
+  font-size: 0.9em;
+  padding: 2px 4px;
+  border-radius: 4px;
+  color: #607d8b;
+  margin: 0 2px;
+}
+.p p {
+  padding-bottom: 3px;
+}
+@media(min-width: 669px) {
+  .info-box .title-box {
+    font-size: 16px;
+  }
 }

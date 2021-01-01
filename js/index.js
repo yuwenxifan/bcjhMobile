@@ -241,7 +241,7 @@ $(function() {
         { id: 8, name: '个人', icon: 'el-icon-user' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
-      navId: 1,
+      navId: 0,
       calCode: 'cal',
       defaultEx: false,
       calShowGot: false,
@@ -653,7 +653,8 @@ $(function() {
           { name: '2装饰', flag: true },
           { name: '2屏风', flag: true },
           { name: '3包间', flag: true },
-        ]
+        ],
+        time: { id: [], row: [] },
       },
       decoration_radio: false,
       originEquipFilter: {},
@@ -662,6 +663,7 @@ $(function() {
       decoSelect: [],
       decoSelectId: [],
       decoBuff: '',
+      decoTime_list: [],
       suits: [],
       mapTypes: [],
       mapType: '牧场',
@@ -1244,14 +1246,16 @@ $(function() {
           return item;
         });
         let suits = [];
+        let decoTimes = [];
         this.data.decorations = this.data.decorations.map(item => {
           item.gold_show = item.gold ? `${Math.round(item.gold * s * 100) / s}%` : null;
           item.tipMin = item.tipMin || '';
           item.tipMax = item.tipMax || '';
+          if (item.tipTime) {
+            decoTimes.push(Number(item.tipTime));
+          }
           const dSecond = 86400;
-          const day = item.tipTime > dSecond ? `${Math.floor(item.tipTime / dSecond)}天` : '';
-          const hour = (item.tipTime % dSecond) ? `${Math.floor(item.tipTime % dSecond / 3600)}小时` : '';
-          item.tipTime_show = day + hour;
+          item.tipTime_show = this.formatTime(item.tipTime) || '';
           item.effMin = item.tipMin ? parseFloat((item.tipMin / (item.tipTime / dSecond)).toFixed(1)) : null;
           item.effMax = item.tipMax ? parseFloat((item.tipMax / (item.tipTime / dSecond)).toFixed(1)) : null;
           item.effAvg = Math.floor(((item.effMin + item.effMax) * 10 / 2)) / 10 || null;
@@ -1260,6 +1264,15 @@ $(function() {
             suits.push(item.suit);
           }
           return item;
+        });
+        decoTimes = Array.from(new Set(decoTimes));
+        decoTimes.sort((a, b) => a - b);
+        this.decoTime_list = decoTimes.map(t => {
+          let name = this.formatTime(t);
+          return {
+            id: t,
+            name
+          };
         });
         this.suits = Array.from(new Set(suits));
         this.mapTypes = this.data.maps.map(item => item.name);
@@ -2573,13 +2586,15 @@ $(function() {
       initDecoration() {
         this.decorations = [];
         const position_arr = this.decorationFilter.position.filter(p => { return p.flag }).map(p => p.name);
+        const time_arr = this.decorationFilter.time.id;
         for (item of this.data.decorations) {
           const s_name = this.checkKeyword(this.decorationFilter.keyword, item.name);
           const s_suit = this.checkKeyword(this.decorationFilter.keyword, item.suit);
           const s_origin = this.checkKeyword(this.decorationFilter.keyword, item.origin);
           const search = s_name || s_suit || s_origin;
           const f_postion = position_arr.indexOf(item.position) > -1;
-          if (search && f_postion) {
+          const f_time = time_arr.length == 0 || time_arr.indexOf(item.tipTime) > -1;
+          if (search && f_postion && f_time) {
             this.decorations.push(item);
           }
         }
@@ -2589,7 +2604,7 @@ $(function() {
           this.decorationsCurPage = 1;
           const decorationsPage = this.decorations.slice(0, this.decorationsPageSize)
           this.decorationsPage = decorationsPage.map(d => {
-            return Object.assign({}, d, checked);
+            return Object.assign({}, d, { checked: this.decoSelectId.indexOf(d.id) > -1 });
           });
         }
         this.$nextTick(() => {
@@ -3529,6 +3544,7 @@ $(function() {
           this.equip_concurrent = false;
         } else if (this.navId === 4) {
           this.decoration_radio = false;
+          this.$refs.decoTime.clear();
         } else if (this.navId === 7) {
           this.calKeyword = '';
         }
