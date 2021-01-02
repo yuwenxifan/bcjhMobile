@@ -1354,8 +1354,16 @@ input.hidden {
 .rst .red {
   color: #b2270f;
 }
-
 @media(min-width: 398px) {
+  .cal-contain, .total-result, .result {
+    width: 370px;
+    margin: 0 auto;
+  }
+  .cal .tool {
+    width: 364px;
+  }
+}
+@media(min-width: 669px) {
   .cal-contain, .total-result, .result {
     width: 430px;
     margin: 0 auto;
