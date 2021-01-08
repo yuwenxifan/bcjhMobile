@@ -881,6 +881,7 @@ input.hidden {
   font-size: 13px;
   width: 96px;
   text-align: center;
+  user-select: none;
 }
 .cal .tool {
   background: #f5f7fa;
