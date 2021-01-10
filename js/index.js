@@ -197,6 +197,17 @@ $(function() {
       repGot: {},
       chefGot: {},
       reg: new RegExp( '<br>' , "g" ),
+      nav_list: [
+        { id: 0, name: '首页' },
+        { id: 1, name: '菜谱' },
+        { id: 7, name: '计算器' },
+        { id: 2, name: '厨师' },
+        { id: 3, name: '厨具' },
+        { id: 4, name: '装修' },
+        { id: 5, name: '采集' },
+        { id: 10, name: '调料' },
+        { id: 6, name: '任务' },
+      ],
       page_list: [
         { id: 5, name: '5条/页' },
         { id: 10, name: '10条/页' },
@@ -242,6 +253,7 @@ $(function() {
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
       navId: 0,
+      userNav: 0,
       calCode: 'cal',
       defaultEx: false,
       calShowGot: false,
@@ -2269,6 +2281,7 @@ $(function() {
           }, 10);
         }
         setTimeout(() => {
+          this.navId = this.userNav;
           this.loading = false;
           this.tableHeight = window.innerHeight - 122 - this.extraHeight;
           this.tableShow = true;
@@ -3595,6 +3608,7 @@ $(function() {
           decorationCol: this.decorationCol,
           mapCol: this.mapCol,
           userUltimate: this.userUltimate,
+          userNav: this.userNav,
           defaultEx: this.defaultEx,
           calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
@@ -3609,7 +3623,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -4072,6 +4086,9 @@ $(function() {
           }
           });
         }
+      },
+      userNav() {
+        this.saveUserData();
       },
       repFilter: {
         deep: true,

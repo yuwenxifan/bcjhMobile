@@ -495,7 +495,7 @@
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
-        top="250px"
+        top="200px"
         :show-close="false"
         :visible.sync="settingVisible"
         width="270px">
@@ -577,6 +577,17 @@
           </el-select>
         </div>
         <div class="warning-tip" v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
+        <div class="input-box">
+          <span class="label">默认首页</span>
+          <el-select size="mini" style="width: 101px;" v-model="userNav">
+            <el-option
+              v-for="item in nav_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
         <span class="switch-box">
           <span>
             <el-switch
@@ -651,8 +662,8 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-01-10 23:25 增加可自选首页的设置。</div>
             <div class="p">2021-01-08 17:43 厨神有厨师倍数时计算器增加显示厨师性别与倍数；修复正常营业使用减时间厨师/厨具算出的结果有误差的问题；修复正常营业无限使用时间加成厨具不双倍的问题。</div>
-            <div class="p">2021-01-03 21:30 悄咪咪改了一个非常非常小的显示bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1649,6 +1660,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=105"></script>
+  <script src="./js/index.js?v=106"></script>
 </body>
 </html>
