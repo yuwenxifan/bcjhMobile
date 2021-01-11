@@ -194,6 +194,7 @@ $(function() {
       calLoading: false,
       calHidden: true,
       chefGotChange: false,
+      showDetail: false,
       repGot: {},
       chefGot: {},
       reg: new RegExp( '<br>' , "g" ),
@@ -1074,7 +1075,7 @@ $(function() {
           data,
         }).then(rst => {
           if (rst) {
-            if (rst.tips && !this.hiddenMessage) {
+            if (rst.tips && (rst.is_key || !this.hiddenMessage)) {
               this.$message({
                 message: rst.tips,
                 showClose: true
@@ -2118,6 +2119,7 @@ $(function() {
           id: rep.id,
           name: rep.name_show,
           rarity: rep.rarity,
+          rarity_show: rep.rarity_show,
           skills: rep.skills,
           materials: rep.materials,
           unknowBuff: rep.unknowBuff,
@@ -2141,7 +2143,8 @@ $(function() {
           rst.price_total = rst.price_buff * rst.cnt;
           rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
           rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
-          rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
+          rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
+          rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
           rst.price_origin_total = rst.price * rst.cnt;
           return rst;
         }
@@ -2163,8 +2166,9 @@ $(function() {
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
         rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) / 100);
         rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
+        rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
-        rst.price_rule = rst.price_total - (rst.price_wipe_rule * rst.cnt);
+        rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
         rst.price_origin_total = rst.price * rst.cnt;
         return rst;
       },
@@ -3609,6 +3613,7 @@ $(function() {
           mapCol: this.mapCol,
           userUltimate: this.userUltimate,
           userNav: this.userNav,
+          showDetail: this.showDetail,
           defaultEx: this.defaultEx,
           calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
@@ -3623,7 +3628,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -4088,6 +4093,9 @@ $(function() {
         }
       },
       userNav() {
+        this.saveUserData();
+      },
+      showDetail() {
         this.saveUserData();
       },
       repFilter: {

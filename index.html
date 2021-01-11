@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=30">
+  <link rel="stylesheet" href="./css/index.css?v=31">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -625,6 +625,15 @@
               inactive-color="#ddd">
             </el-switch>
           </span>
+          <span>
+            <el-switch
+              style="display: block"
+              v-model="showDetail"
+              active-color="#82a1b0"
+              active-text="计算器详细模式（核对用）"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
         </span>
         <span class="slider-box">
           <span class="slider-label">异形屏UI适配</span>
@@ -662,6 +671,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-01-11 21:18 计算器增加详细模式（用于核对分数等）。</div>
             <div class="p">2021-01-11 10:05 修复了菜谱页任意筛选搜索会跳转到默认首页的bug（新鲜出炉的bug啊）。</div>
             <div class="p">2021-01-10 23:25 增加可自选首页的设置。</div>
           </div>
@@ -1167,7 +1177,7 @@
                     <div
                       class="rep"
                       v-for="rep in [1, 2, 3]"
-                      :class="calFocus == `Rep_${chef}-${rep}` ? 'focus' : ''"
+                      :class="(calFocus == `Rep_${chef}-${rep}` ? 'focus ' : '') + (showDetail ? 'long' : '')"
                       @click="calCheck(`Rep_${chef}-${rep}`)"
                     >
                       <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
@@ -1176,6 +1186,9 @@
                           <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
                             <i class="el-icon-success"></i>
                           </span>
+                        </div>
+                        <div class="rep-detail" v-if='showDetail'>
+                          ${{calRepShow[chef-1][rep-1].price}}
                         </div>
                       </div>
                       <div class="rep-empty" v-else>
@@ -1281,7 +1294,7 @@
                 <div
                   class="rst-box"
                   v-for="(arr, i) in calRepShow"
-                  :class="calType.id[0] == 0 && !calLoad ? 'long ' : ''"
+                  :class="(calType.id[0] == 0 || showDetail) && !calLoad ? 'long ' : ''"
                 >
                   <div class="rst" v-for="(item, j) in arr">
                     <div class="show" v-if="item.id">
@@ -1302,6 +1315,7 @@
                                 <span class="val">{{val}}</span>
                               </div>
                             </div>
+                            <div class="rarity-box" v-if="showDetail">{{item.rarity_show}}</div>
                           </div>
                         </div>
                         <div class="buff-box" v-if="item.showBuff || item.unknowBuff">
@@ -1330,6 +1344,9 @@
                       <div class="time-price">
                         <div class="time" v-if="item.time_last && calType.id[0] == 0 && !calLoad && item.grade">
                           <i class="el-icon-time" style="margin-right: 2px;"></i>{{item.time_last_show}}
+                        </div>
+                        <div class="price-box" v-if="showDetail && calType.id[0] != 0">
+                          原始得分：{{item.price_wipe_rule_total || 0}}
                         </div>
                         <div class="price-box" :class="item.unknowBuff || !item.chef ? 'red' : ''">
                           <span style="margin-right: 2px;" v-if="item.grade > 0 || !item.chef">$</span>
@@ -1660,6 +1677,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=107"></script>
+  <script src="./js/index.js?v=108"></script>
 </body>
 </html>
