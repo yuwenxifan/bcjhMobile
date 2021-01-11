@@ -837,7 +837,8 @@ input.hidden {
 }
 .rep-detail {
   background: transparent;
-  font-size: 11px;
+  font-size: 10px;
+  zoom: 0.95;
   line-height: 1;
   justify-content: flex-end;
   align-self: center;
@@ -1223,7 +1224,7 @@ input.hidden {
   bottom: 2px;
 }
 .rarity-box {
-  font-size: 13px;
+  font-size: 11px;
   position: absolute;
   bottom: -11px;
   left: 50%;
@@ -1414,6 +1415,9 @@ input.hidden {
   }
   .rep-box .rep.long {
     height: 47px;
+  }
+  .rarity-box {
+    font-size: 13px;
   }
   .rep-detail {
     font-size: 12px;

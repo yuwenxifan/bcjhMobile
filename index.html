@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=31">
+  <link rel="stylesheet" href="./css/index.css?v=32">
   <link rel="stylesheet" href="./css/image.css?v=8">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -1346,7 +1346,7 @@
                           <i class="el-icon-time" style="margin-right: 2px;"></i>{{item.time_last_show}}
                         </div>
                         <div class="price-box" v-if="showDetail && calType.id[0] != 0">
-                          原始得分：{{item.price_wipe_rule_total || 0}}
+                          原始分: {{item.price_wipe_rule_total || 0}}
                         </div>
                         <div class="price-box" :class="item.unknowBuff || !item.chef ? 'red' : ''">
                           <span style="margin-right: 2px;" v-if="item.grade > 0 || !item.chef">$</span>
