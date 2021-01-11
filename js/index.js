@@ -1436,6 +1436,12 @@ $(function() {
         if (this.navId == 7) {
           this.tabBox = true;
         }
+        setTimeout(() => {
+          this.navId = this.userNav;
+          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
+          this.tableShow = true;
+          this.loading = false;
+        }, 20);
       },
       initCal() {
         this.calLoading = true;
@@ -2280,12 +2286,6 @@ $(function() {
             this.repCol.got = true;
           }, 10);
         }
-        setTimeout(() => {
-          this.navId = this.userNav;
-          this.loading = false;
-          this.tableHeight = window.innerHeight - 122 - this.extraHeight;
-          this.tableShow = true;
-        }, 20);
       },
       changeGot(val, prop, id) {
         this[prop][id] = val;
