@@ -491,11 +491,11 @@
           </footer>
         </div>
       </el-drawer>
-      <div v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="([1, 2, 3, 4, 5, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
-        top="200px"
+        top="160px"
         :show-close="false"
         :visible.sync="settingVisible"
         width="270px">
@@ -577,7 +577,7 @@
           </el-select>
         </div>
         <div class="warning-tip" v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
-        <div class="input-box">
+        <div class="input-box" style="margin-bottom: 10px;">
           <span class="label">默认首页</span>
           <el-select size="mini" style="width: 101px;" v-model="userNav">
             <el-option
@@ -653,7 +653,7 @@
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
       <span class="right">
-        <i v-if="hideSuspend && ([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && ([1, 2, 3, 4, 5, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
       </span>
     </section>
@@ -671,9 +671,8 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-01-13 10:00 把从采集页离家出走到任务页的筛选按钮送了回去。</div>
             <div class="p">2021-01-11 21:18 计算器增加详细模式（用于核对分数等）。</div>
-            <div class="p">2021-01-11 10:05 修复了菜谱页任意筛选搜索会跳转到默认首页的bug（新鲜出炉的bug啊）。</div>
-            <div class="p">2021-01-10 23:25 增加可自选首页的设置。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
