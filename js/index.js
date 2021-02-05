@@ -1059,7 +1059,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=11'
+          url: './data/data.min.json?v=12'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1205,7 +1205,7 @@ $(function() {
           const ultimateSkill = this.data.skills.find(s => {
             return s.skillId === item.ultimateSkill;
           });
-          item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc : '';
+          item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc.replace(this.reg, '\n') : '';
           item.ultimateSkill = ultimateSkill;
           item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
           return item;
