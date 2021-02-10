@@ -1657,13 +1657,7 @@ $(function() {
             r.buff_deco = this.ulti.decoBuff;
             buff += r.buff_deco;
           } else { // 菜谱/食材规则加成
-            if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
-              rule.MaterialsEffect.forEach(m => {
-                if (item.materials_id.indexOf(m.MaterialID) > -1) {
-                  buff_rule += (m.Effect * 100);
-                }
-              });
-            } else if (rule.RecipeEffect) {
+            if (rule.RecipeEffect) {
               if (rule.RecipeEffect[r.id] != null) {
                 buff_rule += (rule.RecipeEffect[r.id] * 100)
               } else {
@@ -1672,11 +1666,23 @@ $(function() {
               if (rule.NotSure) {
                 r.NotSure = rule.NotSure.indexOf(r.id) > -1;
               }
-            } else if (rule.SkillEffect) {
-              for (let skillCode in rule.SkillEffect) {
-                if (item[skillCode]) {
-                  buff_rule += (rule.SkillEffect[skillCode] * 100);
+            } else {
+              if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
+                rule.MaterialsEffect.forEach(m => {
+                  if (item.materials_id.indexOf(m.MaterialID) > -1) {
+                    buff_rule += (m.Effect * 100);
+                  }
+                });
+              }
+              if (rule.SkillEffect) {
+                for (let skillCode in rule.SkillEffect) {
+                  if (item[skillCode]) {
+                    buff_rule += (rule.SkillEffect[skillCode] * 100);
+                  }
                 }
+              }
+              if (rule.RarityEffect) {
+                buff_rule += (rule.RarityEffect[item.rarity] * 100);
               }
             }
           }
