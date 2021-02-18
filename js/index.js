@@ -1059,7 +1059,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=12'
+          url: './data/data.min.json?v=13'
         }).then(rst => {
           this.data = rst;
           this.initData();
