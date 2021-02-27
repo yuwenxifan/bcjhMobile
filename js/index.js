@@ -1817,6 +1817,11 @@ $(function() {
                   buff_skill += eff.value;
                 }
               }
+              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+                if (r.condiment === eff.type.slice(3)) {
+                  buff_skill += eff.value;
+                }
+              }
             });
           }
           chef.buff_skill = buff_skill;
