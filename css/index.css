@@ -775,7 +775,7 @@ input.hidden {
 .cal .select-box {
   margin: 5px 4px 5px 0px;
 }
-.cal .btn {
+.cal .ctl-box .btn {
   display: inline-block;
   font-size: 13px;
   padding: 0 9px;
@@ -786,12 +786,12 @@ input.hidden {
   width: 28px;
   flex-shrink: 0;
 }
-.cal .btn.load {
+.cal .ctl-box .btn.load {
   color: #fff;
   background: #c62828 !important;
   border-color: #c62828;
 }
-.cal .btn:active {
+.cal .ctl-box .btn:active {
   background-color: #f5f7fa;
 }
 .cal .tips {
@@ -1769,4 +1769,71 @@ span.code {
   .info-box .title-box {
     font-size: 16px;
   }
+}
+
+.cal .bottom-ctl {
+  position: fixed;
+  height: 50px;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  box-shadow: 0px -1px 3px #00000030;
+  background-color: #fff;
+  font-size: 14px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  z-index: 1002;
+}
+
+.btn.btn-default {
+  color: #607d8b;
+}
+
+.bottom-ctl .btn-box {
+  line-height: 50px;
+  float: right;
+}
+
+.bottom-ctl .plan-list {
+  position: absolute;
+  width: 100%;
+  height: 0;
+  box-shadow: 0 -16px 24px 2px rgb(0 0 0 / 14%);
+  background: #fff;
+  bottom: 50px;
+  left: 0;
+  transition: height 0.2s;
+  overflow-y: auto;
+}
+
+.bottom-ctl .plan-list.show {
+  height: 400px;
+}
+
+.modal {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  background: #00000060;
+  z-index: 1001;
+}
+
+.empty-tips {
+  font-size: 24px;
+  color: #ccc;
+  line-height: 400px;
+  text-align: center;
+}
+
+.plan-list-item {
+  font-size: 14px;
+  padding: 15px 100px 15px 25px;
+  border-bottom: 1px #dcdfe6 solid;
+}
+
+.plan-list-item .icon-btn {
+  font-size: 14px;
+  color: #607d8b;
 }

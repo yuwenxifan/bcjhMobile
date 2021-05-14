@@ -908,7 +908,21 @@ $(function() {
         '3-3': 0,
       },
       etcRules: [],
-      etcRule: { id: [], row: [] }
+      etcRule: { id: [], row: [] },
+      planList: [
+        // {name: '这是第一个'},
+        // {name: '这是第二个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个'},
+        // {name: '这是第三个方案方案方案方案方案'},
+      ],
+      planListShow: false,
     },
     computed: {
       showCondiment() {
@@ -1054,6 +1068,117 @@ $(function() {
       };
     },
     methods: {
+      share() {},
+      saveNewPlan() {
+        const data = this.savePlan();
+        if (data) {
+          this.$prompt('在下面填上方案名~', '(￣▽￣)"', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            inputPattern: /^.{1,15}$/,
+            inputErrorMessage: '方案名字数在1~15个之间'
+          }).then(({ value }) => {
+            value = value.trim();
+            const planNames = this.planList.map(p => {
+              return p.name;
+            });
+            const index = planNames.indexOf(value);
+            if (index > -1) {
+              this.$confirm('已有同名方案，是否替换？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+              }).then(() => {
+                this.planList[index] = {
+                  name: value,
+                  data,
+                };
+              }).catch(() => { });
+            } else {
+              this.planList.push({
+                name: value,
+                data,
+              });
+            }
+          }).catch(() => {});
+        }
+      },
+      savePlan() {
+        const that = this;
+        const plan_data = {};
+        let has_chef = false;
+        let has_rep = false;
+        function saveChose(name) { // 保存选的厨师等
+          plan_data[name] = {};
+          for (let key in that[`cal${name}`]) { // 天啊，我怎么能写出这么丑的东西
+            const item = that[`cal${name}`][key];
+            if (item.id.length > 0) {
+              plan_data[name][key] = item.id[0];
+              if (name == 'Chef') has_chef = true;
+              if (name == 'Rep') has_rep = true;
+            }
+          }
+        }
+        function saveRepEx(name, rep) { // 保存菜谱数量/专精/是否加料，name：参数名；rep：已选菜谱
+          plan_data[name] = {};
+          for (let key in rep) {
+            const item = that[`calRep${name}`][key];
+            plan_data[name][key] = item;
+          }
+        }
+        const choseName = ['Chef', 'Equip', 'Condiment', 'Rep'];
+        const repExName = ['Cnt', 'Ex', 'Condi'];
+        choseName.forEach(i => {
+          saveChose(i);
+        });
+        repExName.forEach(i => {
+          saveRepEx(i, plan_data.Rep);
+        });
+        if (!has_chef && !has_rep) {
+          this.$message({
+            message: '至少选一个厨子或者菜谱再保存方案啊',
+            showClose: true,
+            type: 'warning'
+          });
+          return false;
+        }
+        return plan_data;
+      },
+      setPlan(data) {
+        console.log(data);
+        const that = this;
+        this.calClear();
+        const choseName = ['Chef', 'Equip', 'Condiment'];
+        const repExName = ['Cnt', 'Ex', 'Condi'];
+        const temp = {};
+        choseName.forEach(i => {
+          temp[i] = Object.assign({}, that[`cal${i}`]);
+          for (let key in data[i]) {
+            temp[i][key] = {
+              id: [data[i][key]],
+              row: that[`cal${i}s_list`].filter(c => {
+                return c.id == data[i][key];
+              }),
+            };
+          }
+          this[`cal${i}`] = temp[i];
+        });
+        for (let key in data.Rep) {
+          this.calRep[key] = {
+            id: [data.Rep[key]],
+            row: that.calReps_list[key.split('-')[0]].filter(c => {
+              return c.id == data.Rep[key];
+            }),
+          };
+        }
+        repExName.forEach(i => {
+          temp[i] = Object.assign({}, that[`cal${i}`]);
+          for (let key in data[i]) {
+            temp[i][key] = data[i][key];
+          }
+          this[`calRep${i}`] = temp[i];
+        });
+      },
       getUrlKey(name) {
         return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
       },
@@ -1444,6 +1569,45 @@ $(function() {
           this.loading = false;
         }, 20);
       },
+      calClear() {
+        this.calChef = {
+          1: { id: [], row: [] },
+          2: { id: [], row: [] },
+          3: { id: [], row: [] }
+        };
+        this.calEquip = {
+          1: { id: [], row: [] },
+          2: { id: [], row: [] },
+          3: { id: [], row: [] }
+        };
+        this.calCondiment = {
+          1: { id: [], row: [] },
+          2: { id: [], row: [] },
+          3: { id: [], row: [] }
+        };
+        this.calRepCnt = {
+          '1-1': null,
+          '1-2': null,
+          '1-3': null,
+          '2-1': null,
+          '2-2': null,
+          '2-3': null,
+          '3-1': null,
+          '3-2': null,
+          '3-3': null,
+        };
+        this.calRep = {
+          '1-1': { id: [], row: [] },
+          '1-2': { id: [], row: [] },
+          '1-3': { id: [], row: [] },
+          '2-1': { id: [], row: [] },
+          '2-2': { id: [], row: [] },
+          '2-3': { id: [], row: [] },
+          '3-1': { id: [], row: [] },
+          '3-2': { id: [], row: [] },
+          '3-3': { id: [], row: [] },
+        };
+      },
       initCal() {
         this.calLoading = true;
         setTimeout(() => {
@@ -1468,43 +1632,7 @@ $(function() {
               this.$refs[`calRep_${key}`][0].clear();
             }
           }
-          this.calChef = {
-            1: { id: [], row: [] },
-            2: { id: [], row: [] },
-            3: { id: [], row: [] }
-          };
-          this.calEquip = {
-            1: { id: [], row: [] },
-            2: { id: [], row: [] },
-            3: { id: [], row: [] }
-          };
-          this.calCondiment = {
-            1: { id: [], row: [] },
-            2: { id: [], row: [] },
-            3: { id: [], row: [] }
-          };
-          this.calRepCnt = {
-            '1-1': null,
-            '1-2': null,
-            '1-3': null,
-            '2-1': null,
-            '2-2': null,
-            '2-3': null,
-            '3-1': null,
-            '3-2': null,
-            '3-3': null,
-          };
-          this.calRep = {
-            '1-1': { id: [], row: [] },
-            '1-2': { id: [], row: [] },
-            '1-3': { id: [], row: [] },
-            '2-1': { id: [], row: [] },
-            '2-2': { id: [], row: [] },
-            '2-3': { id: [], row: [] },
-            '3-1': { id: [], row: [] },
-            '3-2': { id: [], row: [] },
-            '3-3': { id: [], row: [] },
-          };
+          this.calClear();
           this.sort.calRep = {
             prop: 'price_total',
             order: 'descending'

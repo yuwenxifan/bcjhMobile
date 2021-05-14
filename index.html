@@ -14,6 +14,7 @@
     <div v-if="loading" class="loading">
       <div>爆炒江湖图鉴</div>
     </div>
+    <div class="modal" v-if="planListShow" @click="planListShow = false"></div>
     <div v-loading.fullscreen.lock="calLoading"></div>
     <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
@@ -1362,6 +1363,23 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+            <div v-if="!calHidden" class="bottom-ctl">
+              <div :class="'plan-list ' + (planListShow ? 'show' : '')">
+                <div class="empty-tips" v-if="planListShow && planList.length === 0">还没有方案┑(￣Д ￣)┍</div>
+                <div v-if="planListShow">
+                  <div v-for="item in planList" class="plan-list-item" @click="setPlan(item.data)">
+                    <i class="el-icon-edit icon-btn"></i>
+                    {{item.name}}
+                    <!-- <div>替换</div> -->
+                  </div>
+                </div>
+              </div>
+              <div class="btn-box">
+                <button class="btn btn-default" @click="planListShow = !planListShow">方案列表</button>
+                <button class="btn btn-primary" @click="saveNewPlan">保存为新方案</button>
+                <i class="icon-btn el-icon-share" @click="share" style="color: #607d8b;"></i>
               </div>
             </div>
           </div>
