@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=32">
+  <link rel="stylesheet" href="./css/index.css?v=33">
   <link rel="stylesheet" href="./css/image.css?v=13">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -672,9 +672,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-05-18 19:02 计算器正常营业增加编队功能。</div>
             <div class="p">2021-05-03 20:15 新增厨师波特尔、金牛牛。</div>
             <div class="p">2021-04-01 13:15 新增江南烟雨池相关厨师菜谱数据。</div>
-            <div class="p">2021-03-13 04:55 新增菜谱雪花酥。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1365,21 +1365,43 @@
                 </div>
               </div>
             </div>
-            <div v-if="!calHidden" class="bottom-ctl">
+            <div v-if="!calHidden && calType.id[0] == 0" class="bottom-ctl">
               <div :class="'plan-list ' + (planListShow ? 'show' : '')">
                 <div class="empty-tips" v-if="planListShow && planList.length === 0">还没有方案┑(￣Д ￣)┍</div>
                 <div v-if="planListShow">
-                  <div v-for="item in planList" class="plan-list-item" @click="setPlan(item.data)">
-                    <i class="el-icon-edit icon-btn"></i>
+                  <div v-for="(item, idx) in planList" class="plan-list-item" @click="setPlan(item.data)">
+                    <span @click.stop="return;"><i class="el-icon-edit icon-btn" @click="editPlanName(idx)"></i></span>
                     {{item.name}}
-                    <!-- <div>替换</div> -->
+                    <div @click.stop="return;" class="right">
+                      <button class="btn btn-primary" @click="replacePlan(idx)" v-if="!showDel && !showSort">替换</button>
+                      <button class="btn btn-primary btn-circle" @click="planSortUp(idx)" v-if="showSort">
+                        <i class="icon-btn el-icon-arrow-up" style="color: #fff;"></i>
+                      </button>
+                      <button class="btn btn-primary btn-circle" @click="planSortDown(idx)" v-if="showSort">
+                        <i class="icon-btn el-icon-arrow-down" style="color: #fff;"></i>
+                      </button>
+                      <button class="btn btn-delete" v-if="showDel" @click="delPlan(idx)">删除</button>
+                    </div>
                   </div>
                 </div>
               </div>
               <div class="btn-box">
-                <button class="btn btn-default" @click="planListShow = !planListShow">方案列表</button>
-                <button class="btn btn-primary" @click="saveNewPlan">保存为新方案</button>
-                <i class="icon-btn el-icon-share" @click="share" style="color: #607d8b;"></i>
+                <i v-if="planListShow" class="icon-btn el-icon-arrow-down" @click="planListShow = false" style="color: #607d8b;"></i>
+                <div>
+                  <button v-if="!planListShow" class="btn btn-default" @click="planListShow = !planListShow">方案列表</button>
+                  <button v-if="!planListShow" class="btn btn-primary" @click="saveNewPlan">保存为新方案</button>
+                  <button
+                    v-if="planListShow"
+                    class="btn btn-primary"
+                    :class="showSort ? 'yellow' : ''"
+                    @click="showSort = !showSort; showDel = false;">{{showSort ? '确定' : '排序'}}</button>
+                  <button
+                    v-if="planListShow"
+                    class="btn btn-primary"
+                    :class="showDel ? 'yellow' : ''"
+                    @click="showDel = !showDel; showSort = false;">{{showDel ? '确定' : '删除'}}</button>
+                  <!-- <i class="icon-btn el-icon-share" @click="share" style="color: #607d8b;"></i> -->
+                </div>
               </div>
             </div>
           </div>
@@ -1695,6 +1717,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=117"></script>
+  <script src="./js/index.js?v=118"></script>
 </body>
 </html>

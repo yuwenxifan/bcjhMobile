@@ -909,20 +909,10 @@ $(function() {
       },
       etcRules: [],
       etcRule: { id: [], row: [] },
-      planList: [
-        // {name: '这是第一个'},
-        // {name: '这是第二个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个'},
-        // {name: '这是第三个方案方案方案方案方案'},
-      ],
+      planList: [],
       planListShow: false,
+      showSort: false,
+      showDel: false,
     },
     computed: {
       showCondiment() {
@@ -1145,39 +1135,99 @@ $(function() {
         return plan_data;
       },
       setPlan(data) {
-        console.log(data);
         const that = this;
-        this.calClear();
-        const choseName = ['Chef', 'Equip', 'Condiment'];
-        const repExName = ['Cnt', 'Ex', 'Condi'];
-        const temp = {};
-        choseName.forEach(i => {
-          temp[i] = Object.assign({}, that[`cal${i}`]);
-          for (let key in data[i]) {
-            temp[i][key] = {
-              id: [data[i][key]],
-              row: that[`cal${i}s_list`].filter(c => {
-                return c.id == data[i][key];
+        that.calLoading = true;
+        setTimeout(() => {
+          this.calClear();
+          const choseName = ['Chef', 'Equip', 'Condiment'];
+          const repExName = ['Cnt', 'Ex', 'Condi'];
+          const temp = {};
+          choseName.forEach(i => {
+            temp[i] = Object.assign({}, that[`cal${i}`]);
+            for (let key in data[i]) {
+              temp[i][key] = {
+                id: [data[i][key]],
+                row: that[`cal${i}s_list`].filter(c => {
+                  return c.id == data[i][key];
+                }),
+              };
+            }
+            this[`cal${i}`] = temp[i];
+          });
+          for (let key in data.Rep) {
+            this.calRep[key] = {
+              id: [data.Rep[key]],
+              row: that.calReps_list[key.split('-')[0]].filter(c => {
+                return c.id == data.Rep[key];
               }),
             };
           }
-          this[`cal${i}`] = temp[i];
-        });
-        for (let key in data.Rep) {
-          this.calRep[key] = {
-            id: [data.Rep[key]],
-            row: that.calReps_list[key.split('-')[0]].filter(c => {
-              return c.id == data.Rep[key];
-            }),
-          };
-        }
-        repExName.forEach(i => {
-          temp[i] = Object.assign({}, that[`cal${i}`]);
-          for (let key in data[i]) {
-            temp[i][key] = data[i][key];
+          repExName.forEach(i => {
+            temp[i] = Object.assign({}, that[`cal${i}`]);
+            for (let key in data[i]) {
+              temp[i][key] = data[i][key];
+            }
+            this[`calRep${i}`] = temp[i];
+          });
+          setTimeout(() => {
+            that.calLoading = false;
+            that.planListShow = false;
+          }, 1000);
+        }, 50);
+      },
+      editPlanName(idx) {
+        this.$prompt('在下面填上方案名~', '(￣▽￣)"', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^.{1,15}$/,
+          inputErrorMessage: '方案名字数在1~15个之间',
+        }).then(({ value }) => {
+          value = value.trim();
+          const planNames = this.planList.map(p => {
+            return p.name;
+          });
+          const index = planNames.indexOf(value);
+          if (index > -1) {
+            this.$message({
+              type: 'error',
+              message: '方案名已经被占用了！',
+              showClose: true,
+            });
+          } else {
+            this.planList[idx].name = value;
           }
-          this[`calRep${i}`] = temp[i];
-        });
+        }).catch(() => {});
+      },
+      replacePlan(idx) {
+        const data = this.savePlan();
+        if (data) {
+          this.planList[idx].data = data;
+          this.$message({
+            type: 'success',
+            message: '操作成功！',
+            showClose: true,
+          })
+          this.planListShow = false;
+        }
+      },
+      delPlan(idx) {
+        this.planList.splice(idx, 1);
+      },
+      planSortUp(idx) {
+        let arr = this.planList.slice();
+        if (idx > 0) {
+          arr.splice(idx, 1, this.planList[idx - 1]);
+          arr.splice(idx - 1, 1, this.planList[idx]);
+          this.planList = arr;
+        }
+      },
+      planSortDown(idx) {
+        let arr = this.planList.slice();
+        if (idx < arr.length - 1) {
+          arr.splice(idx, 1, this.planList[idx + 1]);
+          arr.splice(idx + 1, 1, this.planList[idx]);
+          this.planList = arr;
+        }
       },
       getUrlKey(name) {
         return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
@@ -3760,14 +3810,15 @@ $(function() {
           repSkillGap: this.repSkillGap,
           chefSkillGap: this.chefSkillGap,
           repGot: this.repGot,
-          chefGot: this.chefGot
+          chefGot: this.chefGot,
+          planList: this.planList
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -4246,6 +4297,12 @@ $(function() {
             this.$refs.recipesTable.doLayout();
           }
           });
+        }
+      },
+      planList: {
+        deep: true,
+        handler() {
+          this.saveUserData();
         }
       },
       repChef: {

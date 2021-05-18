@@ -786,7 +786,7 @@ input.hidden {
   width: 28px;
   flex-shrink: 0;
 }
-.cal .ctl-box .btn.load {
+.cal .ctl-box .btn.load, .plan-list-item .btn.btn-delete {
   color: #fff;
   background: #c62828 !important;
   border-color: #c62828;
@@ -1791,6 +1791,8 @@ span.code {
 
 .bottom-ctl .btn-box {
   line-height: 50px;
+}
+.bottom-ctl .btn-box>div {
   float: right;
 }
 
@@ -1828,6 +1830,7 @@ span.code {
 }
 
 .plan-list-item {
+  position: relative;
   font-size: 14px;
   padding: 15px 100px 15px 25px;
   border-bottom: 1px #dcdfe6 solid;
@@ -1836,4 +1839,24 @@ span.code {
 .plan-list-item .icon-btn {
   font-size: 14px;
   color: #607d8b;
+}
+
+.plan-list-item .right {
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.plan-list-item .btn-circle {
+  padding: 0;
+  height: 26px;
+  width: 26px;
+  border-radius: 26px;
+  margin-right: 0;
+}
+
+.btn-box .btn.btn-primary.yellow {
+  background-color: #cc9f6c !important;
+  border-color: #cc9f6c;
 }
