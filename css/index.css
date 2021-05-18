@@ -1775,7 +1775,8 @@ span.code {
   position: fixed;
   height: 50px;
   width: 100%;
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   bottom: 0;
   box-shadow: 0px -1px 3px #00000030;
   background-color: #fff;
@@ -1859,4 +1860,8 @@ span.code {
 .btn-box .btn.btn-primary.yellow {
   background-color: #cc9f6c !important;
   border-color: #cc9f6c;
+}
+
+.bottom-ctl {
+  max-width: 904px;
 }
