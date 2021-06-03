@@ -1234,7 +1234,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=17'
+          url: './data/data.min.json?v=18'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3125,6 +3125,7 @@ $(function() {
       handleChefSort(sort) {
         this.sort.chef = sort;
         const map = {
+          galleryId: 'chefId',
           rarity_show: 'rarity',
           Stirfry_show: 'Stirfry_last',
           Boil_show: 'Boil_last',
