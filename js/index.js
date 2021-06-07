@@ -1152,10 +1152,10 @@ $(function() {
                 }),
               };
             }
-            this[`cal${i}`] = temp[i];
+            that[`cal${i}`] = temp[i];
           });
           for (let key in data.Rep) {
-            this.calRep[key] = {
+            that.calRep[key] = {
               id: [data.Rep[key]],
               row: that.calReps_list[key.split('-')[0]].filter(c => {
                 return c.id == data.Rep[key];
@@ -1163,11 +1163,11 @@ $(function() {
             };
           }
           repExName.forEach(i => {
-            temp[i] = Object.assign({}, that[`cal${i}`]);
+            temp[i] = Object.assign({}, that[`calRep${i}`]);
             for (let key in data[i]) {
               temp[i][key] = data[i][key];
             }
-            this[`calRep${i}`] = temp[i];
+            that[`calRep${i}`] = temp[i];
           });
           setTimeout(() => {
             that.calLoading = false;
