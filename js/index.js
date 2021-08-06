@@ -3785,9 +3785,10 @@ $(function() {
           }
         }
       },
-      calScroll(val) {
+      calScroll() {
         if (window.innerWidth < 669) {
-          if ($('.cal').scrollTop() < val) {
+          const val = 440 + this.extraHeight - window.innerHeight / 2; // 保证输入框的位置在屏幕的中间偏上不被键盘遮挡
+          if ($('.cal').scrollTop() < val && window.innerHeight > 440) { // 屏幕过短时不弹出
             $('.cal').scrollTop(val);
           }
         }
