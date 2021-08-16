@@ -672,10 +672,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-08-16 16:30 新增个人数据暂存到云的功能，新增更新提示。</div>
             <div class="p">2021-08-06 11:15 修复部分屏幕较短的手机，计算器查找下拉框选中时，无法弹出键盘的bug。</div>
             <div class="p">2021-08-06 10:30 更新礼包厨师秋香。</div>
-            <div class="p">2021-08-05 16:20 更新故城荣光池的数据。</div>
-            <div class="p">2021-07-23 13:10 更新河南烩面，河南加油！郑州加油！。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1587,6 +1586,14 @@
               <input id="file" style="display: none" type="file" accept="text/plain" @input="importUserData(event)">
             </div>
           </div>
+          <div class="title">个人数据云端暂存</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="uploadData">上传个人数据</span>
+              <span class="btn" @click="downloadData">获取云端数据</span>
+            </div>
+          </div>
           <div class="title">L版图鉴数据转移-手动复制版</div>
           <div class="hr"></div>
           <div class="box-body">
@@ -1718,6 +1725,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=125"></script>
+  <script src="./js/index.js?v=126"></script>
 </body>
 </html>

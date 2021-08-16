@@ -181,6 +181,7 @@ $(function() {
   var app = new Vue({
     el: '#main',
     data: {
+      url: 'https://bcjh.xyz/api',
       count: 0,
       location: window.location.origin,
       leftBar: false,
@@ -1042,6 +1043,7 @@ $(function() {
     mounted() {
       if (this.getUrlKey('time')) this.navId = 7
       this.loadFoodGodRule();
+      this.getVersion();
       this.getUserData();
       const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
       for (const key of arr) {
@@ -1244,7 +1246,7 @@ $(function() {
         let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : null;
         const data = {};
         time ? data.time = JSON.parse(JSON.stringify(time)): null;
-        const url = 'https://bcjh.xyz/api';
+        const url = this.url;
         $.ajax({
           url: `${url}/get_rule`,
           data,
@@ -1273,6 +1275,27 @@ $(function() {
         }).fail(err => {
           this.$message.error('获取厨神规则失败');
           this.loadData();
+        });
+      },
+      async getVersion() {
+        const url = this.url;
+        $.ajax({
+          url: `${url}/get_version`,
+        }).then(rst => {
+          if (rst) rst = JSON.parse(rst);
+          const version = localStorage.getItem('version');
+          const userData = localStorage.getItem('data');
+          if (userData && (!version || version != rst.version)) { // 不是第一次打开本页面
+            localStorage.setItem('version', rst.version);
+            this.$notify({
+              title: '有更新！',
+              message: '<strong>更新内容：</strong><br>' + rst.tips + '<br><br>如果发现未更新成功，或图片错位等情况，网页版的刷新页面，APP版的杀后台再进一次即可。',
+              dangerouslyUseHTMLString: true,
+              duration: 0
+            });
+          }
+        }).fail(err => {
+          console.log('调用获取版本号接口报错', err);
         });
       },
       checkNav(id) {
@@ -4102,6 +4125,110 @@ $(function() {
         };
         reader.readAsText(input.files[0]);
         e.target.value = null;
+      },
+      async uploadData() {
+        const that = this;
+        const url = that.url;
+        this.$prompt('数据暂存时限为24小时，单用户单日上传上限为10次，所有用户单日上传上限为1000次。<strong>请勿无节制上传！</strong><br>请在下面填入昵称（仅用作核对）：', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          dangerouslyUseHTMLString: true,
+          inputPattern: /^.{1,10}$/,
+          inputErrorMessage: '昵称字数在1~10个之间',
+        }).then(({ value }) => {
+          value = value.trim();
+          that.saveUserData();
+          const data = localStorage.getItem('data');
+          $.ajax({
+            url: `${url}/upload_data`,
+            type: 'POST',
+            dataType: 'json',
+            data: {
+              user: value,
+              data,
+            },
+          }).then(rst => {
+            if (!rst.result) {
+              that.$message({
+                type: 'error',
+                message: `上传失败：${rst.msg}`,
+                showClose: true,
+              });
+            }
+            that.$notify({
+              title: '上传成功',
+              message: `数据ID：${rst.insertId}<br>获取云端数据时数据ID是唯一的识别码，请务必保管好您的数据ID！`,
+              dangerouslyUseHTMLString: true,
+              duration: 0
+            });
+          }).fail(err => {
+            that.$message({
+              type: 'error',
+              message: '上传失败：服务端错误',
+              showClose: true,
+            });
+            console.log(err);
+          });
+        }).catch(() => { });
+      },
+      async downloadData() {
+        const that = this;
+        const url = that.url;
+        this.$prompt('请填写数据ID：', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          inputPattern: /^\d{1,10}$/,
+          inputErrorMessage: '数据ID为10位以下的纯数字',
+        }).then(({ value }) => {
+          value = value.trim();
+          $.ajax({
+            url: `${url}/download_data`,
+            data: {
+              id: value,
+            },
+          }).then(rst => {
+            if (rst.result) {
+              that.$confirm(`是否确定导入【${rst.user}】的个人数据？`, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'info'
+              }).then(() => {
+                try {
+                  localStorage.setItem('data', rst.data);
+                  that.getUserData();
+                  setTimeout(() => {
+                    that.$refs.userPartial.initOption();
+                    that.$refs.userSelf.initOption();
+                  }, 50);
+                  that.$message({
+                    showClose: true,
+                    message: '导入成功',
+                    type: 'success'
+                  });
+                } catch(e) {
+                  that.$message({
+                    showClose: true,
+                    message: '导入失败',
+                    type: 'error'
+                  });
+                }
+              }).catch(() => {});
+            } else {
+              that.$message({
+                type: 'error',
+                message: `获取云端数据失败：${rst.msg}`,
+                showClose: true,
+              });
+            }
+          }).fail(err => {
+            that.$message({
+              type: 'error',
+              message: '获取云端数据失败：服务端错误',
+              showClose: true,
+            });
+            console.log(err);
+          });
+        }).catch(() => {});
       },
       putUserCol(key) {
         const col = {};
