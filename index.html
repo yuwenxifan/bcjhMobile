@@ -672,9 +672,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-09-29 18:50 计算器新增推荐厨师/厨具/调料的功能。</div>
             <div class="p">2021-09-28 10:10 新增月宫瑶池相关厨师菜谱数据。</div>
             <div class="p">2021-09-05 00:05 新增菜谱归龄糕。</div>
-            <div class="p">2021-08-16 16:30 新增个人数据暂存到云的功能，新增更新提示。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1205,22 +1205,24 @@
                     <muti-select
                       :ref="`calChef_${key}`"
                       placeholder="请选择厨师"
-                      :option="calChefs_list"
+                      :option="calChefs[key]"
                       v-model="calChef[key]"
                       :max="1"
                       :disable="disable"
                       @focus="calScroll"
+                      @click="getRecommend('chef', key)"
                     ></muti-select>
                   </span>
                   <span class="select-box" style="width: calc(50% - 7.5px); padding-left: 0;">
                     <muti-select
                       :ref="`calCondiment_${key}`"
                       placeholder="请选择调料"
-                      :option="calCondiments_list"
+                      :option="calCondiments[key]"
                       v-model="calCondiment[key]"
                       :max="1"
                       :disable="disable"
                       @focus="calScroll"
+                      @click="getRecommend('condi', key)"
                     ></muti-select>
                   </span>
                 </div>
@@ -1229,10 +1231,11 @@
                     <muti-select
                       :ref="`calEquip_${key}`"
                       placeholder="请选择厨具"
-                      :option="calEquips_list"
+                      :option="calEquips[key]"
                       v-model="calEquip[key]"
                       :max="1"
                       @focus="calScroll"
+                      @click="getRecommend('equip', key)"
                     ></muti-select>
                   </span>
                 </div>
@@ -1725,6 +1728,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=128"></script>
+  <script src="./js/index.js?v=129"></script>
 </body>
 </html>

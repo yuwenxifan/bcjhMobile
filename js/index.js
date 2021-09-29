@@ -171,6 +171,7 @@ $(function() {
       show(val) {
         if (val) {
           this.keyword = "";
+          if (this.$listeners['click']) this.$emit('click');
           window.addEventListener("click", this.clickOther);
         } else {
           window.removeEventListener('click', this.clickOther);
@@ -782,8 +783,23 @@ $(function() {
       calFocus: null,
       calChefs_origin: [],
       calChefs_list: [],
+      calChefs: {
+        1: [],
+        2: [],
+        3: [],
+      },
       calEquips_list: [],
+      calEquips: {
+        1: [],
+        2: [],
+        3: [],
+      },
       calCondiments_list: [],
+      calCondiments: {
+        1: [],
+        2: [],
+        3: [],
+      },
       calReps_list: {
         1: [],
         2: [],
@@ -1748,10 +1764,12 @@ $(function() {
           const ultimateSkill = item.ultimateSkill || {};
           const tag = item.tags ? item.tags[0] : null;
           let subName = null;
+          let subName_origin = null;
           let chef_buff = 0;
           if (rule.ChefTagEffect) {
             chef_buff = tag ? rule.ChefTagEffect[tag] : 0;
             subName = (tag == 1 ? '男' : (tag == 2 ? '女' : '')) + ' ' + (chef_buff || '');
+            subName_origin = chef_buff ? `${chef_buff}倍` : '';
           }
           if (!rule.EnableChefTags || rule.EnableChefTags.indexOf(tag) > -1) {
             chefs_list.push({
@@ -1760,6 +1778,7 @@ $(function() {
               rarity: item.rarity,
               name: item.name,
               subName,
+              subName_origin,
               isf: chef_buff < 0,
               skills: {
                 stirfry: item.stirfry,
@@ -1799,6 +1818,9 @@ $(function() {
         } else {
           this.calChefs_list = this.calChefs_origin.slice();
         }
+        this.calChefs[1] = JSON.parse(JSON.stringify(this.calChefs_list));
+        this.calChefs[2] = JSON.parse(JSON.stringify(this.calChefs_list));
+        this.calChefs[3] = JSON.parse(JSON.stringify(this.calChefs_list));
       },
       initCalEquip() {
         this.calEquips_list = this.data.equips.map(item => {
@@ -1806,9 +1828,13 @@ $(function() {
             id: item.equipId,
             name: item.name,
             subName: item.skill,
+            subName_origin: item.skill,
             effect: item.effect
           }
         });
+        this.calEquips[1] = JSON.parse(JSON.stringify(this.calEquips_list));
+        this.calEquips[2] = JSON.parse(JSON.stringify(this.calEquips_list));
+        this.calEquips[3] = JSON.parse(JSON.stringify(this.calEquips_list));
       },
       initCalCondiment() {
         this.calCondiments_list = this.data.condiments.map(item => {
@@ -1816,9 +1842,13 @@ $(function() {
             id: item.condimentId,
             name: `${item.name} ${item.rarity_show}`,
             subName: item.skill,
+            subName_origin: item.skill,
             effect: item.effect
           }
         });
+        this.calCondiments[1] = JSON.parse(JSON.stringify(this.calCondiments_list));
+        this.calCondiments[2] = JSON.parse(JSON.stringify(this.calCondiments_list));
+        this.calCondiments[3] = JSON.parse(JSON.stringify(this.calCondiments_list));
       },
       initCalRep() {
         const rep = [];
@@ -1849,6 +1879,10 @@ $(function() {
           });
           r.materials = materials;
           let buff = 100;
+          let ex = 0
+          if (this.defaultEx) {
+            ex += item.exPrice;
+          }
 
           r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
           buff += r.buff_ulti;
@@ -1889,10 +1923,10 @@ $(function() {
           }
 
           r.buff_rule = buff_rule;
-          r.price_wipe_rule = Math.ceil((item.price * buff) / 100);
+          r.price_wipe_rule = Math.ceil(((item.price + ex) * buff) / 100);
 
           buff += buff_rule;
-          r.price_buff = Math.ceil((item.price * buff) / 100);
+          r.price_buff = Math.ceil(((item.price + ex) * buff) / 100);
 
           r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
           r.limit_origin = r.limit;
@@ -1961,135 +1995,264 @@ $(function() {
         }
         this.setDefaultSort();
       },
+      getRecommend(flag, key) {
+        const hasRep = this.hasRep(key);
+        if (flag == 'chef') { // 厨子
+          if (hasRep) {
+            this.getRecommendChef(key);
+          } else {
+            this.calChefs[key] = JSON.parse(JSON.stringify(this.calChefs_list));
+          }
+        }
+        if (flag == 'equip') { // 厨具
+          if (hasRep && this.calChef[key].id[0]) { // 厨子和菜谱都有
+            this.getRecommendEqp(key);
+          } else {
+            this.calEquips[key] = JSON.parse(JSON.stringify(this.calEquips_list));
+          }
+        }
+        if (flag == 'condi') {
+          if (hasRep && this.calChef[key].id[0]) { // 厨子和菜谱都有
+            this.getRecommendCondi(key);
+          } else {
+            this.calCondiments[key] = JSON.parse(JSON.stringify(this.calCondiments_list));
+          }
+        }
+      },
+      getRecommendChef(key) {
+        this.calChefs[key].forEach(c => {
+          let chef = this.showChef(c, key); // 获取厨师数值
+          let price = 0;
+          let inf = {};
+          let inf_str = '';
+          let inf_sum = 0;
+          for (let i of [1, 2, 3]) { // 判断是否有菜谱
+            const rep = this.calRep[`${key}-${i}`].row[0];
+            if (rep) {
+              const cnt = this.calRepCnt[`${key}-${i}`];
+              const result = this.calScore(chef, rep, 'chf');
+              price += (result.chef_chf.price_buff * cnt);
+              for (let sk in result.chef_chf.inf) {
+                inf[sk] = Math.min((result.chef_chf.inf[sk] || 0), (inf[sk] || 0));
+              }
+            }
+          }
+          for (let sk in inf) {
+            if (inf[sk] < 0) {
+              inf_str += ` ${this.skill_map[sk]}${inf[sk]}`;
+              inf_sum -= inf[sk];
+            }
+          }
+          c.subName = (c.subName_origin || '') + ' ' + price + ' ' + inf_str;
+          c.price_total = price;
+          c.isf = inf_str != '';
+          c.inf_sum = inf_sum;
+        });
+        this.calChefs[key].sort(function(x, y) {
+          if (y.price_total != x.price_total) {
+            return y.price_total - x.price_total;
+          }
+          return x.inf_sum - y.inf_sum;
+        });
+      },
+      getRecommendEqp(key) {
+        const chf = this.calChef[key].row[0];
+        if (!chf) return;
+        this.calEquips[key].forEach(c => {
+          let chef = this.showChef(chf, key, c); // 获取厨师数值
+          let price = 0;
+          let inf = {};
+          let inf_str = '';
+          let inf_sum = 0;
+          for (let i of [1, 2, 3]) { // 判断是否有菜谱
+            const rep = this.calRep[`${key}-${i}`].row[0];
+            if (rep) {
+              const cnt = this.calRepCnt[`${key}-${i}`];
+              const result = this.calScore(chef, rep, 'eqp');
+              price += (result.chef_eqp.price_buff * cnt);
+              for (let sk in result.chef_eqp.inf) {
+                inf[sk] = Math.min((result.chef_eqp.inf[sk] || 0), (inf[sk] || 0));
+              }
+            }
+          }
+          for (let sk in inf) {
+            if (inf[sk] < 0) {
+              inf_str += ` ${this.skill_map[sk]}${inf[sk]}`;
+              inf_sum -= inf[sk];
+            }
+          }
+          c.subName = ' ' + price + ' ' + inf_str + ' ' + (c.subName_origin || '');
+          c.price_total = price;
+          c.isf = inf_str != '';
+          c.inf_sum = inf_sum;
+        });
+        this.calEquips[key].sort(function(x, y) {
+          if (y.price_total != x.price_total) {
+            return y.price_total - x.price_total;
+          }
+          return x.inf_sum - y.inf_sum;
+        });
+      },
+      getRecommendCondi(key) {
+        const chf = this.calChef[key].row[0];
+        if (!chf) return;
+        this.calCondiments[key].forEach(c => {
+          let chef = this.showChef(chf, key, null, c); // 获取厨师数值
+          let price = 0;
+          for (let i of [1, 2, 3]) { // 判断是否有菜谱
+            const rep = this.calRep[`${key}-${i}`].row[0];
+            if (rep) {
+              const cnt = this.calRepCnt[`${key}-${i}`];
+              const result = this.calScore(chef, rep, 'cdi');
+              price += (result.chef_cdi.price_buff * cnt);
+            }
+          }
+          c.subName = ' ' + price + ' ' + (c.subName_origin || '');
+          c.price_total = price;
+        });
+        this.calCondiments[key].sort(function(x, y) {
+          if (y.price_total != x.price_total) {
+            return y.price_total - x.price_total;
+          }
+          return 0;
+        });
+      },
       showRepCnt(cnt, lim) {
         if (lim > cnt) {
           return `${cnt}/${lim}`
         }
         return cnt;
       },
-      handlerChef(i) { // 厨子变化
+      calScore(chf, rep, pos) { // 计算厨师做某个菜的结果
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
-        const reps = this.calRepsAll.map(r => {
-          let chef = {};
-          const rule = this.calType.row[0];
-          chef.buff_rule = r.buff_rule;
+        let chef = {};
+        const rule = this.calType.row[0];
+        chef.buff_rule = rep.buff_rule;
 
-          let min = 5;
-          if (rule.DisableCookbookRank) { // 无菜品加成
-            min = 1;
+        let min = 5;
+        if (rule.DisableCookbookRank) { // 无菜品加成
+          min = 1;
+        }
+        let inf = [];
+        let inf_detail = {};
+        let buff_skill = 0;
+        let buff_equip = 0;
+        let buff_condiment = 0;
+        chef.buff = rep.buff;
+
+        if (rule.ChefTagEffect) { // 男厨/女厨倍数
+          const tag_buff = rule.ChefTagEffect[chf.tag] ? rule.ChefTagEffect[chf.tag] * 100 : 0;
+          chef.buff_rule += tag_buff;
+          chef.buff += tag_buff;
+        }
+
+        for (let sk in rep.skills) { // 判断品级
+          let multi = Math.floor(chf.skills_last[sk] / rep.skills[sk]);
+          if (chf.skills_last[sk] < rep.skills[sk]) {
+            inf.push(`${this.skill_map[sk]}${chf.skills_last[sk] - rep.skills[sk]}`);
+            inf_detail[sk] = Math.min((inf_detail[sk] || 0), (chf.skills_last[sk] - rep.skills[sk]));
           }
-          let inf = [];
-          let buff_skill = 0;
-          let buff_equip = 0;
-          let buff_condiment = 0;
-          chef.buff = r.buff;
+          min = multi > min ? min : multi;
+        }
+        chef.grade = min; // 品级
+        chef.buff_grade = this.grade_buff[min] || 0; // 品级加成
+        chef.buff += chef.buff_grade;
 
-          if (rule.ChefTagEffect) { // 男厨/女厨倍数
-            const tag_buff = rule.ChefTagEffect[this.calChefShow[i].tag] ? rule.ChefTagEffect[this.calChefShow[i].tag] * 100 : 0;
-            chef.buff_rule += tag_buff;
-            chef.buff += tag_buff;
-          }
-
-          for (let sk in r.skills) { // 判断品级
-            let multi = Math.floor(this.calChefShow[i].skills_last[sk] / r.skills[sk]);
-            if (this.calChefShow[i].skills_last[sk] < r.skills[sk]) {
-              inf.push(`${this.skill_map[sk]}${this.calChefShow[i].skills_last[sk] - r.skills[sk]}`);
+        if (!rule.DisableChefSkillEffect) {
+          chf.sum_skill_effect.forEach(eff => { // 技能
+            if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
+              buff_skill += eff.value;
             }
-            min = multi > min ? min : multi;
-          }
-          chef.grade = min; // 品级
-          chef.buff_grade = this.grade_buff[min] || 0; // 品级加成
-          chef.buff += chef.buff_grade;
-
-          if (!rule.DisableChefSkillEffect) {
-            this.calChefShow[i].sum_skill_effect.forEach(eff => { // 技能
-              if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
+            if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+              if (rep.skills[eff.type.slice(3).toLowerCase()]) {
                 buff_skill += eff.value;
               }
-              if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                if (r.skills[eff.type.slice(3).toLowerCase()]) {
-                  buff_skill += eff.value;
-                }
+            }
+            if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+              if (rep.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                buff_skill += eff.value;
               }
-              if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                if (r.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                  buff_skill += eff.value;
-                }
+            }
+            if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+              if (rep.condiment === eff.type.slice(3)) {
+                buff_skill += eff.value;
               }
-              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
-                if (r.condiment === eff.type.slice(3)) {
-                  buff_skill += eff.value;
-                }
-              }
-            });
-          }
-          chef.buff_skill = buff_skill;
-          chef.buff += buff_skill;
+            }
+          });
+        }
+        chef.buff_skill = buff_skill;
+        chef.buff += buff_skill;
 
-          if (!rule.DisableEquipSkillEffect) {
-            this.calChefShow[i].equip_effect.forEach(eff => { // 厨具技能
-              if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
-                buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
+        if (!rule.DisableEquipSkillEffect) {
+          chf.equip_effect.forEach(eff => { // 厨具技能
+            if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
+              buff_equip += eff.value * (100 + chf.MutiEquipmentSkill) / 100;
+            }
+            if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+              if (rep.skills[eff.type.slice(3).toLowerCase()]) {
+                buff_equip += eff.value * (100 + chf.MutiEquipmentSkill) / 100;
               }
-              if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                if (r.skills[eff.type.slice(3).toLowerCase()]) {
-                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
-                }
+            }
+            if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
+              if (rep.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
+                buff_equip += eff.value * (100 + chf.MutiEquipmentSkill) / 100;
               }
-              if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
-                if (r.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
-                }
+            }
+            if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+              if (rep.condiment === eff.type.slice(3)) {
+                buff_equip += eff.value * (100 + chf.MutiEquipmentSkill) / 100;
               }
-              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
-                if (r.condiment === eff.type.slice(3)) {
-                  buff_equip += eff.value * (100 + this.calChefShow[i].MutiEquipmentSkill) / 100;
-                }
-              }
-            });
-          }
-          chef.buff_equip = buff_equip;
-          chef.buff += buff_equip;
+            }
+          });
+        }
+        chef.buff_equip = buff_equip;
+        chef.buff += buff_equip;
 
-          if (!rule.DisableCondimentSkillEffect) {
-            this.calChefShow[i].condiment_effect.forEach(eff => { // 厨具技能
-              if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
-                if (r.skills[eff.type.slice(3).toLowerCase()]) {
-                  buff_condiment += eff.value;
-                }
+        if (!rule.DisableCondimentSkillEffect) {
+          chf.condiment_effect.forEach(eff => { // 厨具技能
+            if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
+              if (rep.skills[eff.type.slice(3).toLowerCase()]) {
+                buff_condiment += eff.value;
               }
-              if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
-                if (r.condiment === eff.type.slice(3)) {
-                  buff_condiment += eff.value;
-                }
+            }
+            if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
+              if (rep.condiment === eff.type.slice(3)) {
+                buff_condiment += eff.value;
               }
-            });
-          }
-          chef.buff_condiment = buff_condiment;
-          chef.buff += buff_condiment;
+            }
+          });
+        }
+        chef.buff_condiment = buff_condiment;
+        chef.buff += buff_condiment;
 
-          let ex = 0;
-          if (this.defaultEx) {
-            ex += r.exPrice;
-          }
-          chef.price_buff = Math.ceil((r.price + ex) * chef.buff / 100);
-          chef.price_total = chef.price_buff * r.limit;
+        let ex = 0;
+        if (this.defaultEx) {
+          ex += rep.exPrice;
+        }
+        chef.price_buff = Math.ceil((rep.price + ex) * chef.buff / 100);
+        chef.price_total = chef.price_buff * rep.limit;
 
-          chef.subName = '';
-          if (min < 1) {
-            chef.subName += ' ' + inf.join(' ');
-          }
-          if (this.calType.id[0] == 0) { // 正常营业算效率
-            chef.gold_eff = Math.floor(chef.price_buff * 3600 / r.time_last);
-            r[`gold_eff_chef_${i}`] = chef.gold_eff;
-          }
+        chef.subName = '';
+        chef.inf = {};
+        if (min < 1) {
+          chef.inf = inf_detail;
+          chef.subName += ' ' + inf.join(' ');
+        }
+        if (this.calType.id[0] == 0) { // 正常营业算效率
+          chef.gold_eff = Math.floor(chef.price_buff * 3600 / rep.time_last);
+          rep[`gold_eff_chef_${pos}`] = chef.gold_eff;
+        }
 
-          r[`chef_${i}`] = chef;
-          r[`price_chef_${i}`] = chef.price_total;
+        rep[`chef_${pos}`] = chef;
+        rep[`price_chef_${pos}`] = chef.price_total;
 
-          return r;
+        return rep;
+      },
+      handlerChef(i) { // 厨子变化
+        const reps = this.calRepsAll.map(r => {
+          return this.calScore(this.calChefShow[i], r, i);
         });
         this.calRepsAll = reps;
         this.calRepSort(i);
@@ -2211,7 +2374,7 @@ $(function() {
         }
         this.calChefShow = rst;
       },
-      showChef(chef, position) {
+      showChef(chef, position, eqp, condi) {
         let ultimate = false;
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const skills_show = {};
@@ -2221,19 +2384,21 @@ $(function() {
         let sum_skill_effect = [];
         let time_buff = 0;
         let equip_time_buff = 0;
+        if (!eqp) eqp = this.calEquip[position].row[0];
+        if (!condi) condi = this.calCondiment[position].row[0];
         function judgeEff(eff) {
           return eff.condition == 'Self' && (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain');
         }
-        if (this.calEquip[position].row[0]) { // 厨具
-          equip_effect = this.calEquip[position].row[0].effect.filter(eff => { // 对售价/时间有影响的技能效果
+        if (eqp) { // 厨具
+          equip_effect = eqp.effect.filter(eff => { // 对售价/时间有影响的技能效果
             if (eff.type == 'OpenTime') {
               equip_time_buff = eff.value;
             }
             return judgeEff(eff);
           });
         }
-        if (this.calCondiment[position].row[0]) { // 调料
-          condiment_effect = this.calCondiment[position].row[0].effect.slice();
+        if (condi) { // 调料
+          condiment_effect = condi.effect.slice();
         }
         chef.skill_effect.forEach(eff => {
           if (eff.type == 'OpenTime') {
@@ -2290,8 +2455,8 @@ $(function() {
               });
             }
           }
-          if (this.calEquip[position].row[0]) { // 装备厨具
-            this.calEquip[position].row[0].effect.forEach(eff => {
+          if (eqp) { // 装备厨具
+            eqp.effect.forEach(eff => {
               if (eff.type == key) {
                 if (eff.cal == 'Abs') {
                   value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
@@ -4311,6 +4476,16 @@ $(function() {
             this.calRepEx[arr[1]] = this.defaultEx;
           }
         }
+      },
+      hasRep(pos) { // 判断某个厨师位是否有菜谱
+        let hasRep = 0;
+        for (let i of [1, 2, 3]) { // 判断是否有菜谱
+          if (this.calRep[`${pos}-${i}`].id[0]) {
+            hasRep = 1;
+            break;
+          }
+        }
+        return hasRep;
       },
       goToConfig() {
         this.showBack = true;
