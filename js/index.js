@@ -2056,7 +2056,7 @@ $(function() {
         });
       },
       getRecommendEqp(key) {
-        const chf = this.calChef[key].row[0];
+        const chf = JSON.parse(JSON.stringify(this.calChef[key].row[0]));
         if (!chf) return;
         this.calEquips[key].forEach(c => {
           let chef = this.showChef(chf, key, c); // 获取厨师数值
@@ -2094,7 +2094,7 @@ $(function() {
         });
       },
       getRecommendCondi(key) {
-        const chf = this.calChef[key].row[0];
+        const chf = JSON.parse(JSON.stringify(this.calChef[key].row[0]));
         if (!chf) return;
         this.calCondiments[key].forEach(c => {
           let chef = this.showChef(chf, key, null, c); // 获取厨师数值
