@@ -196,6 +196,7 @@ $(function() {
       calLoading: false,
       calHidden: true,
       chefGotChange: false,
+      repGotChange: false,
       showDetail: false,
       repGot: {},
       chefGot: {},
@@ -1821,6 +1822,7 @@ $(function() {
         this.calChefs[1] = JSON.parse(JSON.stringify(this.calChefs_list));
         this.calChefs[2] = JSON.parse(JSON.stringify(this.calChefs_list));
         this.calChefs[3] = JSON.parse(JSON.stringify(this.calChefs_list));
+        this.chefGotChange = false;
       },
       initCalEquip() {
         this.calEquips_list = this.data.equips.map(item => {
@@ -2318,6 +2320,7 @@ $(function() {
             }
           }
         }
+        this.repGotChange = false;
       },
       handleCalRepChange(row, key) {
         if (!row[0]) {
@@ -5075,8 +5078,10 @@ $(function() {
               this.lastBuffTime = 100;
             }, 50);
           }
-          if (this.chefGotChange && !this.calHidden && this.chefGot) {
-            this.initCalChefList();
+          if ((this.repGotChange || this.chefGotChange) && !this.calHidden && this.calShowGot) {
+            this.$message('已有厨师菜谱发生了变化，需要重新加载计算器获取最新数据~');
+            this.chefGotChange = false;
+            this.repGotChange = false;
           }
         }
       },
@@ -5092,6 +5097,12 @@ $(function() {
         deep: true,
         handler() {
           this.chefGotChange = true;
+        }
+      },
+      repGot: {
+        deep: true,
+        handler() {
+          this.repGotChange = true;
         }
       }
     }
