@@ -1166,7 +1166,7 @@ $(function() {
             for (let key in data[i]) {
               temp[i][key] = {
                 id: [data[i][key]],
-                row: that[`cal${i}s_list`].filter(c => {
+                row: that[`cal${i}s`][key].filter(c => {
                   return c.id == data[i][key];
                 }),
               };
@@ -4342,7 +4342,7 @@ $(function() {
       async downloadData() {
         const that = this;
         const url = that.url;
-        this.$prompt('请填写数据ID：', '提示', {
+        this.$prompt('请填写数据ID（需要先上传个人数据才能通过ID获取暂存的数据）：', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           inputPattern: /^\d{1,10}$/,
