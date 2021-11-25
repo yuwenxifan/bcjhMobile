@@ -1253,7 +1253,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=26'
+          url: './data/data.min.json?v=27'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1920,6 +1920,9 @@ $(function() {
               }
               if (rule.RarityEffect) {
                 buff_rule += (rule.RarityEffect[item.rarity] * 100);
+              }
+              if (rule.CondimentEffect) {
+                buff_rule += (rule.CondimentEffect[item.condiment] * 100);
               }
             }
           }
