@@ -2628,9 +2628,9 @@ $(function() {
               }
               if (this.chefUltimate) {
                 if (this.chefUseAllUltimate) { // 使用全修炼
-                  buff += (this.allUltimate['PriceBuff_' + item.rarity] || 0); // *星菜谱售价加成
+                  buff += (Number(this.allUltimate['PriceBuff_' + item.rarity]) || 0); // *星菜谱售价加成
                 } else {
-                  buff += (this.userUltimate['PriceBuff_' + item.rarity] || 0); // *星菜谱售价加成
+                  buff += (Number(this.userUltimate['PriceBuff_' + item.rarity]) || 0); // *星菜谱售价加成
                 }
               }
               // 技能/修炼技能加成（如果修炼没开在chefs_list就过滤掉了）
@@ -2873,9 +2873,9 @@ $(function() {
                 buff += this.grade_buff[min]; // 品级加成
                 if (this.chefUltimate) { // 修炼加成
                   if (this.chefUseAllUltimate) { // 使用全修炼
-                    buff += (this.allUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                    buff += (Number(this.allUltimate['PriceBuff_' + rep.rarity]) || 0); // *星菜谱售价加成
                   } else {
-                    buff += (this.userUltimate['PriceBuff_' + rep.rarity] || 0); // *星菜谱售价加成
+                    buff += (Number(this.userUltimate['PriceBuff_' + rep.rarity]) || 0); // *星菜谱售价加成
                   }
                 }
                 // 技能/修炼技能加成（如果修炼没开在effect就过滤掉了）
