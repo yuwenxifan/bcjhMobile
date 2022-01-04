@@ -1021,6 +1021,9 @@ $(function() {
               item.time_buff ? (time_buff = item.time_buff) : null;
             }
           }
+          if (this.calType.row[0].ScoreCoef) {
+            price = Math.floor(price / this.calType.row[0].ScoreCoef);
+          }
           time_last = Math.ceil((time * time_buff * 100) / 10000);
           let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
           let rst = `原售价：${price_origin}${rule_show} 总得分：${price}`;
