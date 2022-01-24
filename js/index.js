@@ -1022,7 +1022,11 @@ $(function() {
             }
           }
           if (this.calType.row[0].ScoreCoef) {
-            price = Math.floor(price / this.calType.row[0].ScoreCoef);
+            if (price >= 0) {
+              price = Math.floor(price / this.calType.row[0].ScoreCoef);
+            } else {
+              price = Math.ceil(price / this.calType.row[0].ScoreCoef);
+            }
           }
           time_last = Math.ceil((time * time_buff * 100) / 10000);
           let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
@@ -1256,7 +1260,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=29'
+          url: './data/data.min.json?v=30'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2028,12 +2032,14 @@ $(function() {
         }
       },
       getRecommendChef(key) {
+        // const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         this.calChefs[key].forEach(c => {
           let chef = this.showChef(c, key); // 获取厨师数值
           let price = 0;
           let inf = {};
           let inf_str = '';
           let inf_sum = 0;
+          // let partials = [];
           for (let i of [1, 2, 3]) { // 判断是否有菜谱
             const rep = this.calRep[`${key}-${i}`].row[0];
             if (rep) {
@@ -2051,6 +2057,14 @@ $(function() {
               inf_sum -= inf[sk];
             }
           }
+          // if (this.ulti.Partial.id.indexOf(c.uid) > -1) { // 如果有已修炼上场类修炼技能
+          //   c.ultimate_effect.forEach(eff => {
+          //     if (eff.condition == 'Partial' && skill_type.indexOf(eff.type) > -1) {
+          //       partials.push(`${this.skill_map[eff.type.toLowerCase()]}光环+${eff.value}`);
+          //     }
+          //   });
+          // }
+          // c.subName = (c.subName_origin || '') + ' ' + price + (inf_str ? ' ' : '') + inf_str + ' ' + partials.join(' ');
           c.subName = (c.subName_origin || '') + ' ' + price + ' ' + inf_str;
           c.price_total = price;
           c.isf = inf_str != '';
@@ -2455,6 +2469,7 @@ $(function() {
           if (this.ulti.Partial.id.indexOf(chef.uid) > -1) {
             ultimate = true;
           }
+          let chef_flag = 0; // 判断当前厨子是否在场
           for (let i = 1; i < 4; i++) {
             if (this.calChef[i].row[0] && this.ulti.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1) { // 已修炼且在场的上场类修炼技能
               this.calChef[i].row[0].ultimate_effect.forEach(eff => {
@@ -2463,6 +2478,16 @@ $(function() {
                 }
               });
             }
+            if (this.calChef[i].row[0] && this.calChef[i].row[0].id == chef.id) { // 当前厨子在场上
+              chef_flag = 1
+            }
+          }
+          if (chef_flag == 0 && this.ulti.Partial.id.indexOf(chef.uid) > -1) { // 如果当前厨子不在场，且有上场类修炼技能
+            chef.ultimate_effect.forEach(eff => {
+              if (eff.type == key && eff.condition == 'Partial') {
+                value += eff.value;
+              }
+            });
           }
           if (eqp) { // 装备厨具
             eqp.effect.forEach(eff => {
@@ -4362,9 +4387,10 @@ $(function() {
             },
           }).then(rst => {
             if (rst.result) {
-              that.$confirm(`是否确定导入【${rst.user}】的个人数据？`, '提示', {
+              that.$confirm(`是否确定导入【${rst.user}】的个人数据？<br/>如果是导入他人数据，记得<strong style="color:red">先保存好自己的个人数据</strong>！`, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
+                dangerouslyUseHTMLString: true,
                 type: 'info'
               }).then(() => {
                 try {
@@ -4420,42 +4446,56 @@ $(function() {
         }
       },
       setAllUltimate() {
-        let userUltimate = JSON.parse(JSON.stringify(this.allUltimate));
-        this.userUltimate = Object.assign(userUltimate, {
-          decoBuff: this.userUltimate.decoBuff
+        const that = this;
+        that.$confirm(`是否确定导入全修炼数据？此操作会覆盖原有修炼数据且不能恢复`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let userUltimate = JSON.parse(JSON.stringify(that.allUltimate));
+          that.userUltimate = Object.assign(userUltimate, {
+            decoBuff: that.userUltimate.decoBuff
+          });
+          setTimeout(() => {
+            that.$refs.userPartial.initOption();
+            that.$refs.userSelf.initOption();
+          }, 50);
         });
-        setTimeout(() => {
-          this.$refs.userPartial.initOption();
-          this.$refs.userSelf.initOption();
-        }, 50);
       },
       emptyUserUltimate() {
-        this.userUltimate = {
-          decoBuff: '',
-          Stirfry: '',
-          Boil: '',
-          Knife: '',
-          Fry: '',
-          Bake: '',
-          Steam: '',
-          Male: '',
-          Female: '',
-          All: '',
-          Partial: { id: [], row: [] },
-          Self: { id: [], row: [] },
-          MaxLimit_1: '',
-          MaxLimit_2: '',
-          MaxLimit_3: '',
-          MaxLimit_4: '',
-          MaxLimit_5: '',
-          PriceBuff_1: '',
-          PriceBuff_2: '',
-          PriceBuff_3: '',
-          PriceBuff_4: '',
-          PriceBuff_5: '',
-        };
-        this.$refs.userPartial.clear();
-        this.$refs.userSelf.clear();
+        const that = this;
+        that.$confirm(`是否确定清空个人修炼数据？此操作会清空原有修炼/装饰加成数据且不能恢复（不影响已有厨师菜谱数据）`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          that.userUltimate = {
+            decoBuff: '',
+            Stirfry: '',
+            Boil: '',
+            Knife: '',
+            Fry: '',
+            Bake: '',
+            Steam: '',
+            Male: '',
+            Female: '',
+            All: '',
+            Partial: { id: [], row: [] },
+            Self: { id: [], row: [] },
+            MaxLimit_1: '',
+            MaxLimit_2: '',
+            MaxLimit_3: '',
+            MaxLimit_4: '',
+            MaxLimit_5: '',
+            PriceBuff_1: '',
+            PriceBuff_2: '',
+            PriceBuff_3: '',
+            PriceBuff_4: '',
+            PriceBuff_5: '',
+          };
+          that.$refs.userPartial.clear();
+          that.$refs.userSelf.clear();
+        });
       },
       clickOther(e) {
         let focus = false;

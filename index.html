@@ -6,7 +6,7 @@
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=33">
-  <link rel="stylesheet" href="./css/image.css?v=25">
+  <link rel="stylesheet" href="./css/image.css?v=26">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -158,6 +158,15 @@
                   :class="repFilter.combo ? 'active' : ''"
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
+                <!-- <span class="select-box">
+                  <muti-select
+                    ref="materialEff"
+                    :option="materials_list"
+                    placeholder="合成菜谱"
+                    v-model="repFilter.materialEff"
+                    @focus="scroll(416)"
+                  ></muti-select>
+                </span> -->
               </div>
               <div class="checkbox-contain">
                 <span
@@ -672,9 +681,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-01-24 15:00 新增虎虎迎春池相关数据。</div>
             <div class="p">2021-01-20 15:00 更新新后厨菜与礼包厨师裘小白。</div>
             <div class="p">2021-12-28 11:45 修复了手动修改菜谱售价加成后，菜谱页选厨师/厨师页选菜谱计算效率出错的bug。</div>
-            <div class="p">2021-12-05 20:05 新增菜谱玉兔仙踪。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1574,31 +1583,6 @@
               <span class="btn" @click="emptyUserUltimate">清空个人数据</span>
             </div>
           </div>
-          <div class="title">个人数据备份-手动复制版</div>
-          <div class="hr"></div>
-          <div class="box-body">
-            <el-input
-              type="textarea"
-              :rows="10"
-              placeholder="请贴入备份的个人数据。（与L的网页版图鉴数据不是同一套，不能互通，首次使用需自行录入修炼/装饰数据。）"
-              v-model="userDataText"
-              @focus="scrollUser(530)"
-            >
-            </el-input>
-            <div class="btn-box" style="margin-top: 10px;">
-              <span class="btn" @click="exportUserDataText">生成个人数据</span>
-              <span class="btn" @click="importUserDataText">导入个人数据</span>
-            </div>
-          </div>
-          <div class="title">个人数据备份-文件版（有的浏览器不支持）</div>
-          <div class="hr"></div>
-          <div class="box-body">
-            <div class="btn-box" style="margin-top: 10px;">
-              <span class="btn" @click="exportUserData">下载个人数据文件</span>
-              <span class="btn" @click="openFile">导入个人数据文件</span>
-              <input id="file" style="display: none" type="file" accept="text/plain" @input="importUserData(event)">
-            </div>
-          </div>
           <div class="title">个人数据云端暂存</div>
           <div class="hr"></div>
           <div class="box-body">
@@ -1628,6 +1612,31 @@
             <div class="btn-box" style="margin-top: 10px;">
               <span class="btn" @click="openLFile">导入L版图鉴数据文件</span>
               <input id="Lfile" style="display: none" type="file" accept="text/plain" @input="importLData(event)">
+            </div>
+          </div>
+          <div class="title">个人数据备份-手动复制版</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <el-input
+              type="textarea"
+              :rows="10"
+              placeholder="请贴入备份的个人数据。（与L的网页版图鉴数据不是同一套，不能互通，首次使用需自行录入修炼/装饰数据，如果有维护L版数据可以使用上面的L版图鉴数据转移功能。）"
+              v-model="userDataText"
+              @focus="scrollUser(530)"
+            >
+            </el-input>
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="exportUserDataText">生成个人数据</span>
+              <span class="btn" @click="importUserDataText">导入个人数据</span>
+            </div>
+          </div>
+          <div class="title">个人数据备份-文件版（有的浏览器不支持）</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="btn-box" style="margin-top: 10px;">
+              <span class="btn" @click="exportUserData">下载个人数据文件</span>
+              <span class="btn" @click="openFile">导入个人数据文件</span>
+              <input id="file" style="display: none" type="file" accept="text/plain" @input="importUserData(event)">
             </div>
           </div>
         </div>
@@ -1738,6 +1747,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=139"></script>
+  <script src="./js/index.js?v=140"></script>
 </body>
 </html>
