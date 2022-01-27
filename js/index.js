@@ -269,6 +269,8 @@ $(function() {
       extraHeight: 0,
       data: [],
       materials_list: [],
+      combos_list: [],
+      combo_map: { combo: {}, split: {} },
       chefs_list: [],
       partial_skill_list: [],
       self_skill_list: [],
@@ -324,6 +326,7 @@ $(function() {
         img: false,
         rarity: false,
         skills: false,
+        skills_sim: false,
         condiment: false,
         materials: false,
         price: true,
@@ -346,7 +349,8 @@ $(function() {
         id: '编号',
         img: '图',
         rarity: '星级',
-        skills: '技法',
+        skills: '技法（全）',
+        skills_sim: '技法（简）',
         condiment: '调料',
         materials: '材料',
         price: '单价',
@@ -398,6 +402,7 @@ $(function() {
         material_type: false,
         guest: false,
         combo: false,
+        comboRep: {},
         price: '',
         materialEff: {},
         got: false
@@ -973,13 +978,34 @@ $(function() {
         return rst;
       },
       disableRep() {
-        let rst = [];
+        // let rst = { own: [], combo: [], split: [] };
+        let disable = [];
         for (let key in this.calRep) {
-          if (this.calRep[key].id.length > 0) {
-            rst.push(this.calRep[key].id[0]);
+          if (this.calRep[key].id.length > 0) { // 已选菜谱
+            const rep = this.calRep[key].row[0];
+            const id = this.calRep[key].id[0];
+            // rst.own.push(id); // 已选菜谱禁选
+            disable.push(id); // 已选菜谱禁选
+            if (this.combo_map.combo[id]) { // 合成菜谱
+              for (const rep_id of this.combo_map.combo[id]) {
+                if (this.combo_map.split[rep_id].length == 1) { // 如果只能合成这一个，禁选
+                  // rst.combo.push({ rep_id, rep_name: rep.name_show });
+                  disable.push(rep_id);
+                }
+              }
+            }
+            if (this.combo_map.split[id]) { // 拆分菜谱
+              if (this.combo_map.split[id].length == 1) {
+                // rst.split.push({
+                //   rep_id: this.combo_map.split[id][0],
+                //   rep_name: rep.name_show
+                // });
+                disable.push(this.combo_map.split[id][0]);
+              }
+            }
           }
         }
-        return rst;
+        return disable;
       },
       buffTips() {
         let raritys = [];
@@ -1333,6 +1359,20 @@ $(function() {
       initData() {
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.filter(r => { return r.recipeId > 5000 });
+        this.combos_list = combo_recipes.map(item => {
+          item.id = item.recipeId;
+          return item;
+        });
+        for (const i of this.data.combos) {
+          this.combo_map.combo[i.recipeId] = i.recipes;
+          for (const j of i.recipes) {
+            if (this.combo_map.split[j]) {
+              this.combo_map.split[j].push(i.recipeId);
+            } else {
+              this.combo_map.split[j] = [i.recipeId];
+            }
+          }
+        }
         this.data.recipes = this.data.recipes.map(item => {
           this.repGot[item.recipeId] = this.repGot[item.recipeId] || false;
           item.checked = this.repGot[item.recipeId];
@@ -1375,12 +1415,14 @@ $(function() {
           item.material_eff = ~~(3600 / item.time * materials_cnt);
           item.condiment_show = this.condimentMap[item.condiment];
           item.combo = [];
+          item.comboId = [];
           for (const i of this.data.combos) {
             if (i.recipes.indexOf(item.recipeId) > -1) {
               const combo = combo_recipes.find(r => {
                 return r.recipeId === i.recipeId;
               });
               item.combo.push(combo.name);
+              item.comboId.push(combo.recipeId);
             }
           }
           item.combo = item.combo.join('\n');
@@ -1403,6 +1445,11 @@ $(function() {
             }
           });
           item.skills = skills;
+          const skill_shows = [];
+          for (let key in item.skills) {
+            skill_shows.push(`${this.skill_map[key]}${item.skills[key]}`);
+          }
+          item.skills_show = skill_shows.join(' ');
           return item;
         });
         this.initRep();
@@ -2619,6 +2666,11 @@ $(function() {
           }
           const f_guest = !this.repFilter.guest || item.normal_guests;
           const f_combo = !this.repFilter.combo || item.combo;
+          let f_combo_rep = true;
+          const comboRep = this.repFilter.comboRep;
+          if (this.repFilter.combo && comboRep.id && comboRep.id.length > 0) {
+            f_combo_rep = (item.comboId.indexOf(comboRep.id[0]) > -1);
+          }
           const f_price = item.price > this.repFilter.price;
           const f_got = !this.repFilter.got || this.repGot[item.recipeId];
           const f_condiment = this.repFilter.condiment[item.condiment] && this.repFilter.condiment[item.condiment].flag;
@@ -2635,7 +2687,7 @@ $(function() {
               f_material_eff = f_material_eff || Boolean(material);
             });
           }
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_price && f_material_eff && f_got && f_condiment) {
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_combo_rep && f_price && f_material_eff && f_got && f_condiment) {
             const chef_ext = {};
             this.repChef.row.forEach(chef => {
               let min = 5;

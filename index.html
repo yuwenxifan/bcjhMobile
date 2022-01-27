@@ -158,15 +158,16 @@
                   :class="repFilter.combo ? 'active' : ''"
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
-                <!-- <span class="select-box">
+                <span class="select-box" v-show="repFilter.combo">
                   <muti-select
-                    ref="materialEff"
-                    :option="materials_list"
+                    ref="combosEff"
+                    :option="combos_list"
                     placeholder="合成菜谱"
-                    v-model="repFilter.materialEff"
-                    @focus="scroll(416)"
-                  ></muti-select>
-                </span> -->
+                    v-model="repFilter.comboRep"
+                    :max="1"
+                    @focus="scroll(436)"
+                    ></muti-select>
+                </span>
               </div>
               <div class="checkbox-contain">
                 <span
@@ -681,9 +682,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-01-27 16:25 菜谱页展示列新增技法（简），优化菜谱页的合成菜谱筛选，计算器选菜时增加合成菜谱的限制（面包比较特殊未做限制）。</div>
             <div class="p">2021-01-24 15:30 新增虎虎迎春池相关数据。</div>
             <div class="p">2021-01-20 15:00 更新新后厨菜与礼包厨师裘小白。</div>
-            <div class="p">2021-12-28 11:45 修复了手动修改菜谱售价加成后，菜谱页选厨师/厨师页选菜谱计算效率出错的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -758,6 +759,7 @@
           </el-table-column>
           <el-table-column fixed sortable="custom" prop="name" label="菜谱名" width="80"></el-table-column>
           <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="80" v-if="repCol.rarity"></el-table-column>
+          <el-table-column prop="skills_show" label="技法" min-width="90" v-if="repCol.skills_sim"></el-table-column>
           <el-table-column sortable="custom" prop="stirfry" label="炒" min-width="48" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="boil" label="煮" min-width="48" v-if="repCol.skills"></el-table-column>
           <el-table-column sortable="custom" prop="knife" label="切" min-width="48" v-if="repCol.skills"></el-table-column>
@@ -1747,6 +1749,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=140"></script>
+  <script src="./js/index.js?v=141"></script>
 </body>
 </html>
