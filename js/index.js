@@ -1632,21 +1632,22 @@ $(function() {
               });
             }
           }
-          if (item.ultimateSkill && item.ultimateSkill.effect.length == 1) {
-            const effect = item.ultimateSkill.effect[0];
-            for (const key in skill_obj) {
-              if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
-                skill_obj[key] += effect.value;
+          if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') < 0) {
+            item.ultimateSkill.effect.forEach(effect => {
+              for (const key in skill_obj) {
+                if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
+                  skill_obj[key] += effect.value;
+                }
               }
-            }
-            for (let i = 1; i < 6; i++) {
-              if (effect.type == 'UseAll' && effect.rarity == i) {
-                price_obj[`PriceBuff_${i}`] += effect.value;
+              for (let i = 1; i < 6; i++) {
+                if (effect.type == 'UseAll' && effect.rarity == i) {
+                  price_obj[`PriceBuff_${i}`] += effect.value;
+                }
+                if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                  limit_obj[`MaxLimit_${i}`] += effect.value;
+                }
               }
-              if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
-                limit_obj[`MaxLimit_${i}`] += effect.value;
-              }
-            }
+            });
           }
           if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
             const effect = item.ultimateSkill.effect[0];
@@ -4223,21 +4224,22 @@ $(function() {
                 });
               }
             }
-            if (item.ultimateSkill && item.ultimateSkill.effect.length == 1) {
-              const effect = item.ultimateSkill.effect[0];
-              for (const key in skill_obj) {
-                if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
-                  skill_obj[key] += effect.value;
+            if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') < 0) {
+              item.ultimateSkill.effect.forEach(effect => {
+                for (const key in skill_obj) {
+                  if (effect.condition == 'Global' && !effect.tag && effect.type == key) {
+                    skill_obj[key] += effect.value;
+                  }
                 }
-              }
-              for (let i = 1; i < 6; i++) {
-                if (effect.type == 'UseAll' && effect.rarity == i) {
-                  price_obj[`PriceBuff_${i}`] += effect.value;
+                for (let i = 1; i < 6; i++) {
+                  if (effect.type == 'UseAll' && effect.rarity == i) {
+                    price_obj[`PriceBuff_${i}`] += effect.value;
+                  }
+                  if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                    limit_obj[`MaxLimit_${i}`] += effect.value;
+                  }
                 }
-                if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
-                  limit_obj[`MaxLimit_${i}`] += effect.value;
-                }
-              }
+              });
             }
             if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
               const effect = item.ultimateSkill.effect[0];
