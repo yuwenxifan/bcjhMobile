@@ -11,7 +11,7 @@ $(function() {
       </div>
       <div class="arrow" v-show="show"></div>
       <div class="dropdown-box" v-show="show">
-        <div class="controll-box">
+        <div class="controll-box" v-show="!simple">
           <i class="el-input__icon el-icon-error clear" @click="clearKeyword"></i>
           <input v-model="keyword" placeholder="查找" @focus="handlerFocus"/>
           <span class="btn" @click="clear" v-if="canEmpty">清空</span>
@@ -30,7 +30,7 @@ $(function() {
       </div>
     <div>
     `,
-    props: ['option', 'placeholder', 'value', 'max', 'empty', 'disable'],
+    props: ['option', 'placeholder', 'value', 'max', 'empty', 'disable', 'simple'],
     data: function() {
       return {
         valueId: [],
@@ -219,6 +219,12 @@ $(function() {
         { id: 50, name: '50条/页' },
         { id: 100, name: '100条/页' },
         { id: 1000, name: '所有' },
+      ],
+      chef_skill_gap_list: [
+        { id: 2, name: '优级能力差' },
+        { id: 3, name: '特级能力差' },
+        { id: 4, name: '神级能力差' },
+        { id: 5, name: '传级能力差' },
       ],
       skill_map: {
         stirfry: '炒',
@@ -500,7 +506,7 @@ $(function() {
         got: false
       },
       partial_skill: { id: [], row: [] },
-      chefSkillGap: false,
+      chefSkillGap: { id: [], row: [] },
       chefUltimate: true,
       chefUseAllUltimate: false,
       showLastSkill: true,
@@ -2014,7 +2020,6 @@ $(function() {
           }
           r.skills_show = skills.join(' ');
           r.name = `${item.name}（${r.skills_show} [${item.condiment_show}]）`;
-
           let ext = {
             galleryId: item.galleryId,
             name_show: item.name,
@@ -2041,6 +2046,7 @@ $(function() {
             materials_search: item.materials_search,
             condiment: item.condiment,
             condiment_show: item.condiment_show,
+            isCombo: Boolean(this.combo_map.combo[item.recipeId])
           };
           Object.assign(ext, r);
           if (item.rarity <= (rule.CookbookRarityLimit || 6)) {
@@ -2588,7 +2594,8 @@ $(function() {
           time: rep.time * this.calRepCnt[position],
           time_buff: rep.buff_time || 100,
           price: this.calRepEx[position] ? (rep.price + rep.exPrice) : rep.price,
-          chef: true
+          chef: true,
+          isCombo: rep.isCombo
         };
         rst.time_last = Math.ceil((rst.time * rst.time_buff * 100) / 10000);
         rst.time_last_show = this.formatTime(rst.time_last);
@@ -2937,19 +2944,23 @@ $(function() {
             const rep_ext = {};
             this.chefRep.row.forEach(rep => {
               let min = 5;
-              const diff = [];
-              let diff_sum = 0;
+              const diff = {};
+              let diff_sum = {};
               let buff = 100;
-              for (const key in rep.skills) {
-                const chef_key = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
-                const grade = Math.floor((ultimate[chef_key] || 0) / rep.skills[key]);
-                min = grade > min ? min : grade;
-                if (grade < 4) {
-                  const diff_value = rep.skills[key] * 4 - ultimate[chef_key];
-                  diff.push(`${this.skill_map[key]}-${diff_value}`);
-                  diff_sum += diff_value;
+              this.chef_skill_gap_list.forEach(item => {
+                diff[item.id] = [];
+                diff_sum[item.id] = 0;
+                for (const key in rep.skills) {
+                  const chef_key = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
+                  const grade = Math.floor((ultimate[chef_key] || 0) / rep.skills[key]);
+                  min = grade > min ? min : grade;
+                  if (grade < item.id) {
+                    const diff_value = rep.skills[key] * item.id - ultimate[chef_key];
+                    diff[item.id].push(`${this.skill_map[key]}-${diff_value}`);
+                    diff_sum[item.id] += diff_value;
+                  }
                 }
-              }
+              });
               if (min > 0) { // 技法足够
                 buff += this.grade_buff[min]; // 品级加成
                 if (this.chefUltimate) { // 修炼加成
@@ -2974,9 +2985,11 @@ $(function() {
                 });
               }
               rep_ext[`rep_grade_${rep.id}`] = min < 0 ? '' : ' 可优特神传'.slice(min, min + 1);
-              rep_ext[`rep_diff_${rep.id}`] = diff.join('\n');
+              this.chef_skill_gap_list.forEach(item => {
+                rep_ext[`rep_diff_${item.id}_${rep.id}`] = diff[item.id].join('\n');
+                rep_ext[`rep_diff_value_${item.id}_${rep.id}`] = diff_sum[item.id];
+              })
               rep_ext[`rep_eff_${rep.id}`] = min < 1 ? '' : Math.floor(Math.ceil(rep.price * buff / 100) * 3600 / rep.time);
-              rep_ext[`rep_diff_value_${rep.id}`] = diff_sum;
               rep_ext[`rep_grade_value_${rep.id}`] = min;
             });
             this.chefs.push(Object.assign({}, item, ultimate, skills, rep_ext));
@@ -3430,9 +3443,11 @@ $(function() {
         } else {
           let arr = sort.prop.split('_');
           let id = arr[arr.length - 1];
-          if (sort.prop.indexOf('rep_diff_') > -1) {
-            sort.prop = 'rep_diff_value_' + id;
-          }
+          this.chef_skill_gap_list.forEach(item => {
+            if (sort.prop.indexOf(`rep_diff_${item.id}_`) > -1) {
+              sort.prop = sort.prop.replace('rep_diff', 'rep_diff_value');
+            }
+          });
           if (sort.prop.indexOf('rep_grade_') > -1) {
             sort.prop = 'rep_grade_value_' + id;
           }
@@ -4085,7 +4100,6 @@ $(function() {
           hideSuspend: this.hideSuspend,
           hiddenMessage: this.hiddenMessage,
           repSkillGap: this.repSkillGap,
-          chefSkillGap: this.chefSkillGap,
           repGot: this.repGot,
           chefGot: this.chefGot,
           planList: this.planList
@@ -4095,7 +4109,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'chefSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -5025,9 +5039,6 @@ $(function() {
         this.saveUserData();
       },
       hiddenMessage() {
-        this.saveUserData();
-      },
-      chefSkillGap() {
         this.saveUserData();
       },
       repSkillGap() {

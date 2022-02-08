@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=33">
+  <link rel="stylesheet" href="./css/index.css?v=34">
   <link rel="stylesheet" href="./css/image.css?v=28">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -228,7 +228,7 @@
                 :class="chefCol[key] ? 'active' : ''"
                 @click="chefCol[key] = !chefCol[key]"
               >{{val}}</span>
-              <span class="select-box" style="width: 150px;">
+              <span class="select-box split-left" style="width: 150px;">
                 <muti-select
                   :option="reps_list"
                   placeholder="选择菜谱"
@@ -236,11 +236,16 @@
                   @focus="scroll(130)"
                 ></muti-select>
               </span>
-              <span
-                class="checkbox"
-                :class="chefSkillGap ? 'active' : ''"
-                @click="chefSkillGap = !chefSkillGap"
-              >神级能力差</span>
+              <span class="select-box split-right" style="width: 105px;">
+                <muti-select
+                  ref="chefSkillGap"
+                  :option="chef_skill_gap_list"
+                  placeholder="等级能力差"
+                  v-model="chefSkillGap"
+                  :max="1"
+                  :simple="true"
+                  ></muti-select>
+              </span>
             </div>
             <div class="box">
               <div class="box-title">筛选</div>
@@ -682,9 +687,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
-            <div class="p">2021-02-03 12:30 修复填入全修炼/L版图鉴数据导入时，唐伏露的修炼技能不生效的bug。</div>
+            <div class="p">2021-02-08 18:00 1. 计算器增加后厨菜谱提示（提醒抄作业前记得去后厨合成）；2. 【厨师】页选菜谱可自选显示能力差。</div>
+            <div class="p">2021-02-03 12:30 修复填入全修炼/L版图鉴数据导入时，唐伏鹿的修炼技能不生效的bug。</div>
             <div class="p">2021-01-31 13:15 主线更新到730。</div>
-            <div class="p">2021-01-27 16:45 主线更新到705，菜谱页展示列新增技法（简），优化菜谱页的合成菜谱筛选，计算器选菜时增加合成菜谱的限制（面包比较特殊未做限制）。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -856,7 +861,10 @@
           <div v-for="item in chefRep.row">
             <el-table-column sortable="custom" :prop="'rep_grade_' + item.id" :label="item.name" :min-width="nameMinWidth(item.name)"></el-table-column>
             <el-table-column sortable="custom" :prop="'rep_eff_' + item.id" label="效率" min-width="65"></el-table-column>
-            <el-table-column sortable="custom" :prop="'rep_diff_' + item.id" label="神差值" min-width="75" v-if="chefSkillGap"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_diff_2_' + item.id" label="优差值" min-width="75" v-if="chefSkillGap.id[0]==2"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_diff_3_' + item.id" label="特差值" min-width="75" v-if="chefSkillGap.id[0]==3"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_diff_4_' + item.id" label="神差值" min-width="75" v-if="chefSkillGap.id[0]==4"></el-table-column>
+            <el-table-column sortable="custom" :prop="'rep_diff_5_' + item.id" label="传差值" min-width="75" v-if="chefSkillGap.id[0]==5"></el-table-column>
           </div>
           <el-table-column label="" min-width="1"></el-table-column>
         </el-table>
@@ -1207,6 +1215,9 @@
                           <span class="cnt">{{calType.row[0].MaterialsLimit ? showRepCnt(calRepCnt[`${chef}-${rep}`], calRepLimit[`${chef}-${rep}`]) : calRepCnt[`${chef}-${rep}`]}}</span>
                           <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
                             <i class="el-icon-success"></i>
+                          </span>
+                          <span class="is-combo" v-if="calRep[`${chef}-${rep}`].row[0].isCombo">
+                            合
                           </span>
                         </div>
                         <div class="rep-detail" v-if='showDetail'>
@@ -1749,6 +1760,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=144"></script>
+  <script src="./js/index.js?v=145"></script>
 </body>
 </html>
