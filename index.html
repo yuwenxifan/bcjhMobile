@@ -45,7 +45,7 @@
                 :class="repCol[key] ? 'active' : ''"
                 @click="repCol[key] = !repCol[key]"
               >{{val}}</span>
-              <div class="checkbox-contain">
+              <div class="checkbox-contain" style="vertical-align: top">
                 <span class="select-box" :class="repChef.id.length == 1 ? 'split-left' : ''" style="vertical-align: top; width: 123px; position: relative; z-index: 1002;">
                   <muti-select
                     :option="chefs_list"
