@@ -63,7 +63,6 @@
                     @change="checkChefTask"
                     :simple="true"
                     :max="1"
-                    @focus="scroll(126)"
                   ></muti-select>
                 </span>
                 <span v-show="chefUltimate"
@@ -75,6 +74,7 @@
                     v-model="partial_skill"
                     ref="partialSkill"
                     :max="2"
+                    @focus="scroll(156)"
                   ></muti-select>
                 </span>
                 <span
@@ -90,6 +90,7 @@
                     ref="repChefEquip"
                     :max="1"
                     @change="initRep"
+                    @focus="scroll(156)"
                   ></muti-select>
                 </span>
               </div>
@@ -167,7 +168,7 @@
                     :option="materials_list"
                     placeholder="耗材效率"
                     v-model="repFilter.materialEff"
-                    @focus="scroll(416)"
+                    @focus="scroll(416 + (repChef.id.length > 0 ? 30 : 0))"
                   ></muti-select>
                 </span>
               </div>
@@ -175,7 +176,7 @@
                 <div class="prepend-input">
                   <div class="input-box">
                     <div class="prepend">单价大于</div>
-                    <input type="number" v-model="repFilter.price" @focus="scroll(316)" />
+                    <input type="number" v-model="repFilter.price" @focus="scroll(316 + (repChef.id.length > 0 ? 30 : 0))" />
                   </div>
                 </div>
               </div>
@@ -199,7 +200,7 @@
                     placeholder="合成菜谱"
                     v-model="repFilter.comboRep"
                     :max="1"
-                    @focus="scroll(436)"
+                    @focus="scroll(446 + (repChef.id.length > 0 ? 30 : 0))"
                     ></muti-select>
                 </span>
               </div>
