@@ -2838,6 +2838,7 @@ $(function() {
               let diff_sum = 0;
               let buff = 100;
               const chefSkills = Object.assign({}, chef.skills);
+              if (item.recipeId == 1) console.log(chefSkills)
               if (this.repChefEquip.id.length == 1) { // 厨具技法加成
                 const equip_eff = this.repChefEquip.row[0].effect;
                 for (let key in chefSkills) {
@@ -2847,13 +2848,14 @@ $(function() {
                       if (eff.cal == 'Abs') {
                         value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
                       } else if (eff.cal == 'Percent') {
-                        value += Math.ceil(((chef.skills[key] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
+                        value += Math.ceil(value * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
                       }
                     }
                   });
                   chefSkills[key] = value;
                 }
               }
+              if (item.recipeId == 1) console.log(chefSkills)
               for (const key in item.skills) {
                 const grade = Math.floor(chefSkills[key] / item.skills[key]);
                 min = grade >= min ? min : grade;
