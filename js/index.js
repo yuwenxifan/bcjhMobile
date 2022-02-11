@@ -113,7 +113,7 @@ $(function() {
         return 'disable';
       },
       clickOther(e) {
-        if (!this.$refs.mutiSelect.contains(e.target) && this.fold) {
+        if ((!this.$refs.mutiSelect || !this.$refs.mutiSelect.contains(e.target)) && this.fold) {
           this.show = false;
         }
       },
@@ -198,6 +198,8 @@ $(function() {
       chefGotChange: false,
       repGotChange: false,
       showDetail: false,
+      time1: 1,
+      time2: 2,
       repGot: {},
       chefGot: {},
       reg: new RegExp( '<br>' , "g" ),
@@ -226,6 +228,7 @@ $(function() {
         { id: 4, name: '神级能力差' },
         { id: 5, name: '传级能力差' },
       ],
+      chefs_task_list: [],
       skill_map: {
         stirfry: '炒',
         boil: '煮',
@@ -278,6 +281,8 @@ $(function() {
       combos_list: [],
       combo_map: { combo: {}, split: {} },
       chefs_list: [],
+      chef_partial_skill_list: [],
+      refreshFlag: false,
       partial_skill_list: [],
       self_skill_list: [],
       reps_list: [],
@@ -414,6 +419,7 @@ $(function() {
         got: false
       },
       repChef: { id: [], row: [] },
+      repChefTask: { id: [], row: [] },
       chefRep: { id: [], row: [] },
       originRepFilter: {},
       material_type: [
@@ -806,6 +812,8 @@ $(function() {
         2: [],
         3: [],
       },
+      rep_equips_list: [],
+      repChefEquip: { id: [], row: [] },
       calCondiments_list: [],
       calCondiments: {
         1: [],
@@ -1292,7 +1300,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=32'
+          url: './data/data.min.json?v=33'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1474,17 +1482,27 @@ $(function() {
           item.skill_obj = skill;
           item.sex = item.tags ? (item.tags[0] == 1 ? '男' : '女') : '';
           item.origin = item.origin.replace(this.reg, '\n');
+          const ultimateGoalDetail = [];
           item.ultimateGoal = item.ultimateGoal.map(qId => {
-            return this.data.quests.find(q => { return q.questId == qId }).goal;
+            const quest = this.data.quests.find(q => { return q.questId == qId });
+            if (quest.conditions) {
+              ultimateGoalDetail.push(quest);
+            }
+            return quest.goal;
           }).join('\n');
+          item.ultimateGoalDetail = ultimateGoalDetail;
           const ultimateSkill = this.data.skills.find(s => {
             return s.skillId === item.ultimateSkill;
           });
           item.ultimateSkillShow = ultimateSkill ? ultimateSkill.desc.replace(this.reg, '\n') : '';
           item.ultimateSkill = ultimateSkill;
-          item.ultimateSkillCondition = ultimateSkill ? ultimateSkill.effect[0].condition : '';
+          let conditions = ultimateSkill ? ultimateSkill.effect.map(e => e.condition) : [];
+          conditions = Array.from(new Set(conditions)); // 去重
+          item.ultimateSkillCondition = conditions.length > 0 ? conditions[0] : '';
+          item.ultimateSkillConditions = conditions.length > 0 ? conditions : [];
           return item;
         });
+        const rep_equips_list = [];
         this.data.equips = this.data.equips.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
           const skill = this.data.skills.filter(s => {
@@ -1508,8 +1526,16 @@ $(function() {
           }
           item.skill_type = skillType;
           item.origin = item.origin.replace(this.reg, '\n');
+          rep_equips_list.push({
+            id: item.equipId,
+            name: item.name,
+            subName: item.skill,
+            subName_origin: item.skill,
+            effect: item.effect
+          });
           return item;
         });
+        this.rep_equips_list = rep_equips_list;
         this.data.condiments = this.data.condiments.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
           const skill = this.data.skills.filter(s => {
@@ -1567,6 +1593,7 @@ $(function() {
         this.suits = Array.from(new Set(suits));
         this.mapTypes = this.data.maps.map(item => item.name);
         const partial_skill = [];
+        const chef_partial_skill = [];
         const self_skill = [];
         let allUltimate = {
           Partial: { id: [], row: []},
@@ -1599,6 +1626,7 @@ $(function() {
           MaxLimit_4: 0,
           MaxLimit_5: 0,
         };
+        const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         this.data.chefs.forEach(item => {
           const id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
           if (item.ultimateSkillCondition == 'Partial') {
@@ -1607,16 +1635,27 @@ $(function() {
               id,
               name: item.name,
               subName: item.ultimateSkillShow,
-              type: item.ultimateSkill.effect[0].type,
-              value: item.ultimateSkill.effect[0].value,
+              effect: item.ultimateSkill.effect,
             });
-            partial_skill.push({
+            partial_skill.push({ // 所有上场类技能
               id,
               name: item.name,
               subName: item.ultimateSkillShow,
-              type: item.ultimateSkill.effect[0].type,
-              value: item.ultimateSkill.effect[0].value,
+              effect: item.ultimateSkill.effect,
             });
+          }
+          if (item.ultimateSkillConditions.indexOf('Partial') > -1) {
+            const effect = item.ultimateSkill.effect.filter(e => { // 仅筛选技法光环类上场技能
+              return skill_type.indexOf(e.type) > -1 && e.condition == 'Partial';
+            });
+            if (effect.length > 0) {
+              chef_partial_skill.push({
+                id,
+                name: item.name,
+                subName: item.ultimateSkillShow,
+                effect,
+              });
+            }
           }
           if (item.ultimateSkillCondition == 'Self') {
             const effect = item.ultimateSkill.effect.filter(eff => {
@@ -1669,6 +1708,7 @@ $(function() {
         this.allUltimate = Object.assign({}, allUltimate, skill_obj, global_obj, price_obj, limit_obj);
         this.initChef();
         this.partial_skill_list = partial_skill;
+        this.chef_partial_skill_list = chef_partial_skill;
         this.self_skill_list = self_skill;
         this.materials_list = this.data.materials.map(item => {
           return {
@@ -1719,6 +1759,93 @@ $(function() {
           this.tableShow = true;
           this.loading = false;
         }, 20);
+      },
+      checkChefTask() {
+        const repFilter = JSON.parse(JSON.stringify(this.repFilter));
+        if (this.repChefTask.row && this.repChefTask.row.length == 1) {
+          const { conditions, name } = this.repChefTask.row[0];
+          const limit_arr = {
+            1: 40,
+            2: 30,
+            3: 25,
+            4: 20,
+            5: 15,
+          }; // 份数
+          if (this.chefUltimate) { // 修炼开
+            for (let r in limit_arr) { // 计算个人菜谱上限
+              if (this.chefUseAllUltimate) { // 使用全修炼
+                limit_arr[r] += this.allUltimate['MaxLimit_' + r]; // *星菜谱上限
+              } else {
+                limit_arr[r] += this.userUltimate['MaxLimit_' + r]; // *星菜谱上限
+              }
+            }
+          }
+          const c = conditions[0];
+          if (c.rarity) { // 星级
+            let max = 5;
+            if (c.num && name.indexOf('一次') > -1) {
+              const cnt = c.num - 2 * limit_arr[c.rarity]; // 星级菜谱最少份数
+              for (let r in limit_arr) {
+                if (limit_arr[r] >= cnt) {
+                  max = Number(r); // 最低星级
+                  continue;
+                }
+                break;
+              }
+            }
+            for (let r in repFilter.rarity) {
+              if (r >= c.rarity && r <= max) {
+                repFilter.rarity[r] = true;
+              } else {
+                repFilter.rarity[r] = false;
+              }
+            }
+          }
+          if (c.skill) { // 技法
+            for (let s in repFilter.skill) {
+              if (s == c.skill) {
+                repFilter.skill[s].flag = true;
+              } else {
+                repFilter.skill[s].flag = false;
+              }
+            }
+          }
+          if (c.anyGuest) {
+            repFilter.guest = true;
+          } else {
+            repFilter.guest = false;
+          }
+          this.repFilter = repFilter;
+          if (!c.anyGuest) {
+            this.repSkillGap = true;
+          } else {
+            this.repSkillGap = false;
+          }
+        } else {
+          this.resetTask();
+        }
+      },
+      resetTask() {
+        const repFilter = JSON.parse(JSON.stringify(this.repFilter));
+        repFilter.rarity = {
+          1: true,
+          2: true,
+          3: true,
+          4: true,
+          5: true
+        };
+        this.repSkillGap = false;
+        repFilter.skill = {
+          stirfry: { name: '炒', flag: true },
+          boil: { name: '煮', flag: true },
+          knife: { name: '切', flag: true },
+          fry: { name: '炸', flag: true },
+          bake: { name: '烤', flag: true },
+          steam: { name: '蒸', flag: true },
+        };
+        repFilter.guest = false;
+        this.repFilter = repFilter;
+        this.$refs.recipesTable.sort('time_show', null);
       },
       calClear() {
         this.calChef = {
@@ -2490,7 +2617,7 @@ $(function() {
             if (eff.type == 'OpenTime' && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) {
               time_buff += eff.value;
             }
-            if (judgeEff(eff) && this.ulti.Self.id.indexOf(chef.uid) > -1) { // 对售价有影响的修炼技能效果
+            if (judgeEff(eff) && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) { // 对售价有影响的修炼技能效果
               sum_skill_effect.push(eff);
             }
           });
@@ -2509,10 +2636,10 @@ $(function() {
             value += this.ulti.Female;
           }
           chef.MutiEquipmentSkill = 0;
-          if (this.ulti.Self.id.indexOf(chef.uid) > -1) { // 已修炼的个人类修炼技能
+          if (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1) { // 已修炼的特殊修炼技能
             ultimate = true;
             chef.ultimate_effect.forEach(eff => {
-              if (eff.type == key) {
+              if (eff.type == key && eff.condition == 'Self') { // 个人类
                 value += eff.value;
               }
               if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent') { // 厨具技能加成
@@ -2520,12 +2647,11 @@ $(function() {
               }
             });
           }
-          if (this.ulti.Partial.id.indexOf(chef.uid) > -1) {
-            ultimate = true;
-          }
           let chef_flag = 0; // 判断当前厨子是否在场
           for (let i = 1; i < 4; i++) {
-            if (this.calChef[i].row[0] && this.ulti.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1) { // 已修炼且在场的上场类修炼技能
+            if (this.calChef[i].row[0] &&
+              (this.ulti.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1 || this.ulti.Self.id.indexOf(this.calChef[i].row[0].uid) > -1)
+            ) { // 已修炼且在场的上场类修炼技能
               this.calChef[i].row[0].ultimate_effect.forEach(eff => {
                 if (eff.type == key && eff.condition == 'Partial') {
                   value += eff.value;
@@ -2536,7 +2662,7 @@ $(function() {
               chef_flag = 1
             }
           }
-          if (chef_flag == 0 && this.ulti.Partial.id.indexOf(chef.uid) > -1) { // 如果当前厨子不在场，且有上场类修炼技能
+          if (chef_flag == 0 && (this.ulti.Partial.id.indexOf(chef.uid) > -1 || this.ulti.Self.id.indexOf(chef.uid) > -1)) { // 如果当前厨子不在场，且有上场类修炼技能
             chef.ultimate_effect.forEach(eff => {
               if (eff.type == key && eff.condition == 'Partial') {
                 value += eff.value;
@@ -2642,6 +2768,7 @@ $(function() {
         this.recipes = [];
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const materials_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
+        const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
         for (const item of this.data.recipes) {
           const s_name = this.checkKeyword(this.repKeyword, item.name);
           const s_origin = this.checkKeyword(this.repKeyword, item.origin);
@@ -2702,11 +2829,28 @@ $(function() {
               const diff = [];
               let diff_sum = 0;
               let buff = 100;
+              const chefSkills = Object.assign({}, chef.skills);
+              if (this.repChefEquip.id.length == 1) { // 厨具技法加成
+                const equip_eff = this.repChefEquip.row[0].effect;
+                for (let key in chefSkills) {
+                  let value = chefSkills[key];
+                  equip_eff.forEach(eff => {
+                    if (eff.type.toLowerCase() == key) {
+                      if (eff.cal == 'Abs') {
+                        value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
+                      } else if (eff.cal == 'Percent') {
+                        value += Math.ceil(((chef.skills[lowKey] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
+                      }
+                    }
+                  });
+                  chefSkills[key] = value;
+                }
+              }
               for (const key in item.skills) {
-                const grade = Math.floor(chef.skills[key] / item.skills[key]);
+                const grade = Math.floor(chefSkills[key] / item.skills[key]);
                 min = grade >= min ? min : grade;
                 if (grade < 4) {
-                  const diff_value = item.skills[key] * 4 - chef.skills[key];
+                  const diff_value = item.skills[key] * 4 - chefSkills[key];
                   diff.push(`${this.skill_map[key]}-${diff_value}`);
                   diff_sum += diff_value;
                 }
@@ -2724,16 +2868,44 @@ $(function() {
               // 技能/修炼技能加成（如果修炼没开在chefs_list就过滤掉了）
               chef.effect.forEach(eff => {
                 const type = eff.type.slice(3);
-                if (skill_type.indexOf(type) > -1 && item[type.toLowerCase()]) { // 技法类售价
-                  buff += eff.value;
-                }
-                if (materials_type.indexOf(type) > -1 && item.materials_type.indexOf(type.toLowerCase()) > -1) { // 食材类售价
-                  buff += eff.value;
+                if (eff.type.slice(0, 3) == 'Use') {
+                  if (skill_type.indexOf(type) > -1 && item[type.toLowerCase()]) { // 技法类售价
+                    buff += eff.value;
+                  }
+                  if (materials_type.indexOf(type) > -1 && item.materials_type.indexOf(type.toLowerCase()) > -1) { // 食材类售价
+                    buff += eff.value;
+                  }
+                  if (condiment_type.indexOf(type) > -1 && item.condiment === type) { // 食材类售价
+                    buff += eff.value;
+                  }
                 }
                 if (eff.type == 'Gold_Gain') { // 金币获得
                   buff += eff.value;
                 }
               });
+              // 厨具售价加成
+              if (this.repChefEquip.id.length == 1) {
+                const equip_eff = this.repChefEquip.row[0].effect;
+                let buff_equip = 0;
+                equip_eff.forEach(eff => { // 厨具技能
+                  const type = eff.type.slice(3);
+                  if (eff.type == 'Gold_Gain') { // 金币加成
+                    buff_equip += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
+                  }
+                  if (eff.type.slice(0, 3) == 'Use') {
+                    if (skill_type.indexOf(type) > -1 && item[type.toLowerCase()]) { // 技法类售价
+                      buff_equip += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
+                    }
+                    if (materials_type.indexOf(type) > -1 && item.materials_type.indexOf(type.toLowerCase()) > -1) { // 食材类售价
+                      buff_equip += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
+                    }
+                    if (condiment_type.indexOf(type) > -1 && item.condiment === type) { // 食材类售价
+                      buff_equip += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
+                    }
+                  }
+                });
+                buff += buff_equip;
+              }
               chef_ext[`chef_grade_${chef.id}`] = min < 0 ? '' : ' 可优特神传'.slice(min, min + 1);
               chef_ext[`chef_diff_${chef.id}`] = diff.join('\n');
               chef_ext[`chef_eff_${chef.id}`] = min < 1 ? '' : Math.floor(Math.ceil(item.price * buff / 100) * 3600 / item.time);
@@ -2749,6 +2921,16 @@ $(function() {
         } else {
           this.recipesCurPage = 1;
           this.recipesPage = this.recipes.slice(0, this.recipesPageSize);
+        }
+        if (this.repChefTask.row && this.repChefTask.row.length == 1) { // 如果有任务，排序
+          const { conditions } = this.repChefTask.row[0];
+          const c = conditions[0];
+          this.$refs.recipesTable.sort('time_show', 'ascending');
+          if (!c.anyGuest) {
+            setTimeout(() => {
+              this.$refs.recipesTable.sort(`chef_diff_${this.repChef.id[0]}`, 'ascending');
+            });
+          }
         }
         this.$nextTick(() => {
           if (this.tableShow) {
@@ -2851,6 +3033,25 @@ $(function() {
           const ultimate = {};
           const skills = {};
           const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
+          let MutiEquipmentSkill = 0;
+          if (item.ultimateSkill) {
+            item.ultimateSkill.effect.forEach(eff => {
+              if (this.chefUltimate) {
+                if (this.chefUseAllUltimate) {
+                  if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent') { // 厨具技能加成
+                    MutiEquipmentSkill += eff.value;
+                  }
+                } else {
+                  if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent'
+                    && (userUltimate.Self.id.indexOf(partial_id) > -1 || userUltimate.Partial.id.indexOf(partial_id) > -1)
+                  ) { // 厨具技能加成
+                    MutiEquipmentSkill += eff.value;
+                  }
+                }
+              }
+            });
+          }
+          item.MutiEquipmentSkill = MutiEquipmentSkill;
           skill_arr.forEach(key => {
             if (this.chefUltimate) {
               let value = 0;
@@ -2859,15 +3060,19 @@ $(function() {
               if (this.chefUseAllUltimate) {
                 value += this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
-                  if (s.type == key && s.id != partial_id) {
-                    value += s.value;
+                  if (s.id != partial_id) {
+                    s.effect.forEach(e => {
+                      if (e.type == key) value += e.value;
+                    });
                   }
                 });
               } else {
                 value += (userUltimate[key] || 0) + (userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? userUltimate.Male : userUltimate.Female) : 0) || 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
-                  if (s.type == key && (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0)) {
-                    value += s.value;
+                  if (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0) {
+                    s.effect.forEach(e => {
+                      if (e.type == key) value += e.value;
+                    });
                   }
                 });
               }
@@ -2937,6 +3142,7 @@ $(function() {
           chefs_list.push({
             id: item.chefId,
             name: item.name,
+            MutiEquipmentSkill: item.MutiEquipmentSkill,
             skills,
             effect
           });
@@ -4049,6 +4255,7 @@ $(function() {
           this.repKeyword = '';
           this.guestKeyword = '';
           this.$refs.materialEff.clear();
+          this.$refs.repChefTask.clear();
         } else if (this.navId === 3) {
           this.equip_radio = false;
           this.equip_concurrent = false;
@@ -4099,7 +4306,6 @@ $(function() {
           calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
           hiddenMessage: this.hiddenMessage,
-          repSkillGap: this.repSkillGap,
           repGot: this.repGot,
           chefGot: this.chefGot,
           planList: this.planList
@@ -4109,7 +4315,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repSkillGap', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -4207,15 +4413,13 @@ $(function() {
                 id,
                 name: item.name,
                 subName: item.ultimateSkillShow,
-                type: item.ultimateSkill.effect[0].type,
-                value: item.ultimateSkill.effect[0].value,
+                effect: item.ultimateSkill.effect,
               });
               partial_skill.push({
                 id,
                 name: item.name,
                 subName: item.ultimateSkillShow,
-                type: item.ultimateSkill.effect[0].type,
-                value: item.ultimateSkill.effect[0].value,
+                effect: item.ultimateSkill.effect,
               });
             }
             if (item.ultimateSkillCondition == 'Self') {
@@ -4510,7 +4714,7 @@ $(function() {
       changeChefUltimate(val) {
         this.initChef();
         if (!val) {
-          this.$refs.chefRep.clear();
+          this.$refs.partialSkill.clear();
         }
       },
       setAllUltimate() {
@@ -4728,13 +4932,32 @@ $(function() {
       },
       repChef: {
         deep: true,
-        handler() {
+        handler(val) {
           this.initRep();
           this.$nextTick(()=>{
             if (this.tableShow) {
-            this.$refs.recipesTable.doLayout();
-          }
+              this.$refs.recipesTable.doLayout();
+            }
           });
+          if (val.id && val.id.length == 1) { // 只选中了一个厨子的情况，生成修炼任务列表
+            const chefId = val.id[0];
+            const chef = this.chefs.find(c => c.chefId == chefId);
+            this.chefs_task_list = chef.ultimateGoalDetail.map(t => {
+              return {
+                id: t.questId,
+                name: t.goal,
+                conditions: t.conditions,
+              };
+            });
+          } else {
+            this.chefs_task_list = [];
+            this.repChefTask = { id: [], row: [] };
+            this.resetTask();
+            if (val.id && val.id.length == 0) {
+              this.partial_skill = { id: [], row: [] };
+              this.repChefEquip = { id: [], row: [] };
+            }
+          }
         }
       },
       chefCol: {
@@ -4779,6 +5002,19 @@ $(function() {
             this.$refs.chefsTable.doLayout();
           }
           });
+          if (this.navId == 1 && !this.refreshFlag) { // 异常丑陋的解决方式，用于强刷额外上场技能的子组件
+            this.time2 = new Date().getTime();
+            this.refreshFlag = true;
+            setTimeout(() => {
+              this.refreshFlag = false;
+            });
+          } else if (this.navId == 2 && !this.refreshFlag) {
+            this.time1 = new Date().getTime();
+            this.refreshFlag = true;
+            setTimeout(() => {
+              this.refreshFlag = false;
+            });
+          }
         }
       },
       equipCol: {
@@ -5039,9 +5275,6 @@ $(function() {
         this.saveUserData();
       },
       hiddenMessage() {
-        this.saveUserData();
-      },
-      repSkillGap() {
         this.saveUserData();
       },
       defaultEx(val) {

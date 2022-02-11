@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=34">
+  <link rel="stylesheet" href="./css/index.css?v=35">
   <link rel="stylesheet" href="./css/image.css?v=28">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -45,20 +45,54 @@
                 :class="repCol[key] ? 'active' : ''"
                 @click="repCol[key] = !repCol[key]"
               >{{val}}</span>
-              <br/>
-              <span class="select-box" style="width: 130px; position: relative; z-index: 1002;">
-                <muti-select
-                  :option="chefs_list"
-                  placeholder="选择厨师"
-                  v-model="repChef"
-                  @focus="scroll(126)"
-                ></muti-select>
-              </span>
-              <span
-                class="checkbox"
-                :class="repSkillGap ? 'active' : ''"
-                @click="repSkillGap = !repSkillGap"
-              >神级能力差</span>
+              <div class="checkbox-contain">
+                <span class="select-box" :class="repChef.id.length == 1 ? 'split-left' : ''" style="vertical-align: top; width: 123px; position: relative; z-index: 1002;">
+                  <muti-select
+                    :option="chefs_list"
+                    placeholder="选择厨师"
+                    v-model="repChef"
+                    @focus="scroll(126)"
+                  ></muti-select>
+                </span>
+                <span class="select-box split-right chef-task" style="width: 130px; position: relative; z-index: 1002; margin-bottom: 0;" v-if="repChef.id.length == 1">
+                  <muti-select
+                    :option="chefs_task_list"
+                    ref="repChefTask"
+                    placeholder="选择任务"
+                    v-model="repChefTask"
+                    @change="checkChefTask"
+                    :simple="true"
+                    :max="1"
+                    @focus="scroll(126)"
+                  ></muti-select>
+                </span>
+                <span v-show="chefUltimate"
+                  class="select-box split-left chef-skill" style="width: 150px; position: relative; z-index: 1000; margin-top: 0; vertical-align: top;" v-if="repChef.id.length > 0">
+                  <muti-select
+                    :option="chef_partial_skill_list"
+                    :key="time1"
+                    placeholder="额外使用上场类技能"
+                    v-model="partial_skill"
+                    ref="partialSkill"
+                    :max="2"
+                  ></muti-select>
+                </span>
+                <span
+                  class="select-box chef-equip"
+                  :class="chefUltimate ? 'split-right' : ''"
+                  style="position: relative; z-index: 1000; margin-top: 0; margin-bottom: 0;"
+                  :style="chefUltimate ? 'width: 103px;' : 'width: 253px'"
+                  v-if="repChef.id.length > 0">
+                  <muti-select
+                    :option="rep_equips_list"
+                    placeholder="使用厨具"
+                    v-model="repChefEquip"
+                    ref="repChefEquip"
+                    :max="1"
+                    @change="initRep"
+                  ></muti-select>
+                </span>
+              </div>
             </div>
             <div class="box">
               <div class="box-title">筛选</div>
@@ -194,11 +228,12 @@
                 </div>
                 <span v-show="chefUltimate" class="select-box" style="width: 250px; position: relative; z-index: 1002;">
                   <muti-select
-                    :option="partial_skill_list"
+                    :option="chef_partial_skill_list"
                     placeholder="额外使用上场类技能"
+                    :key="time2"
                     v-model="partial_skill"
-                    ref="chefRep"
-                    :max="3"
+                    ref="partialSkill"
+                    :max="2"
                   ></muti-select>
                 </span>
                 <div v-show="chefUltimate" class="switch-box">
@@ -667,7 +702,7 @@
     <section class="header">
       <i class="icon-btn el-icon-s-operation" @click="leftBar = !leftBar"></i>
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
-      <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0">{{tips}}</div>
+      <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0 && chefUltimate">{{tips}}</div>
       <span class="right">
         <i v-if="hideSuspend && ([1, 2, 3, 4, 5, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
@@ -1760,6 +1795,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=145"></script>
+  <script src="./js/index.js?v=146"></script>
 </body>
 </html>

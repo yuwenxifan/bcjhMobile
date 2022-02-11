@@ -1522,6 +1522,10 @@ input.hidden {
   cursor: pointer;
   font-size: 0px;
 }
+.chef-task #muti-select .input-box, .chef-equip #muti-select .input-box {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 #muti-select .placeholder {
   color: #c0c4cc;
   user-select: none;
@@ -1568,6 +1572,17 @@ input.hidden {
   border-radius: 4px;
   padding: 6px 0;
   background-color: #fff;
+}
+.chef-task #muti-select .dropdown-box {
+  width: 250px;
+  right: 0;
+}
+.chef-equip #muti-select .dropdown-box {
+  min-width: 200px;
+  right: 0;
+}
+.chef-skill #muti-select .dropdown-box {
+  width: 200px;
 }
 #muti-select .arrow {
   height: 0;
