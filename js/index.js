@@ -1808,6 +1808,10 @@ $(function() {
                 repFilter.rarity[r] = false;
               }
             }
+          } else {
+            for (let r in repFilter.rarity) {
+              repFilter.rarity[r] = true;
+            }
           }
           if (c.skill) { // 技法
             for (let s in repFilter.skill) {
@@ -1816,6 +1820,10 @@ $(function() {
               } else {
                 repFilter.skill[s].flag = false;
               }
+            }
+          } else {
+            for (let s in repFilter.skill) {
+              repFilter.skill[s].flag = true;
             }
           }
           if (c.anyGuest) {
