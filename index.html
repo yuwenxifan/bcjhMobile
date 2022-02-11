@@ -162,7 +162,7 @@
                 </el-switch>
               </div>
               <div class="checkbox-contain">
-                <span class="select-box">
+                <span class="select-box" style="position: relative; z-index: 1001;">
                   <muti-select
                     ref="materialEff"
                     :option="materials_list"
@@ -171,14 +171,6 @@
                     @focus="scroll(416 + (repChef.id.length > 0 ? 30 : 0))"
                   ></muti-select>
                 </span>
-              </div>
-              <div class="checkbox-contain">
-                <div class="prepend-input">
-                  <div class="input-box">
-                    <div class="prepend">单价大于</div>
-                    <input type="number" v-model="repFilter.price" @focus="scroll(316 + (repChef.id.length > 0 ? 30 : 0))" />
-                  </div>
-                </div>
               </div>
               <div class="checkbox-contain">
                 <span
@@ -190,26 +182,41 @@
               <div class="checkbox-contain">
                 <span
                   class="checkbox"
+                  :class="repFilter.got ? 'active' : ''"
+                  @click="repFilter.got = !repFilter.got"
+                >已有</span>
+              </div>
+              <div class="checkbox-contain">
+                <div class="prepend-input">
+                  <div class="input-box">
+                    <div class="prepend">单价大于</div>
+                    <input type="number" v-model="repFilter.price" @focus="scroll(357 + (repChef.id.length > 0 ? 30 : 0))" />
+                  </div>
+                </div>
+                <el-switch
+                  v-model="allEx"
+                  @change="changeAllEx"
+                  active-color="#82a1b0"
+                  active-text="专精后"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
                   :class="repFilter.combo ? 'active' : ''"
                   @click="repFilter.combo = !repFilter.combo"
                 >可合成</span>
-                <span class="select-box" v-show="repFilter.combo">
+                <span class="select-box" v-show="repFilter.combo" style="position: relative; z-index: 1000;">
                   <muti-select
                     ref="combosEff"
                     :option="combos_list"
                     placeholder="合成菜谱"
                     v-model="repFilter.comboRep"
                     :max="1"
-                    @focus="scroll(446 + (repChef.id.length > 0 ? 30 : 0))"
+                    @focus="scroll(487 + (repChef.id.length > 0 ? 30 : 0))"
                     ></muti-select>
                 </span>
-              </div>
-              <div class="checkbox-contain">
-                <span
-                  class="checkbox"
-                  :class="repFilter.got ? 'active' : ''"
-                  @click="repFilter.got = !repFilter.got"
-                >已有</span>
               </div>
             </div>
           </div>
@@ -723,9 +730,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-02-11 19:40 菜谱页单价筛选优化为可选专精；修复菜谱页选厨师厨具，百分比技法加成的厨具不生效的bug。</div>
             <div class="p">2021-02-11 17:30 优化【菜谱】页查询厨师修炼的体验。</div>
             <div class="p">2021-02-08 18:00 1. 计算器增加后厨菜谱提示（提醒抄作业前记得去后厨合成）；2. 【厨师】页选菜谱可自选显示能力差。</div>
-            <div class="p">2021-02-03 12:30 修复填入全修炼/L版图鉴数据导入时，唐伏鹿的修炼技能不生效的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -810,7 +817,7 @@
           <el-table-column sortable="custom" prop="condiment_show" label="调料" min-width="64" v-if="repCol.condiment"></el-table-column>
           <el-table-column sortable="custom" prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
           <el-table-column sortable="custom" prop="price" min-width="64" label="单价" v-if="repCol.price"></el-table-column>
-          <el-table-column sortable="custom" prop="exPrice" min-width="64" label="熟练" v-if="repCol.exPrice"></el-table-column>
+          <el-table-column sortable="custom" prop="exPriceLast" min-width="64" label="熟练" v-if="repCol.exPrice"></el-table-column>
           <el-table-column sortable="custom" prop="time_show" min-width="76" label="单时间" v-if="repCol.time"></el-table-column>
           <el-table-column sortable="custom" prop="limit" min-width="63" label="一组" v-if="repCol.limit"></el-table-column>
           <el-table-column sortable="custom" prop="total_price" min-width="63" label="总价" v-if="repCol.total_price"></el-table-column>
@@ -1796,6 +1803,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=147"></script>
+  <script src="./js/index.js?v=148"></script>
 </body>
 </html>

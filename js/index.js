@@ -365,7 +365,7 @@ $(function() {
         condiment: '调料',
         materials: '材料',
         price: '单价',
-        exPrice: '熟练加价',
+        exPrice: '熟练售价',
         time: '单时间',
         limit: '一组',
         total_price: '总价',
@@ -418,6 +418,7 @@ $(function() {
         materialEff: {},
         got: false
       },
+      allEx: false,
       repChef: { id: [], row: [] },
       repChefTask: { id: [], row: [] },
       chefRep: { id: [], row: [] },
@@ -1370,6 +1371,12 @@ $(function() {
         const len = name.length;
         return len * 15 + 30;
       },
+      changeAllEx() {
+        this.saveUserData();
+        if (this.repFilter.price) {
+          this.initRep();
+        }
+      },
       initData() {
         const s = Math.pow(10, 5);
         const combo_recipes = this.data.recipes.filter(r => { return r.recipeId > 5000 });
@@ -1428,6 +1435,7 @@ $(function() {
           item.total_time_show = this.formatTime(item.total_time);
           item.material_eff = ~~(3600 / item.time * materials_cnt);
           item.condiment_show = this.condimentMap[item.condiment];
+          item.exPriceLast = item.price + item.exPrice;
           item.combo = [];
           item.comboId = [];
           for (const i of this.data.combos) {
@@ -2806,7 +2814,7 @@ $(function() {
           if (this.repFilter.combo && comboRep.id && comboRep.id.length > 0) {
             f_combo_rep = (item.comboId.indexOf(comboRep.id[0]) > -1);
           }
-          const f_price = item.price > this.repFilter.price;
+          const f_price = (this.allEx ? item.exPriceLast : item.price) > this.repFilter.price;
           const f_got = !this.repFilter.got || this.repGot[item.recipeId];
           const f_condiment = this.repFilter.condiment[item.condiment] && this.repFilter.condiment[item.condiment].flag;
           let f_material_eff = true;
@@ -2839,7 +2847,7 @@ $(function() {
                       if (eff.cal == 'Abs') {
                         value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
                       } else if (eff.cal == 'Percent') {
-                        value += Math.ceil(((chef.skills[lowKey] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
+                        value += Math.ceil(((chef.skills[key] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
                       }
                     }
                   });
@@ -4308,14 +4316,15 @@ $(function() {
           hiddenMessage: this.hiddenMessage,
           repGot: this.repGot,
           chefGot: this.chefGot,
-          planList: this.planList
+          planList: this.planList,
+          allEx: this.allEx,
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList'];
+        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
