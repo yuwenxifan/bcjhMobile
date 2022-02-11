@@ -1350,7 +1350,6 @@ $(function() {
           const version = localStorage.getItem('version');
           const userData = localStorage.getItem('data');
           if (userData && (!version || version != rst.version)) { // 不是第一次打开本页面
-            localStorage.setItem('version', rst.version);
             this.$notify({
               title: '有更新！',
               message: '<strong>更新内容：</strong><br>' + rst.tips + '<br><br>如果发现未更新成功，或图片错位等情况，网页版的刷新页面，APP版的杀后台再进一次即可。',
@@ -1358,6 +1357,7 @@ $(function() {
               duration: 0
             });
           }
+          localStorage.setItem('version', rst.version);
         }).fail(err => {
           console.log('调用获取版本号接口报错', err);
         });
