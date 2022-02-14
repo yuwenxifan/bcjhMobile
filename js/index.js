@@ -446,7 +446,7 @@ $(function() {
       skill_type: false,
       repKeyword: '',
       guestKeyword: '',
-      repSkillGap: false,
+      repSkillGap: true,
       recipesCurPage: 1,
       recipesPageSize: 20,
       chefs: [],
@@ -1850,7 +1850,7 @@ $(function() {
           4: true,
           5: true
         };
-        this.repSkillGap = false;
+        this.repSkillGap = true;
         repFilter.skill = {
           stirfry: { name: '炒', flag: true },
           boil: { name: '煮', flag: true },
