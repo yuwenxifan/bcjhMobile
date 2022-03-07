@@ -1301,7 +1301,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=34'
+          url: './data/data.min.json?v=35'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1861,6 +1861,8 @@ $(function() {
         };
         repFilter.guest = false;
         this.repFilter = repFilter;
+        this.skill_radio = false;
+        this.skill_type = false;
         this.$refs.recipesTable.sort('time_show', null);
       },
       calClear() {
@@ -4970,8 +4972,10 @@ $(function() {
             });
           } else {
             this.chefs_task_list = [];
-            this.repChefTask = { id: [], row: [] };
-            this.resetTask();
+            if (this.repChefTask.id.length > 0) { // 如果已选了任务，重置任务相关的筛选
+              this.repChefTask = { id: [], row: [] };
+              this.resetTask();
+            }
             if (val.id && val.id.length == 0) {
               this.partial_skill = { id: [], row: [] };
               this.repChefEquip = { id: [], row: [] };
