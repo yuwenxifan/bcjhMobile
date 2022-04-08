@@ -1070,7 +1070,7 @@ $(function() {
             for (let item of arr) {
               if (rule.ScoreCoef && typeof rule.ScoreCoef == 'object' && rule.ScoreCoef.each) {
                 let str = rule.ScoreCoef.each;
-                str = str.replaceAll('this', item.price_total || 0);
+                str = str.replace(new RegExp('this', 'g'), item.price_total || 0)
                 price += eval(str);
               } else {
                 price += item.price_total || 0;
@@ -1090,7 +1090,7 @@ $(function() {
           }
           if (rule.ScoreCoef && typeof rule.ScoreCoef == 'object' && rule.ScoreCoef.total) {
             let str = rule.ScoreCoef.total;
-            str = str.replaceAll('this', price);
+            str = str.replace(new RegExp('this', 'g'), price);
             price = eval(str);
           }
           time_last = Math.ceil((time * time_buff * 100) / 10000);
