@@ -182,8 +182,8 @@ $(function() {
   var app = new Vue({
     el: '#main',
     data: {
-      // url: 'https://bcjh.xyz/api',
-      url: 'http://127.0.0.1:7001',
+      url: 'https://bcjh.xyz/api',
+      // url: 'http://127.0.0.1:7001',
       count: 0,
       location: window.location.origin,
       leftBar: false,
