@@ -4947,6 +4947,11 @@ $(function() {
           this.boxHeight = window.innerHeight - 50 - this.extraHeight;
           this.chartHeight = window.innerHeight - 390 - this.extraHeight;
         }
+        if (this.originHeight - val > 0) {
+          $("#customRuleBox").css("bottom", val - this.originHeight);
+        } else {
+          $("#customRuleBox").css("bottom", 0);
+        }
       },
       extraHeight(val) {
         localStorage.setItem('extraHeight', val);
