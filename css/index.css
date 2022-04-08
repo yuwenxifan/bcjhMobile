@@ -786,7 +786,7 @@ input.hidden {
   width: 28px;
   flex-shrink: 0;
 }
-.cal .ctl-box .btn.load, .plan-list-item .btn.btn-delete {
+.cal .ctl-box .btn.load, .btn.btn-delete {
   color: #fff;
   background: #c62828 !important;
   border-color: #c62828;
@@ -1828,7 +1828,7 @@ span.code {
   float: right;
 }
 
-.bottom-ctl .plan-list {
+.bottom-ctl .plan-list, .bottom-ctl .custom-rule-list {
   position: absolute;
   width: 100%;
   height: 0;
@@ -1840,7 +1840,11 @@ span.code {
   overflow-y: auto;
 }
 
-.bottom-ctl .plan-list.show {
+.bottom-ctl .custom-rule-list {
+  padding: 0 10px;
+}
+
+.bottom-ctl .plan-list.show, .bottom-ctl .custom-rule-list.show {
   height: 400px;
 }
 
@@ -1911,4 +1915,7 @@ span.code {
   border-left: none;
   border-top-left-radius: 0px;
   border-bottom-left-radius: 0px;
+}
+.custom-rule-list .ultimate-box {
+  padding-bottom: 250px;
 }
