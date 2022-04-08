@@ -5545,6 +5545,11 @@ $(function() {
         if (!val && this.customRuleChange) {
           this.initCal();
         }
+        if (val && window.innerWidth < 669) {
+          $("#customRuleBox input").on("focus", function() {
+            this.scrollIntoView();
+          });
+        }
       },
       customRule: {
         deep: true,
