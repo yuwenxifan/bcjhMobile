@@ -1410,6 +1410,10 @@
                             <span class="label">规则</span>
                             <span class="val">{{ item.unknowBuff ? '未知' : (item.buff_rule + '%')}}</span>
                           </div>
+                          <div class="buff" v-if="item.buff_muti!=100">
+                            <span class="label">奇珍</span>
+                            <span class="val">{{item.buff_muti-100}}%</span>
+                          </div>
                           <div class="buff" v-if="item.buff_grade">
                             <span class="label">品阶</span>
                             <span class="val">{{item.buff_grade}}%</span>
@@ -1893,6 +1897,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=161"></script>
+  <script src="./js/index.js?v=162"></script>
 </body>
 </html>

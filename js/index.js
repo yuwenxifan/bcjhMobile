@@ -2104,12 +2104,14 @@ $(function() {
             }
           }
         }
+        const mutiEffect = {};
         if (this.customRule && this.customRule.effect) {
           const effect = this.customRule.effect;
-          rule.SkillEffect = this.setCustomEffect(effect.SkillEffect);
-          rule.CondimentEffect = this.setCustomEffect(effect.CondimentEffect);
-          rule.MaterialTypeEffect = this.setCustomEffect(effect.MaterialTypeEffect);
-          rule.TotalEffect = effect.TotalEffect ? Number(effect.TotalEffect) : 0;
+          if (!rule.CustomMuti) { // 自定义规则加算，计入规则
+            this.setCustomRule(effect, rule);
+          } else { // 自定义规则乘算，计入MutiBuff
+            this.setCustomRule(effect, mutiEffect);
+          }
         }
         for (let item of this.data.recipes) {
           let r = {};
@@ -2130,12 +2132,13 @@ $(function() {
           r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
           buff += r.buff_ulti;
           let buff_rule = 0;
+          let buff_muti = 100;
 
           if (this.calType.id[0] == 0) { // 正常营业，加上家具加成
             r.buff_deco = this.ulti.decoBuff;
             buff += r.buff_deco;
           } else { // 菜谱/食材规则加成
-            if (rule.RecipeEffect) {
+            if (rule.RecipeEffect) { // 菜谱加成
               if (rule.RecipeEffect[r.id] != null) {
                 buff_rule += (rule.RecipeEffect[r.id] * 100)
               } else {
@@ -2145,46 +2148,16 @@ $(function() {
                 r.NotSure = rule.NotSure.indexOf(r.id) > -1;
               }
             }
-            if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
-              rule.MaterialsEffect.forEach(m => {
-                if (item.materials_id.indexOf(m.MaterialID) > -1) {
-                  buff_rule += (m.Effect * 100);
-                }
-              });
-            }
-            if (rule.SkillEffect) {
-              for (let skillCode in rule.SkillEffect) {
-                if (item[skillCode]) {
-                  buff_rule += Math.round((rule.SkillEffect[skillCode] || 0) * 100);
-                }
-              }
-            }
-            if (rule.RarityEffect) {
-              buff_rule += Math.round((rule.RarityEffect[item.rarity] || 0) * 100);
-            }
-            if (rule.CondimentEffect) {
-              buff_rule += Math.round((rule.CondimentEffect[item.condiment] || 0) * 100);
-            }
-            if (rule.MaterialTypeEffect) {
-              for (let type in rule.MaterialTypeEffect) {
-                if (item.materials_type.indexOf(type) > -1) {
-                  buff_rule += Math.round(rule.MaterialTypeEffect[type] * 100);
-                }
-              }
-            }
-            if (rule.TotalEffect) {
-              buff_rule += rule.TotalEffect;
-            }
+            buff_rule += this.sumBuffRule(rule, item);
+            buff_muti += this.sumBuffRule(mutiEffect, item);
           }
 
+          buff += buff_rule;
           r.buff_rule = buff_rule;
+          r.buff_muti = buff_muti;
           r.price_wipe_rule = Math.ceil(((item.price + ex) * buff) / 100);
 
-          if (!rule.CustomMuti) { // 加算
-            r.price_buff = Math.ceil(((item.price + ex) * (buff + buff_rule)) / 100);
-          } else { // 乘算
-            r.price_buff = Math.ceil(((item.price + ex) * buff * (100 + buff_rule)) / 10000);
-          }
+          r.price_buff = Math.ceil(((item.price + ex) * buff * buff_muti) / 10000);
 
           r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
           if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
@@ -2263,6 +2236,49 @@ $(function() {
           result[key] = effect[key] ? Number((Number(effect[key]) / 100).toFixed(3)) : 0;
         }
         return result;
+      },
+      setCustomRule(custom, rule) {
+        const prop = ['SkillEffect', 'CondimentEffect', 'MaterialTypeEffect'];
+        prop.forEach(p => {
+          if (custom[p]) {
+            rule[p] = this.setCustomEffect(custom[p]);
+          }
+        });
+        rule.TotalEffect = custom.TotalEffect ? Number(custom.TotalEffect) : 0;
+      },
+      sumBuffRule(rule, recipe) { // 计算规则加成(菜谱食材等加成)
+        let buff = 0;
+        if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
+          rule.MaterialsEffect.forEach(m => {
+            if (recipe.materials_id.indexOf(m.MaterialID) > -1) {
+              buff += (m.Effect * 100);
+            }
+          });
+        }
+        if (rule.SkillEffect) {
+          for (let skillCode in rule.SkillEffect) {
+            if (recipe[skillCode]) {
+              buff += Math.round((rule.SkillEffect[skillCode] || 0) * 100);
+            }
+          }
+        }
+        if (rule.RarityEffect) {
+          buff += Math.round((rule.RarityEffect[recipe.rarity] || 0) * 100);
+        }
+        if (rule.CondimentEffect) {
+          buff += Math.round((rule.CondimentEffect[recipe.condiment] || 0) * 100);
+        }
+        if (rule.MaterialTypeEffect) {
+          for (let type in rule.MaterialTypeEffect) {
+            if (recipe.materials_type.indexOf(type) > -1) {
+              buff += Math.round(rule.MaterialTypeEffect[type] * 100);
+            }
+          }
+        }
+        if (rule.TotalEffect) {
+          buff += rule.TotalEffect;
+        }
+        return buff;
       },
       getRecommend(flag, key) {
         const hasRep = this.hasRep(key);
@@ -2509,11 +2525,7 @@ $(function() {
         if (this.defaultEx) {
           ex += rep.exPrice;
         }
-        if (!rule.CustomMuti) { // 加算
-          chef.price_buff = Math.ceil((rep.price + ex) * (chef.buff + chef.buff_rule) / 100);
-        } else { // 乘算
-          chef.price_buff = Math.ceil((rep.price + ex) * chef.buff * (100 + chef.buff_rule) / 10000);
-        }
+        chef.price_buff = Math.ceil((rep.price + ex) * chef.buff * rep.buff_muti / 10000);
         chef.price_total = chef.price_buff * rep.limit;
 
         chef.subName = '';
@@ -2788,7 +2800,6 @@ $(function() {
       },
       showRep(rep, position) {
         const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule', 'buff_condiment'];
-        const rule = this.calType.row[0];
         let rst = {
           id: rep.id,
           name: rep.name_show,
@@ -2804,6 +2815,7 @@ $(function() {
           time_buff: rep.buff_time || 100,
           price: this.calRepEx[position] ? (rep.price + rep.exPrice) : rep.price,
           chef: true,
+          buff_muti: rep.buff_muti,
           isCombo: rep.isCombo
         };
         rst.time_last = Math.ceil((rst.time * rst.time_buff * 100) / 10000);
@@ -2816,14 +2828,10 @@ $(function() {
           prop_arr.forEach(key => {
             rst[key] = rep[key];
           });
-          if (!rule.CustomMuti) { // 加算
-            rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0) + rst.buff_rule) / 100);
-          } else { // 乘算
-            rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) * (100 + rst.buff_rule) / 10000);
-          }
+          rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
           rst.price_total = rst.price_buff * rst.cnt;
           rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff) / 100); // 除去规则的售价
-          rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
+          rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_muti;
           rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
           rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
           rst.price_origin_total = rst.price * rst.cnt;
@@ -2843,11 +2851,7 @@ $(function() {
           rst[key] = rep[`chef_${chefId}`][key];
         });
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
-        if (!rule.CustomMuti) { // 加算
-          rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0) + rst.buff_rule) / 100);
-        } else { // 乘算
-          rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * (100 + rst.buff_rule) / 10000);
-        }
+        rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
         rst.price_wipe_rule = Math.ceil(rst.price * rst.buff / 100); // 除去规则的售价
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
