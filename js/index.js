@@ -2180,7 +2180,7 @@ $(function() {
           r.buff_rule = buff_rule;
           r.price_wipe_rule = Math.ceil(((item.price + ex) * buff) / 100);
 
-          if (!rule.BuffWay) { // 加算
+          if (!rule.CustomMuti) { // 加算
             r.price_buff = Math.ceil(((item.price + ex) * (buff + buff_rule)) / 100);
           } else { // 乘算
             r.price_buff = Math.ceil(((item.price + ex) * buff * (100 + buff_rule)) / 10000);
@@ -2509,7 +2509,7 @@ $(function() {
         if (this.defaultEx) {
           ex += rep.exPrice;
         }
-        if (!rule.BuffWay) { // 加算
+        if (!rule.CustomMuti) { // 加算
           chef.price_buff = Math.ceil((rep.price + ex) * (chef.buff + chef.buff_rule) / 100);
         } else { // 乘算
           chef.price_buff = Math.ceil((rep.price + ex) * chef.buff * (100 + chef.buff_rule) / 10000);
@@ -2816,7 +2816,7 @@ $(function() {
           prop_arr.forEach(key => {
             rst[key] = rep[key];
           });
-          if (!rule.BuffWay) { // 加算
+          if (!rule.CustomMuti) { // 加算
             rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0) + rst.buff_rule) / 100);
           } else { // 乘算
             rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) * (100 + rst.buff_rule) / 10000);
@@ -2843,7 +2843,7 @@ $(function() {
           rst[key] = rep[`chef_${chefId}`][key];
         });
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
-        if (!rule.BuffWay) { // 加算
+        if (!rule.CustomMuti) { // 加算
           rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0) + rst.buff_rule) / 100);
         } else { // 乘算
           rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * (100 + rst.buff_rule) / 10000);
