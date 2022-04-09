@@ -2152,11 +2152,11 @@ $(function() {
             buff_muti += this.sumBuffRule(mutiEffect, item);
           }
 
-          buff += buff_rule;
           r.buff_rule = buff_rule;
           r.buff_muti = buff_muti;
           r.price_wipe_rule = Math.ceil(((item.price + ex) * buff) / 100);
 
+          buff += buff_rule;
           r.price_buff = Math.ceil(((item.price + ex) * buff * buff_muti) / 10000);
 
           r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
@@ -2830,7 +2830,7 @@ $(function() {
           });
           rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
           rst.price_total = rst.price_buff * rst.cnt;
-          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff) / 100); // 除去规则的售价
+          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
           rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_muti;
           rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
           rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
@@ -2852,7 +2852,7 @@ $(function() {
         });
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
         rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
-        rst.price_wipe_rule = Math.ceil(rst.price * rst.buff / 100); // 除去规则的售价
+        rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
