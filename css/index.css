@@ -1838,6 +1838,7 @@ span.code {
   left: 0;
   transition: height 0.2s;
   overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .bottom-ctl .custom-rule-list {
