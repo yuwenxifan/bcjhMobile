@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=35">
+  <link rel="stylesheet" href="./css/index.css?v=37">
   <link rel="stylesheet" href="./css/image.css?v=32">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -15,6 +15,7 @@
       <div>爆炒江湖图鉴</div>
     </div>
     <div class="modal" v-if="planListShow" @click="planListShow = false"></div>
+    <div class="modal" v-if="customRuleShow" @click="customRuleShow = false"></div>
     <div v-loading.fullscreen.lock="calLoading"></div>
     <aside class="aside">
       <el-drawer class="left-bar" :visible.sync="leftBar" direction="ltr" size="240px" :with-header="false">
@@ -737,9 +738,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2021-04-15 15:20 更新莺啼绿野活动计算器。</div>
             <div class="p">2021-03-26 15:20 更新礼包厨师师焉、左咩阿。</div>
             <div class="p">2021-03-10 11:20 更新菜谱莓果思慕雪。</div>
-            <div class="p">2021-03-07 13:30 更新礼包厨师山楂药师；更新新进实验室的菜谱的来源；主线更新至800；修复【菜谱】页先筛选菜谱，再选择多个厨师或清空厨师时，筛选条件会被重置的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1409,6 +1410,10 @@
                             <span class="label">规则</span>
                             <span class="val">{{ item.unknowBuff ? '未知' : (item.buff_rule + '%')}}</span>
                           </div>
+                          <div class="buff" v-if="item.buff_muti!=100">
+                            <span class="label">奇珍</span>
+                            <span class="val">{{item.buff_muti-100}}%</span>
+                          </div>
                           <div class="buff" v-if="item.buff_grade">
                             <span class="label">品阶</span>
                             <span class="val">{{item.buff_grade}}%</span>
@@ -1486,6 +1491,86 @@
                     :class="showDel ? 'yellow' : ''"
                     @click="showDel = !showDel; showSort = false;">{{showDel ? '确定' : '删除'}}</button>
                   <!-- <i class="icon-btn el-icon-share" @click="share" style="color: #607d8b;"></i> -->
+                </div>
+              </div>
+            </div>
+            <div id="customRuleBox" v-if="!calHidden && customRule" class="bottom-ctl">
+              <div :class="'custom-rule-list ' + (customRuleShow ? 'show' : '')">
+                <div class="ultimate-box">
+                  <div class="title" v-if="customRule.effect">活动售价加成</div>
+                  <div class="hr" v-if="customRule.effect"></div>
+                  <div class="box-body" v-if="customRule.effect">
+                    <div class="contain" v-if="customRule.effect.SkillEffect">
+                      <div class="contain-title">技法加成</div>
+                      <div class="prepend-input append-input" v-for="(val, key) in skill_map" v-if="null != customRule.effect.SkillEffect[key]">
+                        <div class="input-box">
+                          <div class="prepend">{{val}}</div>
+                          <input type="number" v-model.lazy="customRule.effect.SkillEffect[key]"/>
+                          <div class="append">%</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contain" v-if="customRule.effect.CondimentEffect">
+                      <div class="contain-title">口味加成</div>
+                      <div class="prepend-input append-input" v-for="(val, key) in condimentMap" v-if="null != customRule.effect.CondimentEffect[key]">
+                        <div class="input-box">
+                          <div class="prepend">{{val}}</div>
+                          <input type="number" v-model.lazy="customRule.effect.CondimentEffect[key]"/>
+                          <div class="append">%</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contain" v-if="customRule.effect.MaterialTypeEffect">
+                      <div class="contain-title">食材类型加成</div>
+                      <div class="prepend-input append-input" v-for="(val, key) in materialTypeMap" v-if="null != customRule.effect.MaterialTypeEffect[key]">
+                        <div class="input-box">
+                          <div class="prepend">{{val}}</div>
+                          <input type="number" v-model.lazy="customRule.effect.MaterialTypeEffect[key]"/>
+                          <div class="append">%</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contain" v-if="null != customRule.effect.TotalEffect">
+                      <div class="contain-title">总售价加成</div>
+                      <div class="prepend-input append-input">
+                        <div class="input-box">
+                          <div class="prepend">总</div>
+                          <input type="number" v-model.lazy="customRule.effect.TotalEffect"/>
+                          <div class="append">%</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="title" v-if="customRule.skill">活动技法加成</div>
+                  <div class="hr" v-if="customRule.skill"></div>
+                  <div class="box-body" v-if="customRule.skill">
+                    <div class="contain" v-if="customRule.skill.Skill">
+                      <div class="contain-title">单技法</div>
+                      <div class="prepend-input" v-for="(val, key) in skill_map" v-if="null != customRule.skill.Skill[key]">
+                        <div class="input-box">
+                          <div class="prepend">{{val}}</div>
+                          <input type="number" v-model.lazy="customRule.skill.Skill[key]"/>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="contain" v-if="customRule.skill.MaxLimit">
+                      <div class="contain-title">菜谱上限</div>
+                      <div class="prepend-input" v-for="val in [1, 2, 3, 4, 5]" v-if="null != customRule.skill.MaxLimit[val]">
+                        <div class="input-box">
+                          <div class="prepend">{{val}}星</div>
+                          <input @focus="scrollUser(140)" type="number" v-model.lazy="customRule.skill.MaxLimit[val]"/>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="btn-box">
+                <i v-if="customRuleShow" class="icon-btn el-icon-arrow-down" @click="customRuleShow = false" style="color: #607d8b;"></i>
+                <div>
+                  <button v-show="!customRuleShow" class="btn btn-default" @click="customRuleShow = !customRuleShow">活动加成配置</button>
+                  <button v-show="customRuleShow" class="btn btn-primary" @click="customRuleShow = false">确定</button>
+                  <button v-show="customRuleShow" class="btn btn-delete" @click="resetCustomRule">清空</button>
                 </div>
               </div>
             </div>
@@ -1806,10 +1891,12 @@
       </div>
     </section>
   </div>
+  <!-- <script type="text/javascript" src="//cdn.jsdelivr.net/npm/eruda"></script> -->
+  <!-- <script>eruda.init();</script> -->
   <script src="./js/vue.min.js"></script>
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=155"></script>
+  <script src="./js/index.js?v=163"></script>
 </body>
 </html>

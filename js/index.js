@@ -183,6 +183,7 @@ $(function() {
     el: '#main',
     data: {
       url: 'https://bcjh.xyz/api',
+      // url: 'http://127.0.0.1:7001',
       count: 0,
       location: window.location.origin,
       leftBar: false,
@@ -202,6 +203,9 @@ $(function() {
       time2: 2,
       repGot: {},
       chefGot: {},
+      custom_rule_id: null,
+      customRules: {},
+      customRule: null,
       reg: new RegExp( '<br>' , "g" ),
       nav_list: [
         { id: 0, name: '首页' },
@@ -251,6 +255,12 @@ $(function() {
         Salty: '咸',
         Bitter: '苦',
         Tasty: '鲜',
+      },
+      materialTypeMap: {
+        vegetable: '菜',
+        meat: '肉',
+        creation: '面',
+        fish: '鱼',
       },
       userData: null,
       nav: [
@@ -949,6 +959,8 @@ $(function() {
       etcRule: { id: [], row: [] },
       planList: [],
       planListShow: false,
+      customRuleShow: false,
+      customRuleChange: false,
       showSort: false,
       showDel: false,
     },
@@ -1053,21 +1065,33 @@ $(function() {
           let time = 0;
           let time_last = 0;
           let time_buff = 100;
+          const rule = this.calType.row[0];
           for (let arr of this.calRepShow) {
             for (let item of arr) {
-              price += item.price_total || 0;
+              if (rule.ScoreCoef && typeof rule.ScoreCoef == 'object' && rule.ScoreCoef.each) {
+                let str = rule.ScoreCoef.each;
+                str = str.replace(new RegExp('this', 'g'), item.price_total || 0)
+                price += eval(str);
+              } else {
+                price += item.price_total || 0;
+              }
               price_origin += item.price_origin_total || 0;
               time += item.time || 0;
               price_rule += item.price_rule || 0;
               item.time_buff ? (time_buff = item.time_buff) : null;
             }
           }
-          if (this.calType.row[0].ScoreCoef) {
+          if (rule.ScoreCoef && typeof rule.ScoreCoef == 'number') {
             if (price >= 0) {
               price = Math.floor(price / this.calType.row[0].ScoreCoef);
             } else {
               price = Math.ceil(price / this.calType.row[0].ScoreCoef);
             }
+          }
+          if (rule.ScoreCoef && typeof rule.ScoreCoef == 'object' && rule.ScoreCoef.total) {
+            let str = rule.ScoreCoef.total;
+            str = str.replace(new RegExp('this', 'g'), price);
+            price = eval(str);
           }
           time_last = Math.ceil((time * time_buff * 100) / 10000);
           let rule_show = price_rule ? ` 规则分：${price_rule}` : '';
@@ -1301,7 +1325,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=37'
+          url: './data/data.min.json?v=38'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1916,7 +1940,7 @@ $(function() {
               duration: 0
             });
           }
-          this.ChefNumLimit = this.calType.row[0].ChefNumLimit || 3;
+          this.ChefNumLimit = rule.ChefNumLimit || 3;
           if (!this.calHidden) {
             for (let key in this.calChef) {
               this.$refs[`calChef_${key}`][0].clear();
@@ -1928,6 +1952,9 @@ $(function() {
               this.$refs[`calRep_${key}`][0].clear();
             }
           }
+          this.custom_rule_id = rule.custom_rule_id;
+          const customRule = (this.customRules[rule.custom_rule_id]) || rule.CustomRule || null;
+          this.customRule = JSON.parse(JSON.stringify(customRule));
           this.calClear();
           this.sort.calRep = {
             prop: 'price_total',
@@ -1960,6 +1987,7 @@ $(function() {
           }
           this.calRepEx = rst;
           this.calHidden = false;
+          this.customRuleChange = false;
           this.calLoad = false;
           this.calLoading = false;
         }, 50);
@@ -2076,6 +2104,15 @@ $(function() {
             }
           }
         }
+        const mutiEffect = {};
+        if (this.customRule && this.customRule.effect) {
+          const effect = this.customRule.effect;
+          if (!rule.CustomMuti) { // 自定义规则加算，计入规则
+            this.setCustomRule(effect, rule);
+          } else { // 自定义规则乘算，计入MutiBuff
+            this.setCustomRule(effect, mutiEffect);
+          }
+        }
         for (let item of this.data.recipes) {
           let r = {};
           r.id = item.recipeId;
@@ -2095,12 +2132,13 @@ $(function() {
           r.buff_ulti = this.ulti[`PriceBuff_${item.rarity}`]; // 修炼菜谱售价加成
           buff += r.buff_ulti;
           let buff_rule = 0;
+          let buff_muti = 100;
 
           if (this.calType.id[0] == 0) { // 正常营业，加上家具加成
             r.buff_deco = this.ulti.decoBuff;
             buff += r.buff_deco;
           } else { // 菜谱/食材规则加成
-            if (rule.RecipeEffect) {
+            if (rule.RecipeEffect) { // 菜谱加成
               if (rule.RecipeEffect[r.id] != null) {
                 buff_rule += (rule.RecipeEffect[r.id] * 100)
               } else {
@@ -2109,37 +2147,23 @@ $(function() {
               if (rule.NotSure) {
                 r.NotSure = rule.NotSure.indexOf(r.id) > -1;
               }
-            } else {
-              if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
-                rule.MaterialsEffect.forEach(m => {
-                  if (item.materials_id.indexOf(m.MaterialID) > -1) {
-                    buff_rule += (m.Effect * 100);
-                  }
-                });
-              }
-              if (rule.SkillEffect) {
-                for (let skillCode in rule.SkillEffect) {
-                  if (item[skillCode]) {
-                    buff_rule += (rule.SkillEffect[skillCode] * 100);
-                  }
-                }
-              }
-              if (rule.RarityEffect) {
-                buff_rule += (rule.RarityEffect[item.rarity] * 100);
-              }
-              if (rule.CondimentEffect) {
-                buff_rule += (rule.CondimentEffect[item.condiment] * 100);
-              }
             }
+            buff_rule += this.sumBuffRule(rule, item);
+            buff_muti += this.sumBuffRule(mutiEffect, item);
           }
 
           r.buff_rule = buff_rule;
+          r.buff_muti = buff_muti;
           r.price_wipe_rule = Math.ceil(((item.price + ex) * buff) / 100);
 
           buff += buff_rule;
-          r.price_buff = Math.ceil(((item.price + ex) * buff) / 100);
+          r.price_buff = Math.ceil(((item.price + ex) * buff * buff_muti) / 10000);
 
           r.limit = item.limit + this.ulti[`MaxLimit_${item.rarity}`];
+          if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
+            r.limit += Number(this.customRule.skill.MaxLimit[item.rarity]) || 0;
+          }
+
           r.limit_origin = r.limit;
           if (rule.DisableMultiCookbook) {
             r.limit = 1;
@@ -2205,6 +2229,56 @@ $(function() {
           }
         }
         this.setDefaultSort();
+      },
+      setCustomEffect(effect) {
+        let result = {};
+        for (let key in effect) {
+          result[key] = effect[key] ? Number((Number(effect[key]) / 100).toFixed(3)) : 0;
+        }
+        return result;
+      },
+      setCustomRule(custom, rule) {
+        const prop = ['SkillEffect', 'CondimentEffect', 'MaterialTypeEffect'];
+        prop.forEach(p => {
+          if (custom[p]) {
+            rule[p] = this.setCustomEffect(custom[p]);
+          }
+        });
+        rule.TotalEffect = custom.TotalEffect ? Number(custom.TotalEffect) : 0;
+      },
+      sumBuffRule(rule, recipe) { // 计算规则加成(菜谱食材等加成)
+        let buff = 0;
+        if (rule.MaterialsEffect && rule.MaterialsEffect.length > 0) {
+          rule.MaterialsEffect.forEach(m => {
+            if (recipe.materials_id.indexOf(m.MaterialID) > -1) {
+              buff += (m.Effect * 100);
+            }
+          });
+        }
+        if (rule.SkillEffect) {
+          for (let skillCode in rule.SkillEffect) {
+            if (recipe[skillCode]) {
+              buff += Math.round((rule.SkillEffect[skillCode] || 0) * 100);
+            }
+          }
+        }
+        if (rule.RarityEffect) {
+          buff += Math.round((rule.RarityEffect[recipe.rarity] || 0) * 100);
+        }
+        if (rule.CondimentEffect) {
+          buff += Math.round((rule.CondimentEffect[recipe.condiment] || 0) * 100);
+        }
+        if (rule.MaterialTypeEffect) {
+          for (let type in rule.MaterialTypeEffect) {
+            if (recipe.materials_type.indexOf(type) > -1) {
+              buff += Math.round(rule.MaterialTypeEffect[type] * 100);
+            }
+          }
+        }
+        if (rule.TotalEffect) {
+          buff += rule.TotalEffect;
+        }
+        return buff;
       },
       getRecommend(flag, key) {
         const hasRep = this.hasRep(key);
@@ -2366,7 +2440,6 @@ $(function() {
         if (rule.ChefTagEffect) { // 男厨/女厨倍数
           const tag_buff = rule.ChefTagEffect[chf.tag] ? rule.ChefTagEffect[chf.tag] * 100 : 0;
           chef.buff_rule += tag_buff;
-          chef.buff += tag_buff;
         }
 
         for (let sk in rep.skills) { // 判断品级
@@ -2452,7 +2525,7 @@ $(function() {
         if (this.defaultEx) {
           ex += rep.exPrice;
         }
-        chef.price_buff = Math.ceil((rep.price + ex) * chef.buff / 100);
+        chef.price_buff = Math.ceil((rep.price + ex) * chef.buff * rep.buff_muti / 10000);
         chef.price_total = chef.price_buff * rep.limit;
 
         chef.subName = '';
@@ -2687,6 +2760,9 @@ $(function() {
               }
             });
           }
+          if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) {
+            value += Number(this.customRule.skill.Skill[lowKey]) || 0;
+          }
           if (eqp) { // 装备厨具
             eqp.effect.forEach(eff => {
               if (eff.type == key) {
@@ -2739,20 +2815,23 @@ $(function() {
           time_buff: rep.buff_time || 100,
           price: this.calRepEx[position] ? (rep.price + rep.exPrice) : rep.price,
           chef: true,
+          buff_muti: rep.buff_muti,
           isCombo: rep.isCombo
         };
         rst.time_last = Math.ceil((rst.time * rst.time_buff * 100) / 10000);
         rst.time_last_show = this.formatTime(rst.time_last);
         let chefId = position.slice(0, 1);
+        rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         if (!this.calChef[position.slice(0, 1)].id[0]) { // 如果没有选厨子
           rst.chef = false;
           prop_arr.forEach(key => {
             rst[key] = rep[key];
           });
-          rst.price_buff = Math.ceil(rst.price * rst.buff / 100);
+          rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
           rst.price_total = rst.price_buff * rst.cnt;
-          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
-          rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule;
+          rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
+          rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_muti;
           rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
           rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
           rst.price_origin_total = rst.price * rst.cnt;
@@ -2771,11 +2850,9 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
-        rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
-        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
-        rst.price_buff = Math.ceil(rst.price * (rst.buff - (rst.buff_condiment_sub || 0)) / 100);
-        rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - (rst.buff_rule || 0)) / 100); // 除去规则的售价
+        rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
+        rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
@@ -2848,7 +2925,6 @@ $(function() {
               let diff_sum = 0;
               let buff = 100;
               const chefSkills = Object.assign({}, chef.skills);
-              if (item.recipeId == 1) console.log(chefSkills)
               if (this.repChefEquip.id.length == 1) { // 厨具技法加成
                 const equip_eff = this.repChefEquip.row[0].effect;
                 for (let key in chefSkills) {
@@ -2865,7 +2941,6 @@ $(function() {
                   chefSkills[key] = value;
                 }
               }
-              if (item.recipeId == 1) console.log(chefSkills)
               for (const key in item.skills) {
                 const grade = Math.floor(chefSkills[key] / item.skills[key]);
                 min = grade >= min ? min : grade;
@@ -4330,6 +4405,7 @@ $(function() {
           chefGot: this.chefGot,
           planList: this.planList,
           allEx: this.allEx,
+          customRules: this.customRules
         };
         localStorage.setItem('data', JSON.stringify(userData));
       },
@@ -4346,6 +4422,7 @@ $(function() {
             propName.forEach(prop => {
               this[prop] = this.userData[prop] == null ? this[prop] : this.userData[prop];
             });
+            this.customRules = JSON.parse(JSON.stringify(this.userData.customRules));
           } catch(e) {
             this.$message({
               showClose: true,
@@ -4732,6 +4809,9 @@ $(function() {
           this[key] = col;
         }
       },
+      resetCustomRule() {
+        this.customRule = JSON.parse(JSON.stringify(this.calType.row[0].CustomRule || null));
+      },
       changeChefUltimate(val) {
         this.initChef();
         if (!val) {
@@ -4870,6 +4950,11 @@ $(function() {
           this.tableHeight = window.innerHeight - 122 - this.extraHeight;
           this.boxHeight = window.innerHeight - 50 - this.extraHeight;
           this.chartHeight = window.innerHeight - 390 - this.extraHeight;
+        }
+        if (this.originHeight - val > 0) {
+          $("#customRuleBox").css("bottom", val - this.originHeight);
+        } else {
+          $("#customRuleBox").css("bottom", 0);
         }
       },
       extraHeight(val) {
@@ -5458,6 +5543,26 @@ $(function() {
           this.initCalRepList();
           this.initCalRepSearch();
           this.initCalChefList();
+        }
+      },
+      customRuleShow(val) {
+        if (!val && this.customRuleChange) {
+          this.initCal();
+        }
+        if (val && window.innerWidth < 669) {
+          $("#customRuleBox input").on("focus", function() {
+            this.scrollIntoView();
+          });
+        }
+      },
+      customRule: {
+        deep: true,
+        handler() {
+          this.customRules[this.custom_rule_id] = JSON.parse(JSON.stringify(this.customRule));
+          this.saveUserData();
+          if (this.customRuleShow) {
+            this.customRuleChange = true;
+          }
         }
       },
       chefGot: {
