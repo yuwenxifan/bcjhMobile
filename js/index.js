@@ -1325,7 +1325,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=38'
+          url: './data/data.min.json?v=39'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2642,6 +2642,9 @@ $(function() {
             }
             const limit_arr = [0, 40, 30, 25, 20, 15];
             let min = this.ulti[`MaxLimit_${calRep[key].row[0].rarity}`] + limit_arr[calRep[key].row[0].rarity];
+            if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
+              min += Number(this.customRule.skill.MaxLimit[calRep[key].row[0].rarity]) || 0;
+            }
             if (this.calType.row[0].DisableMultiCookbook) { // 如果限制一份
               min = 1;
             }
@@ -4933,7 +4936,10 @@ $(function() {
           const cnt = this.calRepCnt[key];
           const limit_arr = [0, 40, 30, 25, 20, 15];
           if (rep) { // 有菜谱
-            const limit = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
+            let limit = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
+            if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
+              limit += Number(this.customRule.skill.MaxLimit[rep.rarity]) || 0;
+            }
             if (cnt > limit) {
               this.calRepCnt[key] = limit;
             }
