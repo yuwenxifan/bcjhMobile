@@ -1325,7 +1325,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=39'
+          url: './data/data.min.json?v=40'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2763,9 +2763,6 @@ $(function() {
               }
             });
           }
-          if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) {
-            value += Number(this.customRule.skill.Skill[lowKey]) || 0;
-          }
           if (eqp) { // 装备厨具
             eqp.effect.forEach(eff => {
               if (eff.type == key) {
@@ -2776,6 +2773,9 @@ $(function() {
                 }
               }
             });
+          }
+          if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) { // 额外规则加成在百分比厨具后
+            value += Number(this.customRule.skill.Skill[lowKey]) || 0;
           }
           skills_last[lowKey] = (chef.skills[lowKey] || 0) + value;
           skills_show[lowKey] = value ? `${chef.skills[lowKey] || ''}+${value}` : chef.skills[lowKey];
