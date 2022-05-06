@@ -2440,6 +2440,7 @@ $(function() {
         if (rule.ChefTagEffect) { // 男厨/女厨倍数
           const tag_buff = rule.ChefTagEffect[chf.tag] ? rule.ChefTagEffect[chf.tag] * 100 : 0;
           chef.buff_rule += tag_buff;
+          chef.buff += tag_buff;
         }
 
         for (let sk in rep.skills) { // 判断品级
