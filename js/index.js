@@ -1325,7 +1325,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=41'
+          url: './data/data.min.json?v=42'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2825,8 +2825,6 @@ $(function() {
         rst.time_last = Math.ceil((rst.time * rst.time_buff * 100) / 10000);
         rst.time_last_show = this.formatTime(rst.time_last);
         let chefId = position.slice(0, 1);
-        rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
-        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         if (!this.calChef[position.slice(0, 1)].id[0]) { // 如果没有选厨子
           rst.chef = false;
           prop_arr.forEach(key => {
@@ -2854,6 +2852,8 @@ $(function() {
         prop_arr.forEach(key => {
           rst[key] = rep[`chef_${chefId}`][key];
         });
+        rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
+        rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
         rst.price_buff = Math.ceil(rst.price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
         rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
