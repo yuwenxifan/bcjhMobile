@@ -185,7 +185,7 @@ $(function() {
       url: 'https://bcjh.xyz/api',
       // url: 'http://127.0.0.1:7001',
       count: 0,
-      location: window.location.origin,
+      location: window.location.origin + window.location.pathname,
       leftBar: false,
       rightBar: false,
       hideSuspend: false,
