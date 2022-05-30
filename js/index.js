@@ -4435,6 +4435,7 @@ $(function() {
             });
           }
         }
+        this.initRep();
         this.extraHeight = localStorage.getItem('extraHeight') ? Number(localStorage.getItem('extraHeight')) : 0;
       },
       exportUserDataText() {
