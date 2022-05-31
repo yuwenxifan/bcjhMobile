@@ -4344,6 +4344,7 @@ $(function() {
           3: 'Equip',
           4: 'Decoration'
         };
+        console.log(this.originRepFilter)
         if (map[this.navId]) {
           this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
         }
@@ -4354,7 +4355,9 @@ $(function() {
           this.repKeyword = '';
           this.guestKeyword = '';
           this.$refs.materialEff.clear();
-          this.$refs.repChefTask.clear();
+          if (this.$refs.repChefTask) {
+            this.$refs.repChefTask.clear();
+          }
         } else if (this.navId === 3) {
           this.equip_radio = false;
           this.equip_concurrent = false;
@@ -4435,8 +4438,10 @@ $(function() {
             });
           }
         }
-        this.initRep();
         this.extraHeight = localStorage.getItem('extraHeight') ? Number(localStorage.getItem('extraHeight')) : 0;
+        if (this.data.recipes) {
+          this.initRep();
+        }
       },
       exportUserDataText() {
         this.saveUserData();
