@@ -1325,7 +1325,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=42'
+          url: './data/data.min.json?v=43'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -4429,8 +4429,11 @@ $(function() {
             propName.forEach(prop => {
               this[prop] = this.userData[prop] == null ? this[prop] : this.userData[prop];
             });
-            this.customRules = JSON.parse(JSON.stringify(this.userData.customRules));
+            if (this.userData.customRules) {
+              this.customRules = JSON.parse(JSON.stringify(this.userData.customRules));
+            }
           } catch(e) {
+            console.log('个人数据解析错误', e);
             this.$message({
               showClose: true,
               message: '个人数据解析错误！',

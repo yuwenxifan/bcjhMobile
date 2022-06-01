@@ -6,7 +6,7 @@
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=38">
-  <link rel="stylesheet" href="./css/image.css?v=35">
+  <link rel="stylesheet" href="./css/image.css?v=36">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -738,9 +738,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2022-06-01 16:10 更新过家家池相关厨师菜谱数据；修复导入的个人数据不完整时（例如只有厨师已有数据），会在[导入成功]下面藏一个[个人数据解析错误]的bug（实际导入成功）。</div>
             <div class="p">2022-05-31 13:00 修复昨天新写的异形屏UI适配不能保存&筛选页清空过滤按钮点击出错的bug。</div>
             <div class="p">2022-05-31 00:30 修复L版图鉴数据导入时，已有菜谱看起来像是没导入的问题（实际导入成功了，要刷新一下页面或者筛选一下菜谱数据才能打上勾）。</div>
-            <div class="p">2022-05-30 10:10 更新新版地址。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -762,7 +762,11 @@
             </div>
             <div class="p">
               <p>Q: 我要怎么把我有的菜谱、厨师导入到图鉴里呢？<br/></p>
-              <p>A: 【菜谱】【厨师】页里，点右下角的 <i class="el-icon-search"></i>，将<span class="code">展示列</span>里的<span class="code">已有</span>点亮，然后就可以在表格里勾选你有的厨师菜谱，还可以根据来源搜索后点击<span class="code">全选</span>。</p>
+              <p>A: 如果之前有维护过L图鉴的数据，可以直接使用【个人】页的<span class="code">L版图鉴数据转移</span>功能，否则需要录入。
+                <div style="padding-left: 20px;">
+                  <p>自动生成：安卓用户可以下载个人数据生成器：<a href="https://wws.lanzouy.com/b01jjc70j">点击下载，密码：bcjh</a>，选用最新版本下载使用，下载链接里有使用说明记得看。</p>
+                  <p>手动录入：【菜谱】【厨师】页里，点右下角的 <i class="el-icon-search"></i>，将<span class="code">展示列</span>里的<span class="code">已有</span>点亮，然后就可以在表格里勾选你有的厨师菜谱，还可以根据来源搜索后点击<span class="code">全选</span>。</p>
+                </div>
             </div>
             <div class="p">
               <p>Q: 为什么我计算器算出来的分数和游戏里不一样？<br/></p>
@@ -1771,7 +1775,7 @@
             <el-input
               type="textarea"
               :rows="10"
-              placeholder="请贴入备份的个人数据。（与L的网页版图鉴数据不是同一套，不能互通，首次使用需自行录入修炼/装饰数据，如果有维护L版数据可以使用上面的L版图鉴数据转移功能。）"
+              placeholder="请贴入备份的个人数据。（与L的网页版图鉴数据不是同一套，要导入L版数据用上面的L版图鉴数据转移功能，首次使用需自行录入修炼/装饰数据，菜谱/厨师已有数据可以自动生成，具体见首页的常见问题。）"
               v-model="userDataText"
               @focus="scrollUser(530)"
             >
@@ -1884,10 +1888,10 @@
           <div class="box-body">
             <div class="contain-title">个人</div>
             <div class="p">本站仅保存用户上一次在【菜谱】【厨师】等页选择的[展示列]与已有数据，与个人页填入的修炼最终值。</div>
-            <div class="p">个人修炼数据在【个人】页维护，依照游戏中名厨录里的修炼加成数据填入即可（如果在意比丢的话，就分别填男厨/女厨/全体）。</div>
+            <div class="p">个人修炼数据在【个人】页维护，依照游戏中名厨录里的修炼加成数据填入即可（如果在意比丢/嘎喵汪的话，就分别填男厨/女厨/全体）。</div>
             <div class="p">本网站可以将L版图鉴的数据在【个人】页使用 [L版图鉴数据转移] 功能导入，会导入已有厨师菜谱与汇总后的厨师修炼数据，导入后无法转回L版图鉴数据。</div>
-            <div class="p">如果没有L版图鉴的数据，首次使用本网站需手动填入数据。</div>
-            <div class="p">个人数据保存在本地，正常情况不会丢失，如需更换浏览器/设备等可使用备份功能。</div>
+            <div class="p">如果没有L版图鉴的数据，首次使用本网站需手动填入修炼/装饰加成数据，厨师菜谱已有数据可以自动生成，具体见首页常见问题。</div>
+            <div class="p">个人数据保存在本地，正常情况不会丢失，如需更换浏览器/设备等可使用备份功能或上传云端后换设备获取。</div>
             <div class="p">个人备份数据文件版部分浏览器不支持（APP可以上传不能下载，好像只有chrome支持_(:з」∠)_），推荐使用手动复制版。</div>
           </div>
           <div class="title">致谢</div>
@@ -1905,6 +1909,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=171"></script>
+  <script src="./js/index.js?v=172"></script>
 </body>
 </html>
