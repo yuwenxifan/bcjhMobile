@@ -2730,6 +2730,11 @@ $(function() {
           if (chef.tag == 2) { // 女厨全技法
             value += this.ulti.Female;
           }
+          chef.skill_effect.forEach(eff => { // 常驻技能技法加成
+            if (eff.type == key) {
+              value += eff.value;
+            }
+          });
           chef.MutiEquipmentSkill = 0;
           if (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1) { // 已修炼的特殊修炼技能
             ultimate = true;
@@ -3152,11 +3157,11 @@ $(function() {
           }
           item.MutiEquipmentSkill = MutiEquipmentSkill;
           skill_arr.forEach(key => {
-            if (this.chefUltimate) {
-              let value = 0;
+            let value = 0;
+            if (this.chefUltimate) { // 修炼开
               const effect = item.ultimateSkill ? item.ultimateSkill.effect : [];
               const partial_skill = this.partial_skill.row;
-              if (this.chefUseAllUltimate) {
+              if (this.chefUseAllUltimate) { // 全修炼
                 value += this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id) {
@@ -3165,7 +3170,7 @@ $(function() {
                     });
                   }
                 });
-              } else {
+              } else { // 已修炼
                 value += (userUltimate[key] || 0) + (userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? userUltimate.Male : userUltimate.Female) : 0) || 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0) {
@@ -3176,14 +3181,14 @@ $(function() {
                 });
               }
               effect.forEach(eff => {
-                if (this.chefUseAllUltimate) {
+                if (this.chefUseAllUltimate) { // 全修炼
                   if (this.allUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
                     value += eff.value;
                   }
                   if (this.allUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
                     value += eff.value;
                   }
-                } else {
+                } else { // 已修炼
                   if (userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
                     value += eff.value;
                   }
@@ -3192,12 +3197,14 @@ $(function() {
                   }
                 }
               });
-              ultimate[`${key}_show`] = (item[key.toLowerCase()] || '') + `${value ? '+' + value : ''}`;
-              ultimate[`${key}_last`] = (item[key.toLowerCase()] + value) || '';
-            } else {
-              ultimate[`${key}_show`] = item[key.toLowerCase()];
-              ultimate[`${key}_last`] = item[key.toLowerCase()] || '';
             }
+            item.skill_obj.effect.forEach(eff => { // 常驻技能加技法值
+              if (eff.type == key) {
+                value += eff.value;
+              }
+            });
+            ultimate[`${key}_show`] = (item[key.toLowerCase()] || '') + `${value ? '+' + value : ''}`;
+            ultimate[`${key}_last`] = (item[key.toLowerCase()] + value) || '';
             skills[key.toLowerCase()] = ultimate[`${key}_last`] || 0;
           });
 
