@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>白菜菊花</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=38">
+  <link rel="stylesheet" href="./css/index.css?v=39">
   <link rel="stylesheet" href="./css/image.css?v=36">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -30,6 +30,10 @@
           <div class="nav" v-for="item in nav" :class="item.id === navId ? 'active' : '' " @click="checkNav(item.id)">
             <i :class="item.icon"></i>
             {{item.name}}
+          </div>
+          <div class="nav" :class="item.id === 11 ? 'active' : '' " @click="checkNav(11)" v-if="host == 'www.bcjh.xyz'">
+            <i class="el-icon-present"></i>
+            费用和捐赠
           </div>
         </div>
       </el-drawer>
@@ -738,9 +742,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2022-06-06 17:00 【菜谱】页新增展示列【耗调料效率】，新增仅计费版可见的捐赠页面。</div>
             <div class="p">2022-06-02 17:40 修复奶油霜比丢技能没生效的bug。</div>
             <div class="p">2022-06-01 16:10 更新过家家池相关厨师菜谱数据；修复导入的个人数据不完整时（例如只有厨师已有数据），会在[导入成功]下面藏一个[个人数据解析错误]的bug（实际导入成功）。</div>
-            <div class="p">2022-05-31 13:00 修复昨天新写的异形屏UI适配不能保存&筛选页清空过滤按钮点击出错的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -839,6 +843,7 @@
           <el-table-column sortable="custom" prop="total_time_show" min-width="100" label="总时间" v-if="repCol.total_time_show"></el-table-column>
           <el-table-column sortable="custom" prop="gold_eff" label="金币/h" min-width="79" v-if="repCol.gold_eff"></el-table-column>
           <el-table-column sortable="custom" prop="material_eff" label="耗材/h" min-width="79" v-if="repCol.material_eff"></el-table-column>
+          <el-table-column sortable="custom" prop="condi_eff" label="调料/h" min-width="79" v-if="repCol.condi_eff"></el-table-column>
           <el-table-column sortable="custom" prop="origin" label="来源" min-width="90" v-if="repCol.origin"></el-table-column>
           <el-table-column sortable="custom" prop="unlock" label="可解锁" v-if="repCol.unlock"></el-table-column>
           <el-table-column sortable="custom" prop="combo" min-width="80" label="可合成" v-if="repCol.combo"></el-table-column>
@@ -1901,6 +1906,37 @@
           </div>
         </div>
       </div>
+      <div v-if="navId === 11">
+        <div class="info-box" :style="'height: '+ boxHeight + 'px;'">
+          <div class="title">费用说明和捐赠</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="p">
+              看到这个页面，说明你使用的是会产生流量费用的网址或APP（腾讯云静态网站托管）。
+            </div>
+            <div class="p">
+              截至2022/6/6运行约一周，消耗流量110G（流量费用约20元）。
+            </div>
+            <div class="p">
+              之前收到了一些捐赠，<strong>目前费用是有结余的！暂时不要再打钱了！</strong>
+            </div>
+            <div class="p">
+              <a href="https://wws.lanzouy.com/b01jkaixc">捐赠费用支出明细公示，下载密码：bcjh</a><br/>
+            </div>
+          </div>
+          <div class="box-body">
+            <div class="contain-title">薅羊毛式捐赠</div>
+            <div class="p">
+              平时用支付宝的可以扫下面这个二维码领红包，每天可以扫一次，几毛~几块不等，3天内有效，<span class="add">线下支付使用红包后我是可以拿到钱的</span>。
+            </div>
+            <div class="qr-code">
+            </div>
+            <div class="p">
+              感觉用这个收入大概就可以覆盖掉流量费用支出，先试行一段时间看看具体收支情况~
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
   <!-- <script type="text/javascript" src="//cdn.jsdelivr.net/npm/eruda"></script> -->
@@ -1909,6 +1945,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=173"></script>
+  <script src="./js/index.js?v=174"></script>
 </body>
 </html>

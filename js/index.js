@@ -185,6 +185,7 @@ $(function() {
       url: 'https://bcjh.xyz/api',
       // url: 'http://127.0.0.1:7001',
       count: 0,
+      host: window.location.host,
       location: window.location.origin + window.location.pathname,
       leftBar: false,
       rightBar: false,
@@ -358,6 +359,7 @@ $(function() {
         total_time_show: false,
         gold_eff: true,
         material_eff: false,
+        condi_eff: false,
         origin: true,
         unlock: false,
         combo: false,
@@ -382,6 +384,7 @@ $(function() {
         total_time_show: '总时间',
         gold_eff: '金币效率',
         material_eff: '总耗材效率',
+        condi_eff: '耗调料效率',
         origin: '来源',
         unlock: '解锁',
         combo: '合成',
@@ -1454,6 +1457,7 @@ $(function() {
           item.origin = item.origin.replace(this.reg, '\n');
           item.time_show = this.formatTime(item.time);
           item.gold_eff = Math.round(3600 / item.time * item.price);
+          item.condi_eff = ~~(3600 / item.time * item.rarity);
           item.total_price = item.price * item.limit;
           item.total_time = item.time * item.limit;
           item.total_time_show = this.formatTime(item.total_time);

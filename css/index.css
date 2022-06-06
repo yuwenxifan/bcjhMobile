@@ -1924,3 +1924,11 @@ span.code {
 .custom-rule-list .ultimate-box {
   padding-bottom: 250px;
 }
+
+.qr-code {
+  height: 300px;
+  margin-left: 10px;
+  background-image: url('../images/qrCode.png');
+  background-size: auto 100%;
+  background-repeat: no-repeat;
+}
