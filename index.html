@@ -31,7 +31,7 @@
             <i :class="item.icon"></i>
             {{item.name}}
           </div>
-          <div class="nav" :class="item.id === 11 ? 'active' : '' " @click="checkNav(11)" v-if="host == 'www.bcjh.xyz'">
+          <div class="nav" :class="navId === 11 ? 'active' : '' " @click="checkNav(11)" v-if="host == 'www.bcjh.xyz'">
             <i class="el-icon-present"></i>
             费用和捐赠
           </div>
