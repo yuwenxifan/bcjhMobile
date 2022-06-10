@@ -31,10 +31,6 @@
             <i :class="item.icon"></i>
             {{item.name}}
           </div>
-          <div class="nav" :class="navId === 11 ? 'active' : '' " @click="checkNav(11)" v-if="host == 'www.bcjh.xyz'">
-            <i class="el-icon-present"></i>
-            费用和捐赠
-          </div>
         </div>
       </el-drawer>
       <el-drawer class="right-bar" :visible.sync="rightBar" size="295px" :with-header="false">
@@ -743,6 +739,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2022-06-10 12:30 更新说明、下载地址等，删除捐赠页面。</div>
             <div class="p">2022-06-07 16:10 新增限时签到厨师尤布。</div>
             <div class="p">2022-06-06 17:00 【菜谱】页新增展示列【耗调料效率】，新增仅计费版可见的捐赠页面。</div>
             <div class="p">2022-06-02 17:40 修复奶油霜比丢技能没生效的bug。</div>
@@ -753,8 +750,7 @@
             <div class="p">
               <p>Q: iOS有APP吗，APP在哪里下载？<br/></p>
               <p>A: iOS没有APP；<br/>
-                安卓下载地址1（移动网用不了）：<a href="https://wws.lanzouy.com/iS6te05m3hsb">点击下载，密码：bcjh</a><br/>
-                安卓下载地址2（这个要收我钱的，上面的用不了再用这个）：<a href="https://wws.lanzouy.com/i3vs205msk0b">点击下载，密码：bcjh</a>
+                安卓下载地址：<a href="https://wws.lanzouy.com/i3vs205msk0b">点击下载，密码：bcjh</a>
               </p>
             </div>
             <div class="p">
@@ -1817,15 +1813,14 @@
           <div class="box-body">
             <div class="contain-title">备胎和APP</div>
             <div class="p">
-              非移动网：<a href="https://bcjh.pages.dev">https://bcjh.pages.dev</a>，移动网或部分地区的网会打不开<br/>
-              移动网：<a href="https://www.bcjh.xyz">https://www.bcjh.xyz</a>，这个都能用但是要收我钱，所以如果常用网络都能打开上面网址就优先用上面的
+              正式：<a href="https://www.bcjh.xyz">https://www.bcjh.xyz</a>，现在不用收钱了！
             </div>
             <div class="p">
-              备胎地址：<a href="https://yuwenxifan.github.io/bcjhMobile">https://yuwenxifan.github.io/bcjhMobile</a>，国内使用可能会特别慢，仅做应急使用
+              备胎①：<a href="https://bcjh.pages.dev">https://bcjh.pages.dev</a>，移动网或部分地区的网会打不开，还可能跳到反诈中心<br/>
+              备胎②：<a href="https://yuwenxifan.github.io/bcjhMobile">https://yuwenxifan.github.io/bcjhMobile</a>，国内使用可能会比较慢
             </div>
             <div class="p">
-              APP下载地址1（移动网用不了）：<a href="https://wws.lanzouy.com/iS6te05m3hsb">点击下载，密码：bcjh</a><br/>
-              APP下载地址2（这个要收我钱的，上面的用不了再用这个）：<a href="https://wws.lanzouy.com/i3vs205msk0b">点击下载，密码：bcjh</a>
+              APP下载地址：<a href="https://wws.lanzouy.com/i3vs205msk0b">点击下载，密码：bcjh</a>
             </div>
           </div>
           <div class="box-body">
@@ -1904,37 +1899,6 @@
           <div class="hr"></div>
           <div class="box-body">
             <div class="p">感谢L的图鉴网，感谢Boketto提供的菜谱数据，感谢试菜组提供的厨神规则，感谢闲时和小熊提供的升阶贵客符文数据，感谢梨大只提供的数据。</div>
-          </div>
-        </div>
-      </div>
-      <div v-if="navId === 11">
-        <div class="info-box" :style="'height: '+ boxHeight + 'px;'">
-          <div class="title">费用说明和捐赠</div>
-          <div class="hr"></div>
-          <div class="box-body">
-            <div class="p">
-              看到这个页面，说明你使用的是会产生流量费用的网址或APP（腾讯云静态网站托管）。
-            </div>
-            <div class="p">
-              截至2022/6/6运行约一周，消耗流量110G（流量费用约20元）。
-            </div>
-            <div class="p">
-              之前收到了一些捐赠，<strong>目前费用是有结余的！暂时不要再打钱了！</strong>
-            </div>
-            <div class="p">
-              <a href="https://wws.lanzouy.com/b01jkaixc">捐赠费用支出明细公示，下载密码：bcjh</a><br/>
-            </div>
-          </div>
-          <div class="box-body">
-            <div class="contain-title">薅羊毛式捐赠</div>
-            <div class="p">
-              平时用支付宝的可以扫下面这个二维码领红包，每天可以扫一次，几毛~几块不等，3天内有效，<span class="add">线下支付使用红包后我是可以拿到钱的</span>。
-            </div>
-            <div class="qr-code">
-            </div>
-            <div class="p">
-              感觉用这个收入大概就可以覆盖掉流量费用支出，先试行一段时间看看具体收支情况~
-            </div>
           </div>
         </div>
       </div>
