@@ -1516,7 +1516,7 @@ $(function() {
           });
           item.skill = skill.desc;
           item.skill_obj = skill;
-          item.sex = item.tags ? (item.tags[0] == 1 ? '男' : '女') : '';
+          item.sex = item.tags ? (item.tags.map(t => t == 1 ? '男' : '女').join('、')) : '';
           item.origin = item.origin.replace(this.reg, '\n');
           const ultimateGoalDetail = [];
           item.ultimateGoal = item.ultimateGoal.map(qId => {
@@ -2001,16 +2001,26 @@ $(function() {
         const rule = this.calType.row[0];
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
-          const tag = item.tags ? item.tags[0] : null;
-          let subName = null;
+          const tags = item.tags ? item.tags : [];
+          let subName = '';
           let subName_origin = null;
           let chef_buff = 0;
           if (rule.ChefTagEffect) {
-            chef_buff = tag ? rule.ChefTagEffect[tag] : 0;
-            subName = (tag == 1 ? '男' : (tag == 2 ? '女' : '')) + ' ' + (chef_buff || '');
+            for (let tag of tags) {
+              chef_buff += rule.ChefTagEffect[tag];
+              subName += (tag == 1 ? '男' : (tag == 2 ? '女' : ''));
+            }
+            subName += (' ' + (chef_buff || ''))
             subName_origin = chef_buff ? `${chef_buff}倍` : '';
           }
-          if (!rule.EnableChefTags || rule.EnableChefTags.indexOf(tag) > -1) {
+          let EnableChefTag = false;
+          for (let tag of tags) {
+            if (rule.EnableChefTags && rule.EnableChefTags.indexOf(tag) > -1) {
+              EnableChefTag = true; // 性别有一个满足就可以
+              break;
+            }
+          }
+          if (!rule.EnableChefTags || EnableChefTag) {
             chefs_list.push({
               id: item.chefId,
               uid: `${item.chefId},${ultimateSkill.skillId}`,
@@ -2029,7 +2039,7 @@ $(function() {
               },
               skill_effect: item.skill_obj.effect,
               ultimate_effect: ultimateSkill.effect,
-              tag
+              tags
             });
           }
         }
@@ -2442,7 +2452,10 @@ $(function() {
         chef.buff = rep.buff;
 
         if (rule.ChefTagEffect) { // 男厨/女厨倍数
-          const tag_buff = rule.ChefTagEffect[chf.tag] ? rule.ChefTagEffect[chf.tag] * 100 : 0;
+          let tag_buff = 0;
+          for (let tag of chf.tags) {
+            tag_buff += rule.ChefTagEffect[tag] * 100;
+          }
           chef.buff_rule += tag_buff;
           chef.buff += tag_buff;
         }
@@ -2728,10 +2741,10 @@ $(function() {
           const lowKey = key.toLowerCase();
           let value = this.ulti.All; // 全体全技法
           value += this.ulti[key]; // 全体单技法
-          if (chef.tag == 1) { // 男厨全技法
+          if (chef.tags.indexOf(1) > -1) { // 男厨全技法
             value += this.ulti.Male;
           }
-          if (chef.tag == 2) { // 女厨全技法
+          if (chef.tags.indexOf(2) > -1) { // 女厨全技法
             value += this.ulti.Female;
           }
           chef.skill_effect.forEach(eff => { // 常驻技能技法加成
@@ -3136,7 +3149,13 @@ $(function() {
               sex_check.push(this.chefFilter.sex[key].name);
             }
           }
-          const f_sex = sex_check.indexOf(item.sex || '未知') > -1;
+          let f_sex = false;
+          for (let sex of item.sex.split('、')) {
+            if (sex_check.indexOf(sex || '未知') > -1) {
+              f_sex = true;
+              break;
+            }
+          }
           const skill_arr = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
           const ultimate = {};
           const skills = {};
@@ -3166,7 +3185,9 @@ $(function() {
               const effect = item.ultimateSkill ? item.ultimateSkill.effect : [];
               const partial_skill = this.partial_skill.row;
               if (this.chefUseAllUltimate) { // 全修炼
-                value += this.allUltimate[key] + this.allUltimate.All + (item.tags ? (item.tags[0] == 1 ? this.allUltimate.Male : this.allUltimate.Female) : 0);
+                value += this.allUltimate[key] + this.allUltimate.All;
+                if (item.tags && item.tags.indexOf(1) > -1) value += this.allUltimate.Male;
+                if (item.tags && item.tags.indexOf(2) > -1) value += this.allUltimate.Female;
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id) {
                     s.effect.forEach(e => {
@@ -3175,7 +3196,9 @@ $(function() {
                   }
                 });
               } else { // 已修炼
-                value += (userUltimate[key] || 0) + (userUltimate.All || 0) + ((item.tags ? (item.tags[0] == 1 ? userUltimate.Male : userUltimate.Female) : 0) || 0);
+                value += (userUltimate[key] || 0) + (userUltimate.All || 0);
+                if (item.tags && item.tags.indexOf(1) > -1) value += (userUltimate.Male || 0);
+                if (item.tags && item.tags.indexOf(2) > -1) value += (userUltimate.Female || 0);
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0) {
                     s.effect.forEach(e => {
