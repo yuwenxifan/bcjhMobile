@@ -2561,6 +2561,7 @@ $(function() {
       },
       getSameSkillFlag(position) {
         const skill_type = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
+        let result = 0;
         for (let sk of skill_type) {
           let cnt = 0;
           for (let key of [1, 2, 3]) {
@@ -2570,10 +2571,10 @@ $(function() {
             }
           }
           if (cnt == 3) {
-            return 1;
+            result ++;
           }
         }
-        return 0;
+        return result;
       },
       getEffectBuff(eff, rep, chf, repCnt, grade, position) { // 根据effect和rep，获取buff数值
         let buff = 0;
@@ -2588,10 +2589,11 @@ $(function() {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf);
           }
         } else if (eff.conditionType == 'SameSkill') { // 同技法
-          if (this.getSameSkillFlag(position)) { // 如果同技法判定通过
+          if (this.getSameSkillFlag(position) > 0) { // 如果同技法判定通过
             let effect = Object.assign({}, eff);
             delete effect.conditionType;
             delete effect.condition;
+            effect.value = eff.value * this.getSameSkillFlag(position);
             this.onSiteEffect[position].push(effect);
           }
         }
@@ -5388,7 +5390,7 @@ $(function() {
               buff_time += (val[key].time_buff || 0);
             }
             for (let key in val) {
-              if (!this.compareObj(val[key], this.calChefShowLast[key]) || !this.compareObj(this.onSiteEffect, this.onSiteEffectLast)) {
+              if (!this.compareObj(val[key], this.calChefShowLast[key])) {
                 if (val[key].id) {
                   this.handlerChef(key);
                 } else {
@@ -5429,8 +5431,20 @@ $(function() {
               }
             }
             this.calChefShowLast = JSON.parse(JSON.stringify(val));
-            this.onSiteEffectLast = JSON.parse(JSON.stringify(this.onSiteEffect));
           }, 100);
+        }
+      },
+      onSiteEffect: {
+        deep: true,
+        handler(val) {
+          if (!this.compareObj(this.onSiteEffect, this.onSiteEffectLast)) {
+            for (let key in this.calChefShow) {
+              if (this.calChefShow[key].id) {
+                this.handlerChef(key);
+              }
+            }
+          }
+          this.onSiteEffectLast = JSON.parse(JSON.stringify(this.onSiteEffect));
         }
       },
       calRepEx: {
