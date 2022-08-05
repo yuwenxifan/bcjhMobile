@@ -2517,7 +2517,7 @@ $(function() {
 
         if (!rule.DisableEquipSkillEffect) {
           chf.equip_effect.forEach(eff => { // 厨具技能
-            buff_equip += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
+            buff_equip += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1);
           });
         }
 
@@ -2576,17 +2576,17 @@ $(function() {
         }
         return result;
       },
-      getEffectBuff(eff, rep, chf, repCnt, grade, position) { // 根据effect和rep，获取buff数值
+      getEffectBuff(eff, rep, chf, repCnt, grade, position, eqpFlag = 0) { // 根据effect和rep，获取buff数值
         let buff = 0;
         if (!eff.conditionType) { // 无前置条件
-          buff += this.getEffectBuffWithOutCondition(eff, rep, chf);
+          buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
         } else if (eff.conditionType == 'ExcessCookbookNum') { // 菜谱份数
           if (repCnt >= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         } else if (eff.conditionType == 'PerRank') { // 菜谱品阶
           if (grade >= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         } else if (eff.conditionType == 'SameSkill') { // 同技法
           if (this.getSameSkillFlag(position) > 0) { // 如果同技法判定通过
@@ -2599,42 +2599,42 @@ $(function() {
         }
         return buff;
       },
-      getEffectBuffWithOutCondition(eff, rep, chf) { // 前置条件通过的情况，计算buff数值
+      getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag = 0) { // 前置条件通过的情况，计算buff数值
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         const rule = this.calType.row[0];
         let buff = 0;
         if (eff.type == 'Gold_Gain' && rule.id == 0) { // 金币加成
-          buff += this.getSelfPartialBuff(eff, chf);
+          buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
         }
         if (eff.type.slice(0, 3) == 'Use' && skill_type.indexOf(eff.type.slice(3)) > -1) { // 技法类售价加成
           if (rep.skills[eff.type.slice(3).toLowerCase()]) {
-            buff += this.getSelfPartialBuff(eff, chf);
+            buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
         }
         if (eff.type.slice(0, 3) == 'Use' && material_type.indexOf(eff.type.slice(3)) > -1) { // 食材类售价加成
           if (rep.materials_type.indexOf(eff.type.slice(3).toLowerCase()) > -1) {
-            buff += this.getSelfPartialBuff(eff, chf);
+            buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
         }
         if (eff.type.slice(0, 3) == 'Use' && condiment_type.indexOf(eff.type.slice(3)) > -1) { // 调料类售价加成
           if (rep.condiment === eff.type.slice(3)) {
-            buff += this.getSelfPartialBuff(eff, chf);
+            buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
         }
         if (eff.type == 'CookbookPrice') { // 菜谱售价
-          buff += this.getSelfPartialBuff(eff, chf);
+          buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
         }
         if (eff.type == 'BasicPrice' && eff.conditionType == 'PerRank') { // 基础售价
           if (!this.repCntMap[rep.id]) { // 如果不在场，加在自己上，在场的另外加
-            rep.basicPrice += this.getSelfPartialBuff(eff, chf);
+            rep.basicPrice += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
         }
         return buff;
       },
-      getSelfPartialBuff(eff, chf) { // 个人，全体售价分类
-        let muti = (100 + chf.MutiEquipmentSkill || 0) / 100;
+      getSelfPartialBuff(eff, chf, eqpFlag = 0) { // 个人，全体售价分类
+        let muti = eqpFlag ? (100 + chf.MutiEquipmentSkill || 0) / 100 : 1;
         let buff = eff.value * muti;
         if (eff.condition == 'Partial' && this.onSiteChef.indexOf(chf.id) > -1) {
           return 0; // 全体，且厨师在场，前面已经记中在场buff上
