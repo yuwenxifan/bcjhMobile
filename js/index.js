@@ -1340,7 +1340,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=49'
+          url: './data/data.min.json?v=50'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2424,7 +2424,7 @@ $(function() {
             const rep = this.calRep[`${key}-${i}`].row[0];
             if (rep) {
               const cnt = this.calRepCnt[`${key}-${i}`];
-              const result = this.calScore(chef, rep, 'cdi');
+              const result = this.calScore(chef, rep, 'cdi', key);
               price += (result.chef_cdi.price_buff * cnt);
             }
           }
