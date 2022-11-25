@@ -1340,7 +1340,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=56'
+          url: './data/data.min.json?v=57'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3432,7 +3432,7 @@ $(function() {
             this.chefs.push(Object.assign({}, item, ultimate, skills, rep_ext));
           }
         }
-        this.chefs_list = chefs_list;
+        this.chefs_list = chefs_list.slice().reverse();
         if (this.sort.chef.order) {
           this.handleChefSort(this.sort.chef);
         } else {
