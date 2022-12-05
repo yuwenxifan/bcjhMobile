@@ -2976,11 +2976,11 @@ $(function() {
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
         let price = Math.floor(rst.price * (100 + rst.basicPrice) / 100);
         rst.price_buff = Math.ceil(price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
-        rst.price_wipe_rule = Math.ceil(rst.price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
+        rst.price_wipe_rule = Math.ceil(price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
-        rst.price_origin_total = rst.price * rst.cnt;
+        rst.price_origin_total = price * rst.cnt;
         return rst;
       },
       initRep() {
@@ -5202,7 +5202,7 @@ $(function() {
           });
           if (val.id && val.id.length == 1) { // 只选中了一个厨子的情况，生成修炼任务列表
             const chefId = val.id[0];
-            const chef = this.chefs.find(c => c.chefId == chefId);
+            const chef = this.data.chefs.find(c => c.chefId == chefId);
             this.chefs_task_list = chef.ultimateGoalDetail.map(t => {
               return {
                 id: t.questId,
