@@ -736,12 +736,16 @@ $(function() {
         label: '主线任务'
       }, {
         value: 2,
-        label: '支线任务'
+        label: '旧支线任务'
+      }, {
+        value: 3,
+        label: '新支线任务'
       }],
       questsKeyword: '',
       questsMain: [],
       questsPage: [],
       questsRegional: [],
+      questsRegionalNew: [],
       questsCurPage: 1,
       questsPageSize: 20,
       calType: { id: [], row: [] },
@@ -1340,7 +1344,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=58'
+          url: './data/data.min.json?v=59'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3764,7 +3768,7 @@ $(function() {
         if (nav === 6) {
           this.questsCurPage = val;
           const size = this.questsPageSize;
-          const quests = this.questsType === 1 ? this.questsMain : this.questsRegional;
+          const quests = this.questsType === 1 ? this.questsMain : (this.questsType === 2 ? this.questsRegional : this.questsRegionalNew);
           this.questsPage = quests.slice((val - 1) * size, val * size);
           this.$refs.questsTable.bodyWrapper.scrollTop = 0;
         } else if (nav === 4) {
@@ -4050,9 +4054,12 @@ $(function() {
         if (this.questsType === 1) {
           this.questsMain.sort(this.customSort(sort));
           this.questsPage = this.questsMain.slice(0, this.questsPageSize);
-        } else {
+        } else if (this.questsType === 2) {
           this.questsRegional.sort(this.customSort(sort));
           this.questsPage = this.questsRegional.slice(0, this.questsPageSize);
+        } else if (this.questsType === 3) {
+          this.questsRegionalNew.sort(this.customSort(sort));
+          this.questsPage = this.questsRegionalNew.slice(0, this.questsPageSize);
         }
         this.$nextTick(()=>{
           this.$refs.questsTable.doLayout();
@@ -4079,6 +4086,7 @@ $(function() {
         this.questsCurPage = 1;
         this.questsMain = [];
         this.questsRegional = [];
+        this.questsRegionalNew = [];
         for (let item of this.data.quests) {
           item.rewards = item.rewards || [];
           const rewards = item.rewards.map(r => {
@@ -4089,11 +4097,14 @@ $(function() {
           if (item.type === '主线任务' && search) {
             item.questIdDisp = item.questId;
             this.questsMain.push(item);
-          } else if (item.type === '支线任务' && search) {
+          } else if (item.type === '旧支线任务' && search) {
             this.questsRegional.push(item);
+          } else if (item.type === '新支线任务' && search) {
+            this.questsRegionalNew.push(item);
           }
         }
-        this.questsPage = this.questsType == 1 ? this.questsMain.slice(0, this.questsPageSize) : this.questsRegional.slice(0, this.questsPageSize);
+        let size = this.questsPageSize;
+        this.questsPage = this.questsType == 1 ? this.questsMain.slice(0, size) : (this.questsType == 2 ? this.questsRegional.slice(0, size) : this.questsRegionalNew.slice(0, size));
         this.$nextTick(() => {
           this.$refs.questsTable.bodyWrapper.scrollTop = 0;
           this.$refs.questsTable.clearSort();
