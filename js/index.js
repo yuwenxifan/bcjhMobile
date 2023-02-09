@@ -184,6 +184,7 @@ $(function() {
     data: {
       url: 'https://bcjh.xyz/api',
       // url: 'http://127.0.0.1:7001',
+      cloudIdShow: '',
       count: 0,
       host: window.location.host,
       location: window.location.origin + window.location.pathname,
@@ -1157,6 +1158,7 @@ $(function() {
       for (const key of arr) {
         this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
       }
+      this.getCloudId();
       const that = this;
       window.onresize = function() {
         return (function() {
@@ -1169,6 +1171,14 @@ $(function() {
     },
     methods: {
       share() {},
+      getCloudId() {
+        let cloud = localStorage.getItem("cloudId");
+        if (cloud) {
+          cloud = JSON.parse(cloud);
+          let time = new Date().valueOf() - new Date(cloud.time).valueOf();
+          this.cloudIdShow = time < 8640000 ? `本机上次上传个人数据ID：${cloud.id}` : '';
+        }
+      },
       saveNewPlan() {
         const data = this.savePlan();
         if (data) {
@@ -2789,6 +2799,7 @@ $(function() {
       },
       showChef(chef, position, eqp, condi) {
         let ultimate = false;
+        const rule = this.calType.row[0];
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const skills_show = {};
         const skills_last = {};
@@ -2802,7 +2813,7 @@ $(function() {
         function judgeEff(eff) {
           return (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type.slice(-5) == 'Price');
         }
-        if (eqp) { // 厨具
+        if (eqp && !rule.DisableEquipSkillEffect) { // 厨具
           equip_effect = eqp.effect.filter(eff => { // 对售价/时间有影响的技能效果
             if (eff.type == 'OpenTime') {
               equip_time_buff = eff.value;
@@ -2887,7 +2898,7 @@ $(function() {
               }
             });
           }
-          if (eqp) { // 装备厨具
+          if (eqp && !rule.DisableEquipSkillEffect) { // 装备厨具
             eqp.effect.forEach(eff => {
               if (eff.type == key) {
                 if (eff.cal == 'Abs') {
@@ -2984,7 +2995,7 @@ $(function() {
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
         rst.price_total = rst.price_buff * rst.cnt;
         rst.price_rule = rst.price_total - rst.price_wipe_rule_total;
-        rst.price_origin_total = price * rst.cnt;
+        rst.price_origin_total = rst.price * rst.cnt;
         return rst;
       },
       initRep() {
@@ -4880,12 +4891,14 @@ $(function() {
                 showClose: true,
               });
             }
+            localStorage.setItem('cloudId', JSON.stringify({id:rst.insertId,time:new Date()}));
             that.$notify({
               title: '上传成功',
               message: `数据ID：${rst.insertId}<br>获取云端数据时数据ID是唯一的识别码，请务必保管好您的数据ID！`,
               dangerouslyUseHTMLString: true,
               duration: 0
             });
+            that.getCloudId();
           }).fail(err => {
             that.$message({
               type: 'error',

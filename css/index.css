@@ -1522,6 +1522,8 @@ input.hidden {
   background-color: #fff;
   cursor: pointer;
   font-size: 0px;
+  overflow: hidden;
+  vertical-align:top
 }
 .chef-task #muti-select .input-box, .chef-equip #muti-select .input-box {
   overflow: hidden;
