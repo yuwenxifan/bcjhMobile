@@ -497,6 +497,7 @@ section.header .right {
   border-radius: 4px;
   margin-bottom: 6px;
   margin-right: 6px;
+  vertical-align: top;
 }
 .checkbox-contain .checkbox {
   margin: 4px 2px;
