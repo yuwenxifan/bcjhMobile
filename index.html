@@ -507,6 +507,31 @@
             </div>
           </div>
           <div v-show="navId === 5">
+            <input class="hidden" type="checkbox">
+            <div class="box">
+              <div class="box-title">加成</div>
+              <div class="hr"></div>
+              <div class="prepend-input append-input large" style="margin-bottom: 13px;">
+                <div class="input-box">
+                  <div class="prepend">技能加成</div>
+                  <input type="number" v-model="mapFilter.skill"/>
+                  <div class="append">%</div>
+                </div>
+              </div>
+              <br>
+              <el-switch
+                v-model="mapFilter.season"
+                active-color="#82a1b0"
+                active-text="季节加成"
+                inactive-color="#ddd">
+              </el-switch>
+              <el-switch
+                v-model="mapFilter.vip"
+                active-color="#82a1b0"
+                active-text="月卡"
+                inactive-color="#ddd">
+              </el-switch>
+            </div>
             <div class="box">
               <div class="box-title">展示列</div>
               <div class="hr"></div>
@@ -739,6 +764,7 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2023-02-22 10:40 【采集】页新增月卡选项。</div>
             <div class="p">2023-02-17 15:55 新增礼包厨师鲨啦啦。</div>
             <div class="p">2023-02-15 13:00 新增后厨菜谱。</div>
             <div class="p">2023-02-09 13:40 修复汤圆的基础售价加成会显示在原售价上的bug；修复计算器旧支线94.1（新53）技法加成类厨具仍能生效的bug；修复计算器支线名称过长导致加载按钮被遮挡的问题；个人数据云端暂存新增显示24小时内最近一次上传数据ID。</div>
@@ -1911,6 +1937,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=200"></script>
+  <script src="./js/index.js?v=201"></script>
 </body>
 </html>

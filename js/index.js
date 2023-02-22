@@ -728,6 +728,7 @@ $(function() {
       },
       mapFilter: {
         season: false,
+        vip: false,
         cnt: '',
         skill: ''
       },
@@ -3598,6 +3599,10 @@ $(function() {
               if (this.mapFilter.skill && !isNaN(Number(this.mapFilter.skill))) {
                 min = percent(min, this.mapFilter.skill);
                 max = percent(max, this.mapFilter.skill);
+              }
+              if (this.mapFilter.vip) {
+                min = percent(min, 10)
+                max = percent(min, 10)
               }
               if (this.mapFilter.cnt != '' && this.mapFilter.cnt < m.skill) {
                 min = 0;
