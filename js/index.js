@@ -3602,7 +3602,7 @@ $(function() {
               }
               if (this.mapFilter.vip) {
                 min = percent(min, 10)
-                max = percent(min, 10)
+                max = percent(max, 10)
               }
               if (this.mapFilter.cnt != '' && this.mapFilter.cnt < m.skill) {
                 min = 0;
