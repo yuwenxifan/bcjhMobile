@@ -6,7 +6,7 @@
   <title>个人爱好[白菜菊花]</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=41">
-  <link rel="stylesheet" href="./css/image.css?v=45">
+  <link rel="stylesheet" href="./css/image.css?v=46">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -46,6 +46,16 @@
                 :class="repCol[key] ? 'active' : ''"
                 @click="repCol[key] = !repCol[key]"
               >{{val}}</span>
+              <span class="select-box" style="width: 90px; vertical-align: top; position: relative; z-index: 1003;">
+                <muti-select
+                  ref="exDetailGap"
+                  :option="gap_list"
+                  placeholder="专精耗时"
+                  v-model="exGap"
+                  :max="1"
+                  :simple="true"
+                  ></muti-select>
+              </span>
               <br/>
               <div class="checkbox-contain" style="vertical-align: top">
                 <span class="select-box" :class="repChef.id.length == 1 ? 'split-left' : ''" style="vertical-align: top; width: 123px; position: relative; z-index: 1002;">
@@ -764,9 +774,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2023-03-09 12:40 新增邮件赠送菜谱洋葱蛋饼，【菜谱】页新增菜谱专精信息。</div>
             <div class="p">2023-02-27 11:11 修复采集月卡选项加成错误的bug。</div>
             <div class="p">2023-02-22 10:40 【采集】页新增月卡选项。</div>
-            <div class="p">2023-02-17 15:55 新增礼包厨师鲨啦啦。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -859,6 +869,16 @@
           <el-table-column sortable="custom" prop="materials_show" label="材料" min-width="130" v-if="repCol.materials"></el-table-column>
           <el-table-column sortable="custom" prop="price" min-width="64" label="单价" v-if="repCol.price"></el-table-column>
           <el-table-column sortable="custom" prop="exPriceLast" min-width="64" label="熟练" v-if="repCol.exPrice"></el-table-column>
+          <el-table-column sortable="custom" prop="exCount1" min-width="110" label="熟练份数[可]" v-if="exGap.id[0] == 1"></el-table-column>
+          <el-table-column sortable="custom" prop="exCount2" min-width="110" label="熟练份数[优]" v-if="exGap.id[0] == 2"></el-table-column>
+          <el-table-column sortable="custom" prop="exCount3" min-width="110" label="熟练份数[特]" v-if="exGap.id[0] == 3"></el-table-column>
+          <el-table-column sortable="custom" prop="exCount4" min-width="110" label="熟练份数[神]" v-if="exGap.id[0] == 4"></el-table-column>
+          <el-table-column sortable="custom" prop="exCount5" min-width="110" label="熟练份数[传]" v-if="exGap.id[0] == 5"></el-table-column>
+          <el-table-column sortable="custom" prop="exTimeShow1" min-width="110" label="熟练时间[可]" v-if="exGap.id[0] == 1"></el-table-column>
+          <el-table-column sortable="custom" prop="exTimeShow2" min-width="110" label="熟练时间[优]" v-if="exGap.id[0] == 2"></el-table-column>
+          <el-table-column sortable="custom" prop="exTimeShow3" min-width="110" label="熟练时间[特]" v-if="exGap.id[0] == 3"></el-table-column>
+          <el-table-column sortable="custom" prop="exTimeShow4" min-width="110" label="熟练时间[神]" v-if="exGap.id[0] == 4"></el-table-column>
+          <el-table-column sortable="custom" prop="exTimeShow5" min-width="110" label="熟练时间[传]" v-if="exGap.id[0] == 5"></el-table-column>
           <el-table-column sortable="custom" prop="time_show" min-width="76" label="单时间" v-if="repCol.time"></el-table-column>
           <el-table-column sortable="custom" prop="limit" min-width="63" label="一组" v-if="repCol.limit"></el-table-column>
           <el-table-column sortable="custom" prop="total_price" min-width="63" label="总价" v-if="repCol.total_price"></el-table-column>
@@ -1936,6 +1956,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=202"></script>
+  <script src="./js/index.js?v=203"></script>
 </body>
 </html>

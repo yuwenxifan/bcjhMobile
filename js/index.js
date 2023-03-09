@@ -235,6 +235,14 @@ $(function() {
         { id: 4, name: '神级能力差' },
         { id: 5, name: '传级能力差' },
       ],
+      gap_list: [
+        { id: 1, name: '可级' },
+        { id: 2, name: '优级' },
+        { id: 3, name: '特级' },
+        { id: 4, name: '神级' },
+        { id: 5, name: '传级' },
+      ],
+      exGap: { id: [], row: [] },
       chefs_task_list: [],
       skill_map: {
         stirfry: '炒',
@@ -368,7 +376,7 @@ $(function() {
         guests: false,
         degree_guests: false,
         gift: false,
-        got: false,
+        got: false
       },
       repColName: {
         id: '编号',
@@ -984,6 +992,13 @@ $(function() {
       customRuleChange: false,
       showSort: false,
       showDel: false,
+      rarityExCfg: {
+        1: { x: 59.23, y: 0.36 },
+        2: { x: 59.23, y: 0.31 },
+        3: { x: 62.21, y: 0.26 },
+        4: { x: 83.65, y: 0.21 },
+        5: { x: 177.86, y: 0.16 },
+      }
     },
     computed: {
       showCondiment() {
@@ -1355,7 +1370,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=62'
+          url: './data/data.min.json?v=63'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1527,6 +1542,24 @@ $(function() {
             skill_shows.push(`${this.skill_map[key]}${item.skills[key]}`);
           }
           item.skills_show = skill_shows.join(' ');
+          // 专精份数时间相关
+          let cfg = this.rarityExCfg[item.rarity];
+          item.exCount1 = Math.ceil(cfg.x * Math.pow(item.price, cfg.y) * 10) / 10;
+          // 快乐桶和蒸汽海鲜单独逻辑
+          if (item.recipeId == 5001) {
+            item.exCount1 = 387;
+          }
+          if (item.recipeId == 5002) {
+            item.exCount1 = 407;
+          }
+          item.exCount2 = Math.ceil(item.exCount1 / 1.5 * 10) / 10;
+          item.exCount3 = Math.ceil(item.exCount1 / 2 * 10) / 10;
+          item.exCount4 = Math.ceil(item.exCount1 / 2.5 * 10) / 10;
+          item.exCount5 = Math.ceil(item.exCount1 / 3 * 10) / 10;
+          [1, 2, 3, 4, 5].forEach(i => {
+            item[`exTime${i}`] = Math.ceil(item[`exCount${i}`] * item.time);
+            item[`exTimeShow${i}`] = this.formatTime(item[`exTime${i}`]);
+          });
           return item;
         });
         this.initRep();
@@ -3808,7 +3841,12 @@ $(function() {
         const map = {
           time_show: 'time',
           rarity_show: 'rarity',
-          total_time_show: 'total_time'
+          total_time_show: 'total_time',
+          exTimeShow1: 'exTime1',
+          exTimeShow2: 'exTime2',
+          exTimeShow3: 'exTime3',
+          exTimeShow4: 'exTime4',
+          exTimeShow5: 'exTime5',
         };
         if (!sort.order) {
           this.initRep();
