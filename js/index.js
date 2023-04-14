@@ -1370,7 +1370,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=66'
+          url: './data/data.min.json?v=67'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -4882,7 +4882,6 @@ $(function() {
 
               localStorage.setItem('data', JSON.stringify(userData));
               that.getUserData();
-              console.log(userData)
               setTimeout(() => {
                 if (userData.userUltimate.Partial.id.length > 0) {
                   that.$refs.userPartial.initOption();
@@ -5044,6 +5043,33 @@ $(function() {
           setTimeout(() => {
             that.$refs.userPartial.initOption();
             that.$refs.userSelf.initOption();
+          }, 50);
+        });
+      },
+      setAllExistUltimate() {
+        const that = this;
+        that.$confirm(`是否确定将已有厨师全部设为已修炼？此操作会覆盖原有修炼数据且不能恢复`, '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let userData = localStorage.getItem('data');
+          userData = userData ? JSON.parse(userData) : {};
+          userData.userUltimate = Object.assign({ decoBuff: userData.decoBuff }, this.setUlti(userData.chefGot));
+
+          localStorage.setItem('data', JSON.stringify(userData));
+          that.getUserData();
+          setTimeout(() => {
+            if (userData.userUltimate.Partial.id.length > 0) {
+              this.$refs.userPartial.initOption();
+            } else {
+              this.$refs.userPartial.clear();
+            }
+            if (userData.userUltimate.Self.id.length > 0) {
+              this.$refs.userSelf.initOption();
+            } else {
+              this.$refs.userSelf.clear();
+            }
           }, 50);
         });
       },
