@@ -2644,6 +2644,10 @@ $(function() {
             effect.value = eff.value * this.getSameSkillFlag(position);
             this.onSiteEffect[position].push(effect);
           }
+        } else if (eff.conditionType == 'CookbookRarity') { // 菜谱星级
+          if (rep.rarity == eff.conditionValue) {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          }
         }
         return buff;
       },
