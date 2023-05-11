@@ -1725,7 +1725,7 @@ $(function() {
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         this.data.chefs.forEach(item => {
           const id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
-          if (item.ultimateSkillCondition == 'Partial') {
+          if (item.ultimateSkillCondition == 'Partial' || item.ultimateSkillCondition == 'Next') {
             allUltimate.Partial.id.push(id);
             allUltimate.Partial.row.push({
               id,
@@ -1740,9 +1740,9 @@ $(function() {
               effect: item.ultimateSkill.effect,
             });
           }
-          if (item.ultimateSkillConditions.indexOf('Partial') > -1) {
+          if (item.ultimateSkillConditions.indexOf('Partial') > -1 || item.ultimateSkillConditions.indexOf('Next') > -1) {
             const effect = item.ultimateSkill.effect.filter(e => { // 仅筛选技法光环类上场技能
-              return skill_type.indexOf(e.type) > -1 && e.condition == 'Partial';
+              return skill_type.indexOf(e.type) > -1 && (e.condition == 'Partial' || e.condition == 'Next');
             });
             if (effect.length > 0) {
               chef_partial_skill.push({
@@ -2557,8 +2557,12 @@ $(function() {
         if (!rule.DisableChefSkillEffect) {
           chf.sum_skill_effect.forEach(eff => { // 技能
             buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
-            if (eff.type == 'BasicPrice' && eff.conditionType == 'PerRank') {
-              chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+            if (eff.type == 'BasicPrice') {
+              if (eff.conditionType == null) {
+                chef.basicPrice += eff.value;
+              } else if (eff.conditionType == 'PerRank') {
+                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+              }
             }
           });
         }
@@ -2846,6 +2850,8 @@ $(function() {
         let sum_skill_effect = [];
         let time_buff = 0;
         let equip_time_buff = 0;
+        // 获取上一位的厨师
+        let lastChef = this.getLastChef(position);
         if (!eqp) eqp = this.calEquip[position].row[0];
         if (!condi) condi = this.calCondiment[position].row[0];
         function judgeEff(eff) {
@@ -2863,7 +2869,7 @@ $(function() {
           condiment_effect = condi.effect.slice();
         }
         let effect_condition = [];
-        chef.skill_effect.forEach(eff => {
+        chef.skill_effect.forEach(eff => { // 厨师技能
           if (eff.type == 'OpenTime') {
             time_buff += eff.value;
           }
@@ -2872,6 +2878,15 @@ $(function() {
             effect_condition.push(eff.conditionType || -1);
           }
         });
+        // 上一位厨师的下一位类型加成
+        if (lastChef && (this.ulti.Partial.id.indexOf(lastChef.uid) > -1 || this.ulti.Self.id.indexOf(lastChef.uid) > -1)) {
+          lastChef.ultimate_effect.forEach(eff => {
+            if (eff.condition == 'Next' && judgeEff(eff)) { // 类型=下位，且对售价有影响
+              sum_skill_effect.push(eff);
+              effect_condition.push(eff.conditionType || -1);
+            }
+          });
+        }
         if (chef.ultimate_effect) {
           chef.ultimate_effect.forEach(eff => {
             if (eff.type == 'OpenTime' && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) {
@@ -2929,6 +2944,14 @@ $(function() {
               chef_flag = 1
             }
           }
+          // 有上一位厨师，且已修炼，加成到本厨师上
+          if (lastChef && (this.ulti.Partial.id.indexOf(lastChef.uid) > -1 || this.ulti.Self.id.indexOf(lastChef.uid) > -1)) {
+            lastChef.ultimate_effect.forEach(eff => {
+              if (eff.type == key && eff.condition == 'Next') {
+                value += eff.value;
+              }
+            });
+          }
           if (chef_flag == 0 && (this.ulti.Partial.id.indexOf(chef.uid) > -1 || this.ulti.Self.id.indexOf(chef.uid) > -1)) { // 如果当前厨子不在场，且有上场类修炼技能
             chef.ultimate_effect.forEach(eff => {
               if (eff.type == key && eff.condition == 'Partial') {
@@ -2966,6 +2989,15 @@ $(function() {
         chef.ultimate = ultimate;
         chef.time_buff = time_buff;
         return chef;
+      },
+      getLastChef(position) { // 获取上一位的厨师
+        if (position == 1) {
+          return null;
+        } else if (position == 2) {
+          return this.calChef[1].row[0];
+        } else {
+          return this.calChef[2].row[0] || this.calChef[1].row[0];
+        }
       },
       getCalRepShow() {
         let rst = [[], [], []];
@@ -4719,7 +4751,7 @@ $(function() {
         this.data.chefs.forEach(item => {
           if (chefUlt[item.chefId]) {
             const id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
-            if (item.ultimateSkillCondition == 'Partial') {
+            if (item.ultimateSkillCondition == 'Partial' || item.ultimateSkillCondition == 'Next') {
               allUltimate.Partial.id.push(id);
               allUltimate.Partial.row.push({
                 id,
