@@ -1790,7 +1790,7 @@ $(function() {
               }
             });
           }
-          if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
+          if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1 && item.ultimateSkill.effect[0].condition == 'Global') {
             const effect = item.ultimateSkill.effect[0];
             if (effect.tag == 1) {
               global_obj.Male += effect.value;
