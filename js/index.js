@@ -2687,6 +2687,7 @@ $(function() {
             rep.basicPrice += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
         }
+
         return buff;
       },
       getSelfPartialBuff(eff, chf, eqpFlag = 0) { // 个人，全体售价分类
@@ -2889,6 +2890,7 @@ $(function() {
         }
         if (chef.ultimate_effect) {
           chef.ultimate_effect.forEach(eff => {
+            if (eff.condition == 'Next') return; // 类型=下位的，加到下位身上，不给自己加
             if (eff.type == 'OpenTime' && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) {
               time_buff += eff.value;
             }
@@ -3392,14 +3394,14 @@ $(function() {
               }
               effect.forEach(eff => {
                 if (this.chefUseAllUltimate) { // 全修炼
-                  if (this.allUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
+                  if (this.allUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key && eff.condition != 'Next') { // 上场类技能-给自己加
                     value += eff.value;
                   }
                   if (this.allUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
                     value += eff.value;
                   }
                 } else { // 已修炼
-                  if (userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key) { // 上场类技能-给自己加
+                  if (userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key && eff.condition != 'Next') { // 上场类技能-给自己加
                     value += eff.value;
                   }
                   if (userUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
