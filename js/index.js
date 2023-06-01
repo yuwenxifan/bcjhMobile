@@ -1824,7 +1824,7 @@ $(function() {
           }
         });
         let defaultRule = 0;
-        let rules = JSON.parse(JSON.stringify(this.data.rules));
+        let rules = JSON.parse(JSON.stringify(this.data.rules.filter(r => { return r.Id < 620000; })));
         if (this.foodgodRule.length > 0) {
           defaultRule = this.foodgodRule[0].Id;
           rules = this.foodgodRule.concat(rules);
@@ -4805,7 +4805,7 @@ $(function() {
                 }
               });
             }
-            if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1) {
+            if (item.ultimateSkill && item.ultimateSkill.desc.indexOf('全技法') > -1 && item.ultimateSkill.effect[0].condition == 'Global') {
               const effect = item.ultimateSkill.effect[0];
               if (effect.tag == 1) {
                 global_obj.Male += effect.value;
