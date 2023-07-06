@@ -1045,27 +1045,27 @@ $(function() {
         let disable = [];
         for (let key in this.calRep) {
           if (this.calRep[key].id.length > 0) { // 已选菜谱
-            const rep = this.calRep[key].row[0];
+            // const rep = this.calRep[key].row[0];
             const id = this.calRep[key].id[0];
             // rst.own.push(id); // 已选菜谱禁选
             disable.push(id); // 已选菜谱禁选
-            if (this.combo_map.combo[id]) { // 合成菜谱
-              for (const rep_id of this.combo_map.combo[id]) {
-                if (this.combo_map.split[rep_id].length == 1) { // 如果只能合成这一个，禁选
-                  // rst.combo.push({ rep_id, rep_name: rep.name_show });
-                  disable.push(rep_id);
-                }
-              }
-            }
-            if (this.combo_map.split[id]) { // 拆分菜谱
-              if (this.combo_map.split[id].length == 1) {
-                // rst.split.push({
-                //   rep_id: this.combo_map.split[id][0],
-                //   rep_name: rep.name_show
-                // });
-                disable.push(this.combo_map.split[id][0]);
-              }
-            }
+            // if (this.combo_map.combo[id]) { // 合成菜谱
+            //   for (const rep_id of this.combo_map.combo[id]) {
+            //     if (this.combo_map.split[rep_id].length == 1) { // 如果只能合成这一个，禁选
+            //       // rst.combo.push({ rep_id, rep_name: rep.name_show });
+            //       disable.push(rep_id);
+            //     }
+            //   }
+            // }
+            // if (this.combo_map.split[id]) { // 拆分菜谱
+            //   if (this.combo_map.split[id].length == 1) {
+            //     // rst.split.push({
+            //     //   rep_id: this.combo_map.split[id][0],
+            //     //   rep_name: rep.name_show
+            //     // });
+            //     disable.push(this.combo_map.split[id][0]);
+            //   }
+            // }
           }
         }
         return disable;
@@ -1370,7 +1370,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=69'
+          url: './data/data.min.json?v=70'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2636,7 +2636,11 @@ $(function() {
           if (repCnt >= eff.conditionValue) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
-        } else if (eff.conditionType == 'PerRank') { // 菜谱品阶
+        } else if (eff.conditionType == 'PerRank') { // 每制作一种菜谱品阶
+          if (grade >= eff.conditionValue) {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          }
+        } else if (eff.conditionType == 'Rank') { // 菜谱品阶
           if (grade >= eff.conditionValue) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
@@ -2649,7 +2653,7 @@ $(function() {
             this.onSiteEffect[position].push(effect);
           }
         } else if (eff.conditionType == 'CookbookRarity') { // 菜谱星级
-          if (rep.rarity == eff.conditionValue) {
+          if (eff.conditionValueList.indexOf(rep.rarity) > -1) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         }
