@@ -2911,6 +2911,7 @@ $(function() {
         skill_type.forEach(key => {
           const lowKey = key.toLowerCase();
           let value = this.ulti.All; // 全体全技法
+          let percentValue = 0;
           value += this.ulti[key]; // 全体单技法
           if (chef.tags.indexOf(1) > -1) { // 男厨全技法
             value += this.ulti.Male;
@@ -2928,7 +2929,11 @@ $(function() {
             ultimate = true;
             chef.ultimate_effect.forEach(eff => {
               if (eff.type == key && eff.condition == 'Self') { // 个人类
-                value += eff.value;
+                if (eff.cal == 'Abs') {
+                  value += eff.value;
+                } else if (eff.cal == 'Percent') {
+                  percentValue += eff.value;
+                }
               }
               if (eff.type == 'MutiEquipmentSkill' && eff.cal == 'Percent') { // 厨具技能加成
                 chef.MutiEquipmentSkill += eff.value;
@@ -2942,7 +2947,11 @@ $(function() {
             ) { // 已修炼且在场的上场类修炼技能
               this.calChef[i].row[0].ultimate_effect.forEach(eff => {
                 if (eff.type == key && eff.condition == 'Partial') {
-                  value += eff.value;
+                  if (eff.cal == 'Abs') {
+                    value += eff.value;
+                  } else if (eff.cal == 'Percent') {
+                    percentValue += eff.value;
+                  }
                 }
               });
             }
@@ -2954,14 +2963,22 @@ $(function() {
           if (lastChef && (this.ulti.Partial.id.indexOf(lastChef.uid) > -1 || this.ulti.Self.id.indexOf(lastChef.uid) > -1)) {
             lastChef.ultimate_effect.forEach(eff => {
               if (eff.type == key && eff.condition == 'Next') {
-                value += eff.value;
+                if (eff.cal == 'Abs') {
+                  value += eff.value;
+                } else if (eff.cal == 'Percent') {
+                  percentValue += eff.value;
+                }
               }
             });
           }
           if (chef_flag == 0 && (this.ulti.Partial.id.indexOf(chef.uid) > -1 || this.ulti.Self.id.indexOf(chef.uid) > -1)) { // 如果当前厨子不在场，且有上场类修炼技能
             chef.ultimate_effect.forEach(eff => {
               if (eff.type == key && eff.condition == 'Partial') {
-                value += eff.value;
+                if (eff.cal == 'Abs') {
+                  value += eff.value;
+                } else if (eff.cal == 'Percent') {
+                  percentValue += eff.value;
+                }
               }
             });
           }
@@ -2971,12 +2988,13 @@ $(function() {
                 if (eff.cal == 'Abs') {
                   value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
                 } else if (eff.cal == 'Percent') {
-                  value += Math.ceil(((chef.skills[lowKey] || 0) + value) * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
+                  percentValue += (eff.value * (100 + chef.MutiEquipmentSkill) / 100);
                 }
               }
             });
           }
-          if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) { // 额外规则加成在百分比厨具后
+          value += Math.ceil(((chef.skills[lowKey] || 0) + value) * percentValue / 100) // 百分比加成单独加
+          if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) { // 额外规则加成在百分比加成后
             value += Number(this.customRule.skill.Skill[lowKey]) || 0;
           }
           skills_last[lowKey] = (chef.skills[lowKey] || 0) + value;
@@ -3140,21 +3158,24 @@ $(function() {
               let diff_sum = 0;
               let buff = 100;
               const chefSkills = Object.assign({}, chef.skills);
-              if (this.repChefEquip.id.length == 1) { // 厨具技法加成
-                const equip_eff = this.repChefEquip.row[0].effect;
-                for (let key in chefSkills) {
-                  let value = chefSkills[key];
+              const chefSkillsPercent = Object.assign({}, chef.skillsPrecent);
+              for (let key in chefSkills) {
+                let value = chefSkills[key]; // 数值加成后的技法
+                let percentValue = chefSkillsPercent[key]; // 百分比加成
+                if (this.repChefEquip.id.length == 1) { // 厨具技法加成
+                  const equip_eff = this.repChefEquip.row[0].effect;
                   equip_eff.forEach(eff => {
                     if (eff.type.toLowerCase() == key) {
                       if (eff.cal == 'Abs') {
                         value += eff.value * (100 + chef.MutiEquipmentSkill) / 100;
                       } else if (eff.cal == 'Percent') {
-                        value += Math.ceil(value * (eff.value * (100 + chef.MutiEquipmentSkill) / 100) / 100)
+                        percentValue += (eff.value * (100 + chef.MutiEquipmentSkill) / 100);
                       }
                     }
                   });
-                  chefSkills[key] = value;
                 }
+                value += Math.ceil(value * percentValue / 100); // 百分比加成单独加成
+                chefSkills[key] = value;
               }
               for (const key in item.skills) {
                 const grade = Math.floor(chefSkills[key] / item.skills[key]);
@@ -3348,6 +3369,7 @@ $(function() {
           const skill_arr = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
           const ultimate = {};
           const skills = {};
+          const skillsPrecent = {};
           const partial_id = item.ultimateSkill ? `${item.chefId},${item.ultimateSkill.skillId}` : null;
           let MutiEquipmentSkill = 0;
           if (item.ultimateSkill) {
@@ -3370,6 +3392,7 @@ $(function() {
           item.MutiEquipmentSkill = MutiEquipmentSkill;
           skill_arr.forEach(key => {
             let value = 0;
+            let percentValue = 0;
             if (this.chefUltimate) { // 修炼开
               const effect = item.ultimateSkill ? item.ultimateSkill.effect : [];
               const partial_skill = this.partial_skill.row;
@@ -3399,29 +3422,51 @@ $(function() {
               effect.forEach(eff => {
                 if (this.chefUseAllUltimate) { // 全修炼
                   if (this.allUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key && eff.condition != 'Next') { // 上场类技能-给自己加
-                    value += eff.value;
+                    if (eff.cal == 'Abs') {
+                      value += eff.value;
+                    } else if (eff.cal == 'Percent') {
+                      percentValue += eff.value;
+                    }
                   }
                   if (this.allUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
-                    value += eff.value;
+                    if (eff.cal == 'Abs') {
+                      value += eff.value;
+                    } else if (eff.cal == 'Percent') {
+                      percentValue += eff.value;
+                    }
                   }
                 } else { // 已修炼
                   if (userUltimate.Partial.id.indexOf(partial_id) > -1 && eff.type == key && eff.condition != 'Next') { // 上场类技能-给自己加
-                    value += eff.value;
+                    if (eff.cal == 'Abs') {
+                      value += eff.value;
+                    } else if (eff.cal == 'Percent') {
+                      percentValue += eff.value;
+                    }
                   }
                   if (userUltimate.Self.id.indexOf(partial_id) > -1 && eff.type == key) { // 给自己加的修炼技能
-                    value += eff.value;
+                    if (eff.cal == 'Abs') {
+                      value += eff.value;
+                    } else if (eff.cal == 'Percent') {
+                      percentValue += eff.value;
+                    }
                   }
                 }
               });
             }
             item.skill_obj.effect.forEach(eff => { // 常驻技能加技法值
               if (eff.type == key) {
-                value += eff.value;
+                if (eff.cal == 'Abs') {
+                  value += eff.value;
+                } else if (eff.cal == 'Percent') {
+                  percentValue += eff.value;
+                }
               }
             });
+            skills[key.toLowerCase()] = (item[key.toLowerCase()] + value) || 0; // 绝对值加成后的技法值
+            value += Math.ceil(((item[key.toLowerCase()] || 0) + value) * percentValue / 100);
             ultimate[`${key}_show`] = (item[key.toLowerCase()] || '') + `${value ? '+' + value : ''}`;
             ultimate[`${key}_last`] = (item[key.toLowerCase()] + value) || '';
-            skills[key.toLowerCase()] = ultimate[`${key}_last`] || 0;
+            skillsPrecent[key.toLowerCase()] = percentValue; // 百分比加成
           });
 
           let f_skills = true;
@@ -3465,7 +3510,8 @@ $(function() {
             id: item.chefId,
             name: item.name,
             MutiEquipmentSkill: item.MutiEquipmentSkill,
-            skills,
+            skills, // 绝对值加成后的技法值
+            skillsPrecent, // 百分比加成
             effect
           });
           if (search && f_rarity && f_skills && f_sex && f_got && f_condiment) {
