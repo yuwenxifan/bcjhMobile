@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>个人爱好[白菜菊花]</title>
   <link rel="icon" href="./favicon.png?v=1">
-  <link rel="stylesheet" href="./css/index.css?v=41">
+  <link rel="stylesheet" href="./css/index.css?v=42">
   <link rel="stylesheet" href="./css/image.css?v=52">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
@@ -775,9 +775,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2023-07-13 16:10 更新宴会跑分计算器的跳转链接和使用说明。</div>
             <div class="p">2023-07-06 20:00 修复屿人的修炼百分比加成被计算为数值加成的bug。</div>
             <div class="p">2023-07-06 16:00 更新浪潮之下奖池相关厨师菜谱数据。</div>
-            <div class="p">2023-06-12 10:40 更新礼包厨师簪娘。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1696,6 +1696,47 @@
           </div>
         </div>
       </div>
+      <div v-show="navId === 11">
+        <div class="info-box" :style="'height: '+ boxHeight + 'px;'">
+          <div class="title">宴会跑分计算器</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="p" style="font-size: 18px; margin: 20px 0 20px 10px;">
+              点击链接或复制到浏览器打开使用：<a href="https://run.bcjh.xyz">https://run.bcjh.xyz</a>
+            </div>
+            <div class="p">可以根据个人数据自动生成江湖风云宴的较优作业（不是最优解，只是提供思路），菜谱默认无专精。</div>
+            <div class="p">生成的作业可以在L图鉴<a href="https://foodgame.github.io">https://foodgame.github.io</a>计算器手动微调。</div>
+            <div class="p">规则列表和L图鉴的保持一致，<strong>仅提供州、省分段的</strong>。每周L图鉴更新宴会计算器规则后，会尽快同步规则。</div>
+          </div>
+          <div class="title">使用说明</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="p">
+              首次使用或个人数据有更新时，需要填入<span class="code">白菜菊花数据ID</span>。
+              在【个人】页使用<span class="code">个人数据云端暂存</span>功能获取。
+            </div>
+            <div class="p">
+              上传个人数据前，需要在本网页维护好厨师、菜谱已有数据和个人修炼数据。
+              修炼数据在【个人】页对照游戏内总修炼填写，厨师菜谱已有数据详细录入方式见首页常见问题。
+            </div>
+            <div class="p">
+              <span class="code">期望分数</span>是你希望能达到的分数，因为跑分逻辑是找到满足期望分数的就返回结果，所以这个分越低出结果就越快。
+              如果始终达不到期望分数，就会把迭代次数跑完，然后返回一个最高的结果。所以期望分数可以往高了填。
+            </div>
+            <div class="p">
+              <span class="code">迭代次数</span>指程序尝试的厨师菜谱组合次数，迭代次数越多跑出来的结果就越有可能更好。
+              对跑出来的结果不满意的话，可以尝试把迭代次数设大一点再跑。
+            </div>
+            <div class="p">
+              计算使用的是本地的CPU资源，长时间执行可能会导致设备发热，飞速掉电等情况。
+              所以不建议把迭代次数设得非常大！！<strong>大家对自己的设备好一点啊喂</strong>
+            </div>
+            <div class="p">
+              分数列表中红色的表示没达到期望分数，绿色的表示达到了，每一个分数都可以点击，用来查看对应的作业。
+            </div>
+          </div>
+        </div>
+      </div>
       <div v-if="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
           <div class="title">个人装饰/修炼数据配置</div>
@@ -1852,7 +1893,7 @@
           <div class="hr"></div>
           <div class="box-body">
             <div class="p">
-              本网页为<a href="https://foodgame.gitee.io">爆炒江湖图鉴网</a> by L 的精简手机版，开发者 小鱼，页面功能、数据等均参照原图鉴网（L神yyds！）。
+              本网页为<a href="https://foodgame.github.io">爆炒江湖图鉴网</a> by L 的精简手机版，开发者 小鱼，页面功能、数据等均参照原图鉴网（L神yyds！）。
             </div>
             <div class="p">
               本网页大部分功能与原图鉴网保持一致，不一致的部分会在下面的页面详情里详细说明。
@@ -1958,6 +1999,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=216"></script>
+  <script src="./js/index.js?v=217"></script>
 </body>
 </html>

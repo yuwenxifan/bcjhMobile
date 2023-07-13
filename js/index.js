@@ -284,6 +284,7 @@ $(function() {
         { id: 6, name: '任务', icon: 'el-icon-document' },
         { id: 7, name: '计算器', icon: 'el-icon-set-up' },
         { id: 8, name: '个人', icon: 'el-icon-user' },
+        { id: 11, name: '宴会跑分', icon: 'el-icon-cpu' },
         { id: 9, name: '说明', icon: 'el-icon-info' },
       ],
       navId: 0,
@@ -4995,7 +4996,7 @@ $(function() {
       async uploadData() {
         const that = this;
         const url = that.url;
-        this.$prompt('数据暂存时限为24小时，单用户单日上传上限为10次，所有用户单日上传上限为1000次。<strong>请勿无节制上传！</strong><br>请在下面填入昵称（仅用作核对）：', '提示', {
+        this.$prompt('数据暂存时限为24小时，单用户24小时上传上限为10次，所有用户24小时上传上限为5000次。<strong>请勿无节制上传！</strong><br>请在下面填入昵称（随便填，只是核对用，防止误导入别人的数据）：', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           dangerouslyUseHTMLString: true,
@@ -5020,15 +5021,16 @@ $(function() {
                 message: `上传失败：${rst.msg}`,
                 showClose: true,
               });
+            } else {
+              localStorage.setItem('cloudId', JSON.stringify({id:rst.insertId,time:new Date()}));
+              that.$notify({
+                title: '上传成功',
+                message: `数据ID：${rst.insertId}<br>获取云端数据时数据ID是唯一的识别码，请务必保管好您的数据ID！`,
+                dangerouslyUseHTMLString: true,
+                duration: 0
+              });
+              that.getCloudId();
             }
-            localStorage.setItem('cloudId', JSON.stringify({id:rst.insertId,time:new Date()}));
-            that.$notify({
-              title: '上传成功',
-              message: `数据ID：${rst.insertId}<br>获取云端数据时数据ID是唯一的识别码，请务必保管好您的数据ID！`,
-              dangerouslyUseHTMLString: true,
-              duration: 0
-            });
-            that.getCloudId();
           }).fail(err => {
             that.$message({
               type: 'error',
