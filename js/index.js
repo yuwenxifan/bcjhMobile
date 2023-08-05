@@ -2503,6 +2503,16 @@ $(function() {
         }
         return buff;
       },
+      getPerRankCnt(eff, chf, position) { // 计算满足品级加成的菜谱数量
+        let cnt = 0;
+        for (let key of [1, 2, 3]) {
+          let rep = this.calRep[`${position}-${key}`].row[0];
+          if (rep && this.getGrade(chf, rep).min >= eff.conditionValue) {
+            cnt += 1;
+          }
+        }
+        return cnt;
+      },
       getGrade(chf, rep) {
         let inf = [];
         let inf_detail = {};
@@ -2638,8 +2648,14 @@ $(function() {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         } else if (eff.conditionType == 'PerRank') { // 每制作一种菜谱品阶
-          if (grade >= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          if (eff.condition == 'Partial') {
+            let effect = Object.assign({}, eff);
+            delete effect.conditionType;
+            delete effect.condition;
+            effect.value = eff.value * this.getPerRankCnt(eff, chf, position);
+            this.onSiteEffect[position].push(effect);
+          } else {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag) * this.getPerRankCnt(eff, chf, position);
           }
         } else if (eff.conditionType == 'Rank') { // 菜谱品阶
           if (grade >= eff.conditionValue) {
@@ -2647,11 +2663,15 @@ $(function() {
           }
         } else if (eff.conditionType == 'SameSkill') { // 同技法
           if (this.getSameSkillFlag(position) > 0) { // 如果同技法判定通过
-            let effect = Object.assign({}, eff);
-            delete effect.conditionType;
-            delete effect.condition;
-            effect.value = eff.value * this.getSameSkillFlag(position);
-            this.onSiteEffect[position].push(effect);
+            if (eff.condition == 'Partial') {
+              let effect = Object.assign({}, eff);
+              delete effect.conditionType;
+              delete effect.condition;
+              effect.value = eff.value * this.getSameSkillFlag(position);
+              this.onSiteEffect[position].push(effect);
+            } else {
+              buff += eff.value * this.getSameSkillFlag(position);
+            }
           }
         } else if (eff.conditionType == 'CookbookRarity') { // 菜谱星级
           if (eff.conditionValueList.indexOf(rep.rarity) > -1) {
@@ -2777,14 +2797,17 @@ $(function() {
       handleCalRepChange(row, key) {
         if (!row[0] || this.oldCalRep[key] != row[0].id || !this.oldCalRep[key]) { // 取下菜谱或更换菜谱
           let chef = this.calChef[key.slice(0, 1)].row; // 检查当前厨师
-          if (chef && chef[0] && chef[0].effect_condition.indexOf('PerRank') > -1) { // 如果会根据菜谱品级变化的
-            setTimeout(() => this.handlerChef(key.slice(0, 1)), 50); // 重新计算加成
-          }
-          if (chef && chef[0] && chef[0].effect_condition.indexOf('SameSkill') > -1) { // 如果是同技法的
-            for (let k of [1,2,3]) {
-              if (this.calChef[k].row[0]) {
-                setTimeout(() => this.handlerChef(k), 50); // 三个都需要重算
+          // 如果会根据菜谱品级、同技法变化的加成
+          if (chef && chef[0] && (chef[0].effect_condition.indexOf('PerRank') > -1 || chef[0].effect_condition.indexOf('SameSkill') > -1)) {
+            // 如果是全场售价加成
+            if (chef[0].partial_flag) {
+              for (let k of [1,2,3]) {
+                if (this.calChef[k].row[0]) {
+                  setTimeout(() => this.handlerChef(k), 50); // 三个都需要重算
+                }
               }
+            } else { // 否则计算自己
+              setTimeout(() => this.handlerChef(key.slice(0, 1)), 50); // 重新计算加成
             }
           }
         }
@@ -2875,6 +2898,7 @@ $(function() {
           condiment_effect = condi.effect.slice();
         }
         let effect_condition = [];
+        let partial_flag = false;
         chef.skill_effect.forEach(eff => { // 厨师技能
           if (eff.type == 'OpenTime') {
             time_buff += eff.value;
@@ -2882,6 +2906,9 @@ $(function() {
           if (judgeEff(eff)) { // 对售价有影响的技能效果
             sum_skill_effect.push(eff);
             effect_condition.push(eff.conditionType || -1);
+            if (eff.condition == 'Partial') { // 有全场售价加成
+              partial_flag = true;
+            }
           }
         });
         // 上一位厨师的下一位类型加成
@@ -2902,9 +2929,13 @@ $(function() {
             if (judgeEff(eff) && (this.ulti.Self.id.indexOf(chef.uid) > -1 || this.ulti.Partial.id.indexOf(chef.uid) > -1)) { // 对售价有影响的修炼技能效果
               sum_skill_effect.push(eff);
               effect_condition.push(eff.conditionType || -1);
+              if (eff.condition == 'Partial') { // 有全场售价加成
+                partial_flag = true;
+              }
             }
           });
         }
+        chef.partial_flag = partial_flag;
         chef.effect_condition = Array.from(new Set(effect_condition));
         chef.equip_effect = equip_effect;
         chef.condiment_effect = condiment_effect;
