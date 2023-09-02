@@ -2591,7 +2591,11 @@ $(function() {
         }
         let onSiteEffect = this.onSiteEffect[1].concat(this.onSiteEffect[2]).concat(this.onSiteEffect[3]);
         onSiteEffect.forEach(eff => { // 在场技能
-          buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
+          if (eff.type == 'BasicPrice') {
+            chef.basicPrice += eff.value;
+          } else {
+            buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
+          }
         });
 
         chef.buff_equip = buff_equip;
