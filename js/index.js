@@ -2647,8 +2647,12 @@ $(function() {
         let buff = 0;
         if (!eff.conditionType) { // 无前置条件
           buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
-        } else if (eff.conditionType == 'ExcessCookbookNum') { // 菜谱份数
+        } else if (eff.conditionType == 'ExcessCookbookNum') { // 菜谱份数大于
           if (repCnt >= eff.conditionValue) {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          }
+        } else if (eff.conditionType == 'FewerCookbookNum') { // 菜谱份数不超过
+          if (repCnt <= eff.conditionValue) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         } else if (eff.conditionType == 'PerRank') { // 每制作一种菜谱品阶
@@ -5772,7 +5776,7 @@ $(function() {
           }
           for (let key in this.calChef) { // 循环检查在场厨师
             let row = this.calChef[key].row;
-            if (row && row[0] && row[0].effect_condition.indexOf('ExcessCookbookNum') > -1) { // 如果有会根据份数变化的
+            if (row && row[0] && (row[0].effect_condition.indexOf('ExcessCookbookNum') > -1 || row[0].effect_condition.indexOf('FewerCookbookNum') > -1)) { // 如果有会根据份数变化的
               this.handlerChef(key); // 重新计算加成
             }
           }
