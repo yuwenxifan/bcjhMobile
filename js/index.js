@@ -2961,7 +2961,11 @@ $(function() {
           }
           chef.skill_effect.forEach(eff => { // 常驻技能技法加成
             if (eff.type == key) {
-              value += eff.value;
+              if (eff.cal == 'Abs') {
+                value += eff.value;
+              } else if (eff.cal == 'Percent') {
+                percentValue += eff.value;
+              }
             }
           });
           chef.MutiEquipmentSkill = 0;
