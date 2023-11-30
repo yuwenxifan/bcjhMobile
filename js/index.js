@@ -1371,7 +1371,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=73'
+          url: './data/data.min.json?v=74'
         }).then(rst => {
           this.data = rst;
           this.initData();
