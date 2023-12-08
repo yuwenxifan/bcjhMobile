@@ -6,7 +6,7 @@
   <title>个人爱好[白菜菊花]</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=42">
-  <link rel="stylesheet" href="./css/image.css?v=56">
+  <link rel="stylesheet" href="./css/image.css?v=57">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -425,6 +425,58 @@
               </div>
             </div>
           </div>
+          <div v-show="navId === 12">
+            <div class="box">
+              <div class="box-title">展示列</div>
+              <div class="hr"></div>
+              <span class="checkbox" @click="selectAll('amberCol')">全选</span>
+              <span
+                v-for="(val, key) in amberColName"
+                class="checkbox"
+                :class="amberCol[key] ? 'active' : ''"
+                @click="amberCol[key] = !amberCol[key]"
+              >{{val}}</span>
+            </div>
+            <div class="box">
+              <div class="box-title">筛选</div>
+              <div class="hr"></div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in amberFilter.rarity"
+                  :class="val ? 'active' : ''"
+                  @click="amberFilter.rarity[key] = !val"
+                >{{key}}星</span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  v-for="(val, key) in amberFilter.origin"
+                  :class="val.flag ? 'active' : ''"
+                  @click="amberFilter.origin[key].flag = !val.flag"
+                >{{val.name}}</span>
+              </div>
+              <div class="checkbox-contain" style="padding-top: 2px;">
+                <div style="padding-bottom: 6px;" v-for="(group, idx) in amberFilter.skillType">
+                  <span
+                    style="margin: 2px;"
+                    class="checkbox"
+                    v-for="(val, key) in group"
+                    :class="val.flag ? 'active' : ''"
+                    @click="clickAmberSkillType(idx, key)"
+                  >{{val.name}}</span>
+                </div>
+                <span class="checkbox" @click="selectAll('amberFilter.skillType')">全选</span>
+                <el-switch
+                  v-model="amber_radio"
+                  active-color="#82a1b0"
+                  active-text="单选"
+                  @change="changeAmberRadio"
+                  inactive-color="#ddd">
+                </el-switch>
+              </div>
+            </div>
+          </div>
           <div v-show="navId === 10">
             <div class="box">
               <div class="box-title">展示列</div>
@@ -595,7 +647,7 @@
           </footer>
         </div>
       </el-drawer>
-      <div v-if="([1, 2, 3, 4, 5, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
+      <div v-if="([1, 2, 3, 4, 5, 10, 12].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep')) && !hideSuspend" v-show="isOriginHei" class="suspend icon-btn" @click="rightBar = true">
         <i class="el-icon-search"></i>
       </div>
       <el-dialog
@@ -628,6 +680,17 @@
         <div class="input-box" v-show="navId==3">
           <span class="label">厨具分页</span>
           <el-select size="mini" v-model="equipsPageSize" @change="handlePageSizeChange($event, 'equips')">
+            <el-option
+              v-for="item in page_list"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </div>
+        <div class="input-box" v-show="navId==12">
+          <span class="label">遗玉分页</span>
+          <el-select size="mini" v-model="ambersPageSize" @change="handlePageSizeChange($event, 'ambers')">
             <el-option
               v-for="item in page_list"
               :key="item.id"
@@ -680,7 +743,7 @@
             </el-option>
           </el-select>
         </div>
-        <div class="warning-tip" v-if="([1, 2, 3, 4, 6, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【任务】页不建议选所有，会卡</div>
+        <div class="warning-tip" v-if="([1, 2, 3, 4, 6, 10, 12].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))">除【遗玉】页不建议选所有，会卡</div>
         <div class="input-box" style="margin-bottom: 10px;">
           <span class="label">默认首页</span>
           <el-select size="mini" style="width: 101px;" v-model="userNav">
@@ -757,7 +820,7 @@
       <div class="notice" v-if="navId == 4 && decoBuff && decoSelectId.length > 0">{{decoBuff}}</div>
       <div class="notice" v-if="(navId == 1 || navId == 2) && partial_skill.id.length > 0 && chefUltimate">{{tips}}</div>
       <span class="right">
-        <i v-if="hideSuspend && ([1, 2, 3, 4, 5, 10].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
+        <i v-if="hideSuspend && ([1, 2, 3, 4, 5, 10, 12].indexOf(navId) > -1 || (navId == 7 && calCode == 'rep'))" class="icon-btn el-icon-search" style="margin-left: 6px;" @click="rightBar = true"></i>
         <i class="icon-btn el-icon-s-tools" @click="settingVisible = true"></i>
       </span>
     </section>
@@ -1021,6 +1084,46 @@
             :pager-count="5"
             layout="total, prev, pager, next"
             :total="equips.length">
+          </el-pagination>
+        </div>
+      </div>
+      <div v-show="navId === 12">
+        <div class="search-box">
+          <el-input size="small" prefix-icon="el-icon-search" placeholder="名字 技能 来源" v-model="amberFilter.amberKeyword">
+          </el-input>
+        </div>
+        <el-table
+          :data="ambersPage"
+          style="width: 100%"
+          ref='ambersTable'
+          @sort-change="handleAmberSort"
+          v-if="tableShow"
+          :height="tableHeight">
+          <el-table-column fixed sortable="custom" prop="galleryId" label="No." width="55" v-if="amberCol.id"></el-table-column>
+          <el-table-column fixed label="" width="45" v-if="amberCol.img">
+            <template slot-scope="scope">
+              <div class="icon-amber" :class="'amber_' + scope.row.amberId"></div>
+            </template>
+          </el-table-column>
+          <el-table-column fixed sortable="custom" prop="name" label="名字" width="80"></el-table-column>
+          <el-table-column sortable="custom" prop="rarity_show" label="星" min-width="55" v-if="amberCol.rarity"></el-table-column>
+          <el-table-column sortable="custom" prop="color" label="颜色" min-width="55" v-if="amberCol.color"></el-table-column>
+          <el-table-column sortable="custom" prop="skill" label="技能" min-width="155" v-if="amberCol.skill"></el-table-column>
+          <el-table-column sortable="custom" prop="amplification" label="成长" min-width="55" v-if="amberCol.amplification"></el-table-column>
+          <el-table-column sortable="custom" prop="skill_detail" label="详细技能" min-width="155" v-if="amberCol.skillDetail"></el-table-column>
+          <el-table-column sortable="custom" prop="origin" label="来源" min-width="100" v-if="amberCol.origin"></el-table-column>
+          <el-table-column label="" min-width="1"></el-table-column>
+        </el-table>
+        <div class="pagination">
+          <el-pagination
+            background
+            small
+            :page-size="ambersPageSize"
+            :current-page.sync="ambersCurPage"
+            @current-change="handleCurrentChange"
+            :pager-count="5"
+            layout="total, prev, pager, next"
+            :total="ambers.length">
           </el-pagination>
         </div>
       </div>
@@ -1998,6 +2101,6 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
-  <script src="./js/index.js?v=223"></script>
+  <script src="./js/index.js?v=224"></script>
 </body>
 </html>

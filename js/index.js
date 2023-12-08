@@ -216,6 +216,7 @@ $(function() {
         { id: 7, name: '计算器' },
         { id: 2, name: '厨师' },
         { id: 3, name: '厨具' },
+        { id: 12, name: '遗玉' },
         { id: 4, name: '装修' },
         { id: 5, name: '采集' },
         { id: 10, name: '调料' },
@@ -278,6 +279,7 @@ $(function() {
         { id: 1, name: '菜谱', icon: 'el-icon-food' },
         { id: 2, name: '厨师', icon: 'el-icon-user' },
         { id: 3, name: '厨具', icon: 'el-icon-knife-fork' },
+        { id: 12, name: '遗玉', icon: 'el-icon-bangzhu' },
         { id: 4, name: '装修', icon: 'el-icon-refrigerator' },
         { id: 5, name: '采集', icon: 'el-icon-chicken' },
         { id: 10, name: '调料', icon: 'el-icon-ice-tea' },
@@ -346,6 +348,7 @@ $(function() {
         },
         chef: {},
         equip: {},
+        amber: {},
         condiment: {},
         decoration: {
           prop: 'effAvg',
@@ -615,6 +618,109 @@ $(function() {
       originEquipFilter: {},
       equipsCurPage: 1,
       equipsPageSize: 20,
+      ambers: [],
+      ambersPage: [],
+      amberCol: {
+        id: false,
+        img: false,
+        rarity: true,
+        color: false,
+        skill: true,
+        amplification: true,
+        skillDetail: false,
+        origin: false
+      },
+      amberColName: {
+        id: '编号',
+        img: '图',
+        rarity: '星',
+        color: '颜色',
+        skill: '技能',
+        amplification: '成长',
+        skillDetail: '详细技能',
+        origin: '来源'
+      },
+      amberFilter: {
+        amberKeyword: '',
+        rarity: {
+          1: true,
+          2: true,
+          3: true
+        },
+        origin: {
+          1: { name: '太初赤玉', flag: true },
+          2: { name: '太初碧玉', flag: true },
+          3: { name: '太初青玉', flag: true }
+        },
+        skillType: [
+          {
+            UseStirfry: { name: '炒售价', flag: true },
+            UseBoil: { name: '煮售价', flag: true },
+            UseKnife: { name: '切售价', flag: true },
+            UseFry: { name: '炸售价', flag: true },
+            UseBake: { name: '烤售价', flag: true },
+            UseSteam: { name: '蒸售价', flag: true }
+          },
+          {
+            Stirfry: { name: '炒技法', flag: true },
+            Boil: { name: '煮技法', flag: true },
+            Knife: { name: '切技法', flag: true },
+            Fry: { name: '炸技法', flag: true },
+            Bake: { name: '烤技法', flag: true },
+            Steam: { name: '蒸技法', flag: true }
+          },
+          {
+            GuestApearRate: { name: '贵客概率', flag: true },
+            InvitationApearRate: { name: '江湖帖概率', flag: true },
+          },
+          {
+            Meat: { name: '肉采集', flag: true },
+            Creation: { name: '面采集', flag: true },
+            Vegetable: { name: '菜采集', flag: true },
+            Fish: { name: '鱼采集', flag: true },
+          },
+          {
+            Material_Meat: { name: '肉类素材', flag: true },
+            Material_Creation: { name: '面类素材', flag: true },
+            Material_Vegetable: { name: '菜类素材', flag: true },
+            Material_Fish: { name: '鱼类素材', flag: true },
+          },
+          {
+            Sweet: { name: '甜技法', flag: true },
+            Sour: { name: '酸技法', flag: true },
+            Spicy: { name: '辣技法', flag: true },
+            Salty: { name: '咸技法', flag: true },
+            Bitter: { name: '苦技法', flag: true },
+            Tasty: { name: '鲜技法', flag: true }
+          },
+          {
+            UseSweet: { name: '甜售价', flag: true },
+            UseSour: { name: '酸售价', flag: true },
+            UseSpicy: { name: '辣售价', flag: true },
+            UseSalty: { name: '咸售价', flag: true },
+            UseBitter: { name: '苦售价', flag: true },
+            UseTasty: { name: '鲜售价', flag: true }
+          },
+          {
+            MaxEquipLimit1: { name: '1火上限', flag: true },
+            MaxEquipLimit2: { name: '2火上限', flag: true },
+            MaxEquipLimit3: { name: '3火上限', flag: true },
+            MaxEquipLimit4: { name: '4火上限', flag: true },
+            MaxEquipLimit5: { name: '5火上限', flag: true }
+          },
+          {
+            CookbookPrice1: { name: '1火售价', flag: true },
+            CookbookPrice2: { name: '2火售价', flag: true },
+            CookbookPrice3: { name: '3火售价', flag: true },
+            CookbookPrice4: { name: '4火售价', flag: true },
+            CookbookPrice5: { name: '5火售价', flag: true }
+          }
+        ]
+      },
+      amber_radio: false,
+      originAmberFilter: {},
+      ambersCurPage: 1,
+      ambersPageSize: 20,
       condiments: [],
       condimentsPage: [],
       condimentCol: {
@@ -1171,7 +1277,7 @@ $(function() {
       this.loadFoodGodRule();
       this.getVersion();
       this.getUserData();
-      const arr = ['Rep', 'Chef', 'Equip', 'Decoration'];
+      const arr = ['Rep', 'Chef', 'Equip', 'Amber', 'Decoration'];
       for (const key of arr) {
         this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
       }
@@ -1371,7 +1477,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=74'
+          url: './data/data.min.json?v=75'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1633,6 +1739,37 @@ $(function() {
           return item;
         });
         this.rep_equips_list = rep_equips_list;
+        this.data.ambers = this.data.ambers.map(item => {
+          item.rarity_show = '★★★'.slice(0, item.rarity);
+          const skill = this.data.skills.filter(s => {
+            return item.skill.indexOf(s.skillId) > -1;
+          });
+          let effect = [];
+          skill.forEach(s => {
+            effect = effect.concat(s.effect);
+          })
+          item.effect = effect;
+          item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
+          item.skill_detail = [0, 1, 2, 3, 4].map(i => {
+            return item.desc.replace(new RegExp( '\_' , "g" ), skill[0].effect[0].value + i * item.amplification);
+          }).join('\n');
+          let skillType = [];
+          for (const s of skill) {
+            for (const i of s.effect) {
+              if (i.type == 'CookbookPrice') {
+                skillType.push(i.type + i.conditionValueList.join())
+              } else if (i.type == 'MaxEquipLimit') {
+                skillType.push(i.type + i.rarity)
+              } else {
+                skillType.push(i.type);
+              }
+            }
+          }
+          item.color = ['红', '绿', '蓝'][item.type - 1];
+          item.skill_type = skillType;
+          item.origin = item.origin.replace(this.reg, '\n');
+          return item;
+        });
         this.data.condiments = this.data.condiments.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
           const skill = this.data.skills.filter(s => {
@@ -3670,6 +3807,37 @@ $(function() {
           this.$refs.equipsTable.bodyWrapper.scrollTop = 0;
         });
       },
+      initAmber() {
+        this.ambers = [];
+        for (const item of this.data.ambers) {
+          const s_name = this.checkKeyword(this.amberFilter.amberKeyword, item.name);
+          const s_skill = this.checkKeyword(this.amberFilter.amberKeyword, item.skill);
+          const s_origin = this.checkKeyword(this.amberFilter.amberKeyword, item.origin);
+          const search = s_name || s_skill || s_origin;
+          const f_rarity = this.amberFilter.rarity[item.rarity];
+          const f_origin = this.amberFilter.origin[item.type].flag;
+          let f_skill = false;
+          for (const group of this.amberFilter.skillType) {
+            for (const key in group) {
+              if (group[key].flag) {
+                f_skill = f_skill || (item.skill_type.indexOf(key) > -1);
+              }
+            }
+          }
+          if (search && f_rarity && f_origin && f_skill) {
+            this.ambers.push(item);
+          }
+        }
+        if (this.sort.amber.order) {
+          this.handleAmberSort(this.sort.amber);
+        } else {
+          this.ambersCurPage = 1;
+          this.ambersPage = this.ambers.slice(0, this.ambersPageSize);
+        }
+        this.$nextTick(() => {
+          this.$refs.ambersTable.bodyWrapper.scrollTop = 0;
+        });
+      },
       initCondiment() {
         this.condiments = [];
         for (const item of this.data.condiments) {
@@ -3944,6 +4112,7 @@ $(function() {
           4: 'decorations',
           7: 'calReps',
           10: 'condiments',
+          12: 'ambers',
         }
         const nav = this.navId;
         if (nav === 6) {
@@ -4104,6 +4273,24 @@ $(function() {
         this.$nextTick(()=>{
           if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
+        });
+      },
+      handleAmberSort(sort) {
+        this.sort.amber = sort;
+        const map = {
+          rarity_show: 'rarity',
+        };
+        if (!sort.order) {
+          this.initEquip();
+        }
+        sort.prop = map[sort.prop] || sort.prop;
+        this.ambersCurPage = 1;
+        this.ambers.sort(this.customSort(sort));
+        this.ambersPage = this.ambers.slice(0, this.ambersPageSize);
+        this.$nextTick(()=>{
+          if (this.tableShow) {
+            this.$refs.ambersTable.doLayout();
           }
         });
       },
@@ -4348,6 +4535,23 @@ $(function() {
             skillType[key].flag = flag;
           }
           this.equipFilter.skillType = skillType;
+        } else if (obj === 'amberFilter.skillType') {
+          this.amber_radio = false;
+          const skillType = JSON.parse(JSON.stringify(this.amberFilter.skillType));
+          for (const group of skillType) {
+            for (const key in group) {
+              if (!group[key].flag) {
+                flag = true;
+                break;
+              }
+            }
+          }
+          for (const group of skillType) {
+            for (const key in group) {
+              group[key].flag = flag;
+            }
+          }
+          this.amberFilter.skillType = skillType;
         } else if (obj === 'condimentFilter.skillType') {
           this.condiment_radio = false;
           this.condiment_concurrent = false;
@@ -4444,6 +4648,23 @@ $(function() {
           this.equipFilter.skillType = skill;
         } else {
           this.equipFilter.skillType[key].flag = !this.equipFilter.skillType[key].flag;
+        }
+      },
+      clickAmberSkillType(idx, key) {
+        if (this.amber_radio) {
+          const skill = JSON.parse(JSON.stringify(this.amberFilter.skillType));
+          for (const group of skill) {
+            for (const k in group) {
+              if (k === key) {
+                group[k].flag = !group[k].flag;
+              } else {
+                group[k].flag = false;
+              }
+            }
+          }
+          this.amberFilter.skillType = skill;
+        } else {
+          this.amberFilter.skillType[idx][key].flag = !this.amberFilter.skillType[idx][key].flag;
         }
       },
       checkCondiSkillType(key) {
@@ -4560,6 +4781,32 @@ $(function() {
           }
         });
       },
+      changeAmberRadio(val) {
+        if (val) {
+          const skill = JSON.parse(JSON.stringify(this.amberFilter.skillType));
+          let cnt = 0;
+          for (let group of skill) {
+            for (const key in group) {
+              if (group[key].flag) {
+                cnt++;
+              }
+            }
+          }
+          if (cnt > 1) {
+            for (let group of skill) {
+              for (const key in group) {
+                group[key].flag = false;
+              }
+            }
+            this.amberFilter.skillType = skill;
+          }
+        }
+        this.$nextTick(()=>{
+          if (this.tableShow) {
+            this.$refs.ambersTable.doLayout();
+          }
+        });
+      },
       changeEquipConcurrent(val) {
         if (val) {
           const skill = JSON.parse(JSON.stringify(this.equipFilter.skillType));
@@ -4671,9 +4918,9 @@ $(function() {
           1: 'Rep',
           2: 'Chef',
           3: 'Equip',
-          4: 'Decoration'
+          4: 'Decoration',
+          12: 'Amber'
         };
-        console.log(this.originRepFilter)
         if (map[this.navId]) {
           this[map[this.navId].toLowerCase() + 'Filter'] = JSON.parse(JSON.stringify(this['origin' + map[this.navId] + 'Filter']));
         }
@@ -4690,6 +4937,8 @@ $(function() {
         } else if (this.navId === 3) {
           this.equip_radio = false;
           this.equip_concurrent = false;
+        } else if (this.navId === 12) {
+          this.amber_radio = false;
         } else if (this.navId === 4) {
           this.decoration_radio = false;
           this.$refs.decoTime.clear();
@@ -4727,6 +4976,7 @@ $(function() {
           calRepCol: this.calRepCol,
           chefCol: this.chefCol,
           equipCol: this.equipCol,
+          amberCol: this.amberCol,
           condimentCol: this.condimentCol,
           decorationCol: this.decorationCol,
           mapCol: this.mapCol,
@@ -4747,7 +4997,7 @@ $(function() {
       },
       getUserData() {
         let userData = localStorage.getItem('data');
-        const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
+        const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'amberCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
         const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
         if (userData) {
           try {
@@ -5528,6 +5778,28 @@ $(function() {
           });
         }
       },
+      amberCol: {
+        deep: true,
+        handler() {
+          this.saveUserData();
+          this.$nextTick(()=>{
+            if (this.tableShow) {
+            this.$refs.ambersTable.doLayout();
+          }
+          });
+        }
+      },
+      amberFilter: {
+        deep: true,
+        handler() {
+          this.initAmber();
+          this.$nextTick(()=>{
+            if (this.tableShow) {
+            this.$refs.ambersTable.doLayout();
+          }
+          });
+        }
+      },
       condimentCol: {
         deep: true,
         handler() {
@@ -5889,6 +6161,17 @@ $(function() {
             this.$refs.equipsTable.bodyWrapper.scrollLeft = 0;
             if (this.tableShow) {
             this.$refs.equipsTable.doLayout();
+          }
+          });
+        } else if (val == 12) {
+          if (this.ambers.length == 0) {
+            this.initAmber();
+          }
+          this.$nextTick(()=>{
+            this.$refs.ambersTable.bodyWrapper.scrollTop = 0;
+            this.$refs.ambersTable.bodyWrapper.scrollLeft = 0;
+            if (this.tableShow) {
+            this.$refs.ambersTable.doLayout();
           }
           });
         } else if (val == 10) {
