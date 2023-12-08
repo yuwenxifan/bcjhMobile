@@ -304,6 +304,7 @@ $(function() {
       materials_list: [],
       combos_list: [],
       combo_map: { combo: {}, split: {} },
+      invitation_guest_list: [],
       chefs_list: [],
       chef_partial_skill_list: [],
       refreshFlag: false,
@@ -378,6 +379,7 @@ $(function() {
         unlock: false,
         combo: false,
         guests: false,
+        invitation_guests: false,
         degree_guests: false,
         gift: false,
         got: false
@@ -403,6 +405,7 @@ $(function() {
         unlock: '解锁',
         combo: '合成',
         guests: '贵客',
+        invitation_guests: '宴会贵客',
         degree_guests: '升阶贵客',
         gift: '神级符文',
         got: '已有',
@@ -441,6 +444,8 @@ $(function() {
         guest: false,
         combo: false,
         comboRep: {},
+        invitation: false,
+        invitationGuest: {},
         price: '',
         materialEff: {},
         got: false
@@ -1570,8 +1575,24 @@ $(function() {
             }
           }
         }
+        const invitationGuestMap = {};
+        for (const guest of this.data.invitationGuests) {
+          for (const gift of guest.gifts) {
+            let show = `${guest.name}-${gift.gift}`
+            if (invitationGuestMap[gift.recipeId]) {
+              invitationGuestMap[gift.recipeId].push(show)
+            } else {
+              invitationGuestMap[gift.recipeId] = [show];
+            }
+          }
+        }
+        this.invitation_guest_list = this.data.invitationGuests.map(r => {
+          r.id = r.name;
+          return r;
+        });
         this.data.recipes = this.data.recipes.map(item => {
           this.repGot[item.recipeId] = this.repGot[item.recipeId] || false;
+          item.invitation_guests = invitationGuestMap[item.recipeId] ? invitationGuestMap[item.recipeId].join('\n') : '';
           item.checked = this.repGot[item.recipeId];
           item.rarity_show = '★★★★★'.slice(0, item.rarity);
           const skill_arr = ['stirfry', 'boil', 'knife', 'fry', 'bake', 'steam'];
@@ -3278,6 +3299,11 @@ $(function() {
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const materials_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
         const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
+        const invitationGuest = this.repFilter.invitationGuest;
+        let giftRepIds = null;
+        if (this.repFilter.invitation && invitationGuest.id && invitationGuest.id.length > 0) {
+          giftRepIds = invitationGuest.row[0].gifts.map(g => g.recipeId);
+        }
         for (const item of this.data.recipes) {
           const s_name = this.checkKeyword(this.repKeyword, item.name);
           const s_origin = this.checkKeyword(this.repKeyword, item.origin);
@@ -3315,6 +3341,8 @@ $(function() {
           if (this.repFilter.combo && comboRep.id && comboRep.id.length > 0) {
             f_combo_rep = (item.comboId.indexOf(comboRep.id[0]) > -1);
           }
+          let f_invitation = !this.repFilter.invitation || item.invitation_guests;
+          let f_invitation_guest = giftRepIds === null ? true : (giftRepIds.indexOf(item.recipeId) > -1);
           const f_price = (this.allEx ? item.exPriceLast : item.price) > this.repFilter.price;
           const f_got = !this.repFilter.got || this.repGot[item.recipeId];
           const f_condiment = this.repFilter.condiment[item.condiment] && this.repFilter.condiment[item.condiment].flag;
@@ -3331,7 +3359,7 @@ $(function() {
               f_material_eff = f_material_eff || Boolean(material);
             });
           }
-          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_combo_rep && f_price && f_material_eff && f_got && f_condiment) {
+          if (search && guest && f_rarity && f_skill && f_material && f_guest && f_combo && f_combo_rep && f_price && f_material_eff && f_got && f_condiment && f_invitation && f_invitation_guest) {
             const chef_ext = {};
             this.repChef.row.forEach(chef => {
               let min = 5;

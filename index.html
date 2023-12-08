@@ -63,7 +63,7 @@
                     :option="chefs_list"
                     placeholder="选择厨师"
                     v-model="repChef"
-                    @focus="scroll(126)"
+                    @focus="scroll(162)"
                   ></muti-select>
                 </span>
                 <span class="select-box split-right chef-task" style="width: 130px; position: relative; z-index: 1002; margin-bottom: 0;" v-if="repChef.id.length == 1">
@@ -93,7 +93,7 @@
                     v-model="partial_skill"
                     ref="partialSkill"
                     :max="2"
-                    @focus="scroll(156)"
+                    @focus="scroll(192)"
                   ></muti-select>
                 </span>
                 <span
@@ -109,7 +109,7 @@
                     ref="repChefEquip"
                     :max="1"
                     @change="initRep"
-                    @focus="scroll(156)"
+                    @focus="scroll(192)"
                   ></muti-select>
                 </span>
               </div>
@@ -187,7 +187,7 @@
                     :option="materials_list"
                     placeholder="耗材效率"
                     v-model="repFilter.materialEff"
-                    @focus="scroll(416 + (repChef.id.length > 0 ? 30 : 0))"
+                    @focus="scroll(452 + (repChef.id.length > 0 ? 30 : 0))"
                   ></muti-select>
                 </span>
               </div>
@@ -209,7 +209,7 @@
                 <div class="prepend-input">
                   <div class="input-box">
                     <div class="prepend">单价大于</div>
-                    <input type="number" v-model="repFilter.price" @focus="scroll(357 + (repChef.id.length > 0 ? 30 : 0))" />
+                    <input type="number" v-model="repFilter.price" @focus="scroll(393 + (repChef.id.length > 0 ? 30 : 0))" />
                   </div>
                 </div>
                 <el-switch
@@ -234,7 +234,25 @@
                     placeholder="合成菜谱"
                     v-model="repFilter.comboRep"
                     :max="1"
-                    @focus="scroll(487 + (repChef.id.length > 0 ? 30 : 0))"
+                    @focus="scroll(523 + (repChef.id.length > 0 ? 30 : 0))"
+                    ></muti-select>
+                </span>
+              </div>
+              <div class="checkbox-contain">
+                <span
+                  class="checkbox"
+                  :class="repFilter.invitation ? 'active' : ''"
+                  style="vertical-align: top;"
+                  @click="repFilter.invitation = !repFilter.invitation"
+                >宴会贵客</span>
+                <span class="select-box" v-show="repFilter.invitation" style="position: relative; z-index: 999;">
+                  <muti-select
+                    ref="invitationGuestRef"
+                    :option="invitation_guest_list"
+                    placeholder="宴会贵客"
+                    v-model="repFilter.invitationGuest"
+                    :max="1"
+                    @focus="scroll(559 + (repChef.id.length > 0 ? 30 : 0))"
                     ></muti-select>
                 </span>
               </div>
@@ -838,9 +856,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2023-12-09 更新遗玉系统相关内容。</div>
             <div class="p">2023-11-30 22:30 更新六周年奖池相关内容。</div>
             <div class="p">2023-11-04 16:15 更新签到菜谱流年蛋糕。</div>
-            <div class="p">2023-10-21 21:55 修复酷洛米的技能在计算器中被算作绝对值加成的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -955,6 +973,7 @@
           <el-table-column sortable="custom" prop="combo" min-width="80" label="可合成" v-if="repCol.combo"></el-table-column>
           <el-table-column sortable="custom" prop="normal_guests" min-width="125" label="贵客" v-if="repCol.guests"></el-table-column>
           <el-table-column sortable="custom" prop="degree_guests" label="升阶贵客" min-width="110" v-if="repCol.degree_guests"></el-table-column>
+          <el-table-column sortable="custom" prop="invitation_guests" label="宴会贵客" min-width="110" v-if="repCol.invitation_guests"></el-table-column>
           <el-table-column sortable="custom" prop="gift" label="神级符文" min-width="92" v-if="repCol.gift"></el-table-column>
           <el-table-column sortable="custom" prop="got" label="已有" min-width="68" v-if="repCol.got">
             <template slot-scope="scope">
