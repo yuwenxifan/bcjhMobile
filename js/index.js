@@ -1810,6 +1810,7 @@ $(function() {
           });
           item.skill_detail = item.skill_detail_list.join('\n');
           item.subName = item.skill_detail_list[0];
+          item.subName_origin = item.skill_detail_list[0];
           let skillType = [];
           for (const s of skill) {
             for (const i of s.effect) {
@@ -2560,7 +2561,7 @@ $(function() {
         }
         return buff;
       },
-      getRecommend(flag, key) {
+      getRecommend(flag, key, idx) {
         const hasRep = this.hasRep(key);
         if (flag == 'chef') { // 厨子
           if (hasRep) {
@@ -2574,6 +2575,18 @@ $(function() {
             this.getRecommendEqp(key);
           } else {
             this.calEquips[key] = JSON.parse(JSON.stringify(this.calEquips_list));
+          }
+        }
+        if (flag == 'amber') {
+          if (hasRep && this.calChef[key].id[0]) { // 厨子和菜谱都有
+            this.getRecommendAmber(key, idx);
+          } else {
+            let type = this.calChef[key].row[0].disk.info[idx];
+            this.calAmberList[key][idx] = deepCopy(this[`calAmberOrigin${type}`])
+            // 强刷组件
+            this.$nextTick(()=>{
+              this.$refs[`calAmber_${key}_${idx}`][0].initOption();
+            })
           }
         }
         if (flag == 'condi') {
@@ -2667,6 +2680,56 @@ $(function() {
           }
           return x.inf_sum - y.inf_sum;
         });
+      },
+      getRecommendAmber(key, idx) {
+        const chf = deepCopy(this.calChef[key].row[0]);
+        if (!chf) return;
+        // 当前厨子的遗玉列表
+        let ambers = this.calAmber[key].map(a => {
+          if (a && a.row[0]) {
+            return a.row[0];
+          }
+          return null;
+        });
+        this.calAmberList[key][idx].forEach(c => {
+          ambers[idx] = c;
+          let chef = this.showChef(chf, key, null, null, ambers); // 获取厨师数值
+          let price = 0;
+          let inf = {};
+          let inf_str = '';
+          let inf_sum = 0;
+          for (let i of [1, 2, 3]) { // 判断是否有菜谱
+            const rep = this.calRep[`${key}-${i}`].row[0];
+            if (rep) {
+              const cnt = this.calRepCnt[`${key}-${i}`];
+              const result = this.calScore(chef, rep, 'amber', key);
+              price += (result.chef_amber.price_buff * cnt);
+              for (let sk in result.chef_amber.inf) {
+                inf[sk] = Math.min((result.chef_amber.inf[sk] || 0), (inf[sk] || 0));
+              }
+            }
+          }
+          for (let sk in inf) {
+            if (inf[sk] < 0) {
+              inf_str += ` ${this.skill_map[sk]}${inf[sk]}`;
+              inf_sum -= inf[sk];
+            }
+          }
+          c.subName = ' ' + price + ' ' + inf_str + ' ' + (c.subName_origin || '');
+          c.price_total = price;
+          c.isf = inf_str != '';
+          c.inf_sum = inf_sum;
+        });
+        this.calAmberList[key][idx].sort(function(x, y) {
+          if (y.price_total != x.price_total) {
+            return y.price_total - x.price_total;
+          }
+          return x.inf_sum - y.inf_sum;
+        });
+        // 强刷组件
+        this.$nextTick(()=>{
+          this.$refs[`calAmber_${key}_${idx}`][0].initOption();
+        })
       },
       getRecommendCondi(key) {
         const chf = JSON.parse(JSON.stringify(this.calChef[key].row[0]));
@@ -3143,7 +3206,12 @@ $(function() {
         let lastChef = this.getLastChef(position);
         if (!eqp) eqp = this.calEquip[position].row[0];
         if (!condi) condi = this.calCondiment[position].row[0];
-        if (!ambers) ambers = this.calAmber[position];
+        if (!ambers) ambers = this.calAmber[position].map(a => {
+          if (a && a.row[0]) {
+            return a.row[0];
+          }
+          return null;
+        });
         if (eqp && !rule.DisableEquipSkillEffect) { // 厨具
           equip_effect = eqp.effect.filter(eff => { // 对售价/时间有影响的技能效果
             if (eff.type == 'OpenTime') {
@@ -3157,8 +3225,7 @@ $(function() {
         }
         let ambersEffect = [];
         if (ambers.length > 0) {
-          for (let a of ambers) {
-            let amber = a ? a.row[0] : null;
+          for (let amber of ambers) {
             if (!amber) {
               continue;
             }
@@ -5759,6 +5826,7 @@ $(function() {
           calAmberList.forEach(list => {
             list.forEach(a => {
               a.subName = a.skill_detail_list[val - 1];
+              a.subName_origin = a.subName;
             })
           });
           this.calAmberList[key] = calAmberList;

@@ -1273,7 +1273,7 @@ input.hidden {
   text-shadow: #f5f7fa 1px 0 0, #f5f7fa 0 1px 0, #f5f7fa -1px 0 0, #f5f7fa 0 -1px 0;
   text-align: center;
   position: relative;
-  z-index: 999;
+  z-index: 99;
 }
 .rst .img-box {
   width: 50px;
