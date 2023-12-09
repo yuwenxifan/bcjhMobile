@@ -1397,6 +1397,17 @@
                           <div class="img icon-chef" :class="'chef_' + calChefShow[chef].id">
                             <span v-show="calChefShow[chef].ultimate" class="ultimate">满</span>
                           </div>
+                          <div class="show-disk">
+                            <div class="disk-level"><div>{{calDiskLevel[chef].current}}</div></div>
+                            <div
+                              class="disk-amber"
+                              :class="(calAmber[chef][idx] && calAmber[chef][idx].id[0] ? 'active ' : '') + 'amber-' + type"
+                              v-for="(type, idx) in calChef[chef].row[0].disk.info">
+                              <div>
+                                <i class="el-icon-plus"></i>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                         <div class="skill-box">
                           <div
@@ -1440,7 +1451,7 @@
                     >
                       <div v-if="calRep[`${chef}-${rep}`].row[0]" class="show">
                         <div class="img icon-recipe" :class="'recipe_' + calRep[`${chef}-${rep}`].row[0].id">
-                          <span class="cnt">{{calType.row[0].MaterialsLimit ? showRepCnt(calRepCnt[`${chef}-${rep}`], calRepLimit[`${chef}-${rep}`]) : calRepCnt[`${chef}-${rep}`]}}</span>
+                          <span class="cnt">{{showRepCnt(calRepCnt[`${chef}-${rep}`], calRepLimit[`${chef}-${rep}`])}}</span>
                           <span class="expert" v-if="calRepEx[`${chef}-${rep}`]">
                             <i class="el-icon-success"></i>
                           </span>
@@ -1461,7 +1472,7 @@
               </div>
               <div ref="tool" class="tool" v-show="calFocus">
                 <div v-for="(val, key) in calChef" v-show="calFocus == `Chef_${key}`">
-                  <span class="select-box" style="width: calc(50% - 7.5px);">
+                  <span class="select-box chef-select">
                     <muti-select
                       :ref="`calChef_${key}`"
                       placeholder="请选择厨师"
@@ -1469,11 +1480,12 @@
                       v-model="calChef[key]"
                       :max="1"
                       :disable="disable"
+                      @change="setDiskList(key)"
                       @focus="calScroll"
                       @click="getRecommend('chef', key)"
                     ></muti-select>
                   </span>
-                  <span class="select-box" style="width: calc(50% - 7.5px); padding-left: 0;">
+                  <span class="select-box chef-select" style="padding-left: 0; ">
                     <muti-select
                       :ref="`calCondiment_${key}`"
                       placeholder="请选择调料"
@@ -1485,6 +1497,29 @@
                       @click="getRecommend('condi', key)"
                     ></muti-select>
                   </span>
+                  <div v-show="calChef[key]" class="disk">
+                    <div class="prepend-input">
+                      <div class="input-box">
+                        <div class="prepend">心法</div>
+                        <input type="number" @change="handleDiskLevelChange(key)" v-model.lazy="calDiskLevel[key].current"/>
+                      </div>
+                    </div>
+                    <div class="amber-list-box">
+                      <span class="select-box" v-for="(amber, idx) in calAmberList[key]">
+                        <muti-select
+                          :class="'amber-list-' + amber[0].type"
+                          :ref="`calAmber_${key}_${idx}`"
+                          placeholder="选择遗玉"
+                          :option="amber"
+                          v-model="calAmber[key][idx]"
+                          @change="handleCalAmberChange(key, idx)"
+                          :max="1"
+                          :disable="disable"
+                          @focus="calScroll"
+                        ></muti-select>
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div v-for="(val, key) in calEquip" v-show="calFocus == `Equip_${key}`">
                   <span class="select-box" style="width: calc(100% - 10px);">
@@ -1531,11 +1566,11 @@
                         type="number"
                         class="input"
                         v-model.lazy="calRepCnt[key]"
-                        :max="calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit"
+                        :max="calRepLimit[key]"
                         :min="0"
-                        @change="handleRepCntChange(key, calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit)"
+                        @change="handleRepCntChange(key, calRepLimit[key])"
                       />
-                      <span class="max">/ {{calType.row[0].MaterialsLimit ? calRepLimit[key] : calRep[key].row[0].limit}}</span>
+                      <span class="max">/ {{calRepLimit[key]}}</span>
                     </div>
                   </div>
                   <div class="tool-condiment" v-if="calRep[key].row[0] && calChef[key.split('-')[0]].row[0] && calCondiment[key.split('-')[0]].row[0]">
@@ -2120,6 +2155,7 @@
   <script src="./ele/index.js"></script>
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
+  <script src="./js/common.js?v=1"></script>
   <script src="./js/index.js?v=224"></script>
 </body>
 </html>

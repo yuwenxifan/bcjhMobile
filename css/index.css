@@ -813,10 +813,10 @@ input.hidden {
 }
 .chef-box .chef {
   width: 95%;
-  height: 92px;
+  height: 102px;
 }
 .chef-box .chef.condiment {
-  height: 112px;
+  height: 122px;
 }
 .chef-box .equip {
   width: 95%;
@@ -976,7 +976,7 @@ input.hidden {
 .chef .img .ultimate {
   position: absolute;
   right: -2px;
-  bottom: -2px;
+  top: -2px;
   display: inline-block;
   height: 12px;
   width: 12px;
@@ -1935,4 +1935,175 @@ span.code {
   background-image: url('../images/qrCode.png');
   background-size: auto 100%;
   background-repeat: no-repeat;
+}
+
+.select-box.chef-select {
+  position: relative;
+  z-index: 1000;
+  width: calc(50% - 7.5px);
+}
+
+.amber-list-1 .input-box .placeholder {
+  color: #d74e2499 !important;
+}
+
+.amber-list-2 .input-box .placeholder {
+  color: #63a45599 !important;
+}
+
+.amber-list-3 .input-box .placeholder {
+  color: #2ba0c199 !important;
+}
+
+.amber-list-1 .input-box .tag.only {
+  color: #d74e24 !important;
+}
+
+.amber-list-2 .input-box .tag.only {
+  color: #63a455 !important;
+}
+
+.amber-list-3 .input-box .tag.only {
+  color: #2ba0c1 !important;
+}
+
+.disk .prepend-input {
+  margin: 0 5px;
+}
+
+.disk .prepend-input .input-box>input {
+  width: 14px;
+}
+
+.disk .amber-list-box {
+  display: inline-block;
+  width: calc(100% - 80px);
+}
+
+.disk .select-box {
+  position: relative;
+  z-index: 999;
+  padding-top: 0;
+  width: calc(34% - 7.5px);
+  padding-left: 0;
+  line-height: 25px;
+  padding-bottom: 6px;
+}
+
+.disk .amber-list-box .dropdown-box {
+  min-width: 200px;
+}
+
+.disk .amber-list-box .select-box:nth-child(2) .dropdown-box {
+  left: -50%;
+}
+
+.disk .amber-list-box .select-box:last-child .dropdown-box {
+  left: auto;
+  right: 0;
+}
+
+.show-chef .name-img {
+  position: relative;
+  padding-bottom: 10px;
+}
+
+.show-disk {
+  position: absolute;
+  background: #91705d;
+  border: 2px #63351e solid;
+  border-radius: 10px;
+  padding: 3px;
+  font-size: 12px;
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, .4);
+  line-height: 9px;
+  bottom: -8px;
+  left: 0;
+  z-index: 999;
+  transform: scale(0.7) translateX(-19%);
+  text-wrap: nowrap;
+}
+.show-disk .disk-level {
+  display: block;
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  font-weight: 600;
+  border-radius: 2px;
+  transform: rotate(45deg);
+  font-size: 14px;
+  background-color: #ebd3b1;
+  color: #441c12;
+  width: 15px;
+  height: 15px;
+  line-height: 15px;
+  text-align: center;
+}
+
+.show-disk .disk-level div {
+  transform: rotate(-45deg);
+}
+
+.show-disk .disk-amber {
+  display: inline-block;
+  height: 14px;
+  width: 14px;
+  border: 2px solid;
+  border-radius: 14px;
+  margin: 0 2px;
+  font-size: 9px;
+  position: relative;
+}
+
+.show-disk .disk-amber i {
+  font-weight: 900 !important;
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%);
+}
+
+
+.show-disk .disk-amber.active i {
+  display: none !important;
+}
+
+.show-disk .disk-amber div {
+  box-sizing: border-box;
+  border-radius: 14px;
+  width: 100%;
+  height: 100%;
+}
+
+.show-disk .disk-amber.amber-1.active div {
+  background-image: linear-gradient(135deg, #fdaf9c, #af3510);
+  border: 1px solid #481305;
+}
+
+.show-disk .disk-amber.amber-2.active div {
+  background-image: linear-gradient(135deg, #bbd9b0, #518f43);
+  border: 1px solid #0f411c;
+}
+
+.show-disk .disk-amber.amber-3.active div {
+  background-image: linear-gradient(135deg, #9df0f7, #218cad);
+  border: 1px solid #02214b;
+}
+
+.show-disk .disk-amber.amber-1 {
+  border-color: #843721;
+  background: #280f08;
+  color: #7f4a3a;
+}
+
+.show-disk .disk-amber.amber-2 {
+  border-color: #406a4b;
+  background: #121d15;
+  color: #516d5e;
+}
+
+.show-disk .disk-amber.amber-3 {
+  border-color: #355a79;
+  background: #171e24;
+  color: #676c70;
 }

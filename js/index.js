@@ -1043,6 +1043,38 @@ $(function() {
           normal: { prop: 'gold_eff', order: 'descending' },
         }
       },
+      // 计算器中三个分类的遗玉列表的初始数据
+      calAmberOrigin1: [],
+      calAmberOrigin2: [],
+      calAmberOrigin3: [],
+      // 计算器中三个位置的遗玉下拉框列表
+      calAmberList: {
+        1: [],
+        2: [],
+        3: []
+      },
+      // 计算器中3个位置的遗玉
+      calAmber: {
+        1: [],
+        2: [],
+        3: []
+      },
+      // 计算器中3个位置的心法盘等级与等级上限
+      calDiskLevel: {
+        1: { max: 1, current: 1, last: 1 },
+        2: { max: 1, current: 1, last: 1 },
+        3: { max: 1, current: 1, last: 1 }
+      },
+      lastCalChef: {
+        1: 0,
+        2: 0,
+        3: 0
+      },
+      lastCalAmber: {
+        1: [],
+        2: [],
+        3: []
+      },
       ChefNumLimit: 3,
       isOriginHei: true,
       screenHeight:
@@ -1762,6 +1794,7 @@ $(function() {
         this.rep_equips_list = rep_equips_list;
         this.data.ambers = this.data.ambers.map(item => {
           item.rarity_show = '★★★'.slice(0, item.rarity);
+          item.id = item.amberId;
           const skill = this.data.skills.filter(s => {
             return item.skill.indexOf(s.skillId) > -1;
           });
@@ -1770,10 +1803,13 @@ $(function() {
             effect = effect.concat(s.effect);
           })
           item.effect = effect;
+          item.skill_list = skill;
           item.skill = skill.map(s => s.desc).join('\n').replace(this.reg, '\n');
-          item.skill_detail = [0, 1, 2, 3, 4].map(i => {
+          item.skill_detail_list = [0, 1, 2, 3, 4].map(i => {
             return item.desc.replace(new RegExp( '\_' , "g" ), skill[0].effect[0].value + i * item.amplification);
-          }).join('\n');
+          });
+          item.skill_detail = item.skill_detail_list.join('\n');
+          item.subName = item.skill_detail_list[0];
           let skillType = [];
           for (const s of skill) {
             for (const i of s.effect) {
@@ -1789,6 +1825,7 @@ $(function() {
           item.color = ['红', '绿', '蓝'][item.type - 1];
           item.skill_type = skillType;
           item.origin = item.origin.replace(this.reg, '\n');
+          this[`calAmberOrigin${item.type}`].push(item);
           return item;
         });
         this.data.condiments = this.data.condiments.map(item => {
@@ -2218,6 +2255,13 @@ $(function() {
       initCalChef() {
         let chefs_list = [];
         const rule = this.calType.row[0];
+        const diskMap = {};
+        for (const disk of this.data.disks) {
+          diskMap[disk.diskId] = {
+            maxLevel: disk.maxLevel,
+            info: disk.info
+          }
+        }
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
           const tags = item.tags ? item.tags : [];
@@ -2258,6 +2302,7 @@ $(function() {
               },
               skill_effect: item.skill_obj.effect,
               ultimate_effect: ultimateSkill.effect,
+              disk: diskMap[item.disk],
               tags
             });
           }
@@ -2402,13 +2447,15 @@ $(function() {
             r.limit = 1;
             r.limit_origin = 1;
           }
+          r.limit_mater = 500;
           if (rule.MaterialsLimit) { // 如果限制了食材数量
-            let min = r.limit_origin;
+            let min = 500;
             for (let m of r.materials) {
               let lim = Math.floor(remain[m.material] / m.quantity);
               min = (min < lim ? min : lim);
             }
-            r.limit = min;
+            // 食材限制的数量
+            r.limit_mater = min;
           }
           r.price_total = r.price_buff * r.limit; // 未选厨子时的总价
           r.buff = buff;
@@ -2718,10 +2765,33 @@ $(function() {
         chef.buff_grade = this.grade_buff[chef.grade] || 0; // 品级加成
         chef.buff += chef.buff_grade;
 
-        let repCnt = rep.limit;
+        let limitBuff = 0;
+        chf.amber_effect.forEach(eff => { // 心法技能份数上限
+          if (eff.type == 'MaxEquipLimit' && eff.rarity == rep.rarity) {
+            limitBuff += eff.value;
+          }
+        });
+        chef.limitBuff = limitBuff;
+        if (!rule.DisableMultiCookbook) {
+          rep.limit = Math.min(rep.limit_origin, rep.limit_mater);
+        }
+
+        let repCnt = Math.min(rep.limit_origin + limitBuff, rep.limit_mater);
         if (['1', '2', '3'].indexOf(pos) > -1 && this.repCntMap[rep.id]) { // 如果不是计算预计值，且在场，使用场上份数
           repCnt = this.calRepCnt[this.repCntMap[rep.id]];
         }
+
+        chf.amber_effect.forEach(eff => { // 心法技能
+          buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
+            if (eff.type == 'BasicPrice') {
+              if (eff.conditionType == null) {
+                chef.basicPrice += eff.value;
+              } else if (eff.conditionType == 'PerRank') {
+                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+              }
+            }
+        });
+
 
         if (!rule.DisableChefSkillEffect) {
           chf.sum_skill_effect.forEach(eff => { // 技能
@@ -2767,7 +2837,7 @@ $(function() {
         let basicBuff = rep.basicPrice + chef.basicPrice; // 基础加成
         let price = Math.floor((rep.price + ex) * (100 + basicBuff) / 100);
         chef.price_buff = Math.ceil(price * chef.buff * rep.buff_muti / 10000);
-        chef.price_total = chef.price_buff * rep.limit;
+        chef.price_total = chef.price_buff * (rep.limit + chef.limitBuff);
 
         chef.subName = '';
         chef.inf = {};
@@ -2896,6 +2966,7 @@ $(function() {
         });
         this.calRepsAll = reps;
         this.calRepSort(i);
+        setTimeout(() => this.getCalRepLimit(), 100)
       },
       changeSort() {
         setTimeout(() => {
@@ -2932,7 +3003,7 @@ $(function() {
         } else {
           for (let i = 1; i < 4; i++) {
             if (!this.calChef[i].id[0]) {
-              this.calReps_origin[i] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+              this.calReps_origin[i] = deepCopy(this.calRepDefaultSort);
             }
           }
           this.initCalRepList();
@@ -2984,37 +3055,52 @@ $(function() {
           this.oldCalRep[key] = row[0].id;
         }
         if (this.calRepCnt[key] == null || !row[0]) {
-          this.calRepCnt[key] = (row[0] ? row[0].limit : null);
+          if (row[0]) {
+            let limitBuff = row[0][`chef_${key.slice(0, 1)}`] ? row[0][`chef_${key.slice(0, 1)}`].limitBuff : 0;
+            this.calRepCnt[key] = row[0].limit + (limitBuff || 0);
+          } else {
+            this.calRepCnt[key] = null;
+          }
         }
       },
       getCalRepLimit() {
         let lim = {}
         let calRep = this.calRep;
+        const rule = this.calType.row[0];
         for (let key in calRep) {
           if (!calRep[key].id[0]) {
             lim[key] = 0
           } else {
-            let remain = JSON.parse(JSON.stringify(this.materialsAll));
-            for (let k in calRep) {
-              if (calRep[k].id[0] && k !== key && this.calRepCnt[k] > 0) {
-                for (let m of calRep[k].row[0].materials) {
-                  remain[m.material] -= (m.quantity * this.calRepCnt[k]);
+            let rep = calRep[key].row[0];
+            let chefKey = `chef_${key.slice(0, 1)}`;
+            let limit_mater = 500;
+            if (rule.MaterialsLimit) {
+              let remain = JSON.parse(JSON.stringify(this.materialsAll));
+              for (let k in calRep) {
+                if (calRep[k].id[0] && k !== key && this.calRepCnt[k] > 0) {
+                  for (let m of calRep[k].row[0].materials) {
+                    remain[m.material] -= (m.quantity * this.calRepCnt[k]);
+                  }
                 }
+              }
+              for (let m of rep.materials) {
+                let l = Math.floor(remain[m.material] / m.quantity);
+                limit_mater = (limit_mater < l ? limit_mater : l);
               }
             }
             const limit_arr = [0, 40, 30, 25, 20, 15];
-            let min = this.ulti[`MaxLimit_${calRep[key].row[0].rarity}`] + limit_arr[calRep[key].row[0].rarity];
+            let min = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
             if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
-              min += Number(this.customRule.skill.MaxLimit[calRep[key].row[0].rarity]) || 0;
+              min += Number(this.customRule.skill.MaxLimit[rep.rarity]) || 0;
             }
             if (this.calType.row[0].DisableMultiCookbook) { // 如果限制一份
               min = 1;
             }
-            for (let m of calRep[key].row[0].materials) {
-              let l = Math.floor(remain[m.material] / m.quantity);
-              min = (min < l ? min : l);
-            }
-            lim[key] = min;
+            let limitBuff = rep[chefKey] ? rep[chefKey].limitBuff : 0;
+            lim[key] = Math.min(min + (limitBuff || 0), limit_mater);
+          }
+          if (this.calRepCnt[key] > lim[key]) {
+            this.calRepCnt[key] = lim[key];
           }
         }
         this.calRepLimit = lim;
@@ -3027,14 +3113,18 @@ $(function() {
         val = val > limit ? limit : val;
         this.calRepCnt[key] = val;
       },
-      getCalChefShow() {
+      getCalChefShow(pos) {
         const rst = {};
+        if (pos != null) {
+          this.calChefShow[pos] = this.calChef[pos].row[0] ? this.showChef(this.calChef[pos].row[0], pos) : {};
+          return;
+        }
         for (const key in this.calChef) {
           rst[key] = this.calChef[key].row[0] ? this.showChef(this.calChef[key].row[0], key) : {};
         }
         this.calChefShow = rst;
       },
-      showChef(chef, position, eqp, condi) {
+      showChef(chef, position, eqp, condi, ambers) {
         let ultimate = false;
         const rule = this.calType.row[0];
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
@@ -3043,15 +3133,17 @@ $(function() {
         let equip_effect = [];
         let condiment_effect = [];
         let sum_skill_effect = [];
+        let amber_effect = [];
+        let effect_condition = [];
         let time_buff = 0;
         let equip_time_buff = 0;
+        // 当前心法盘等级
+        let diskLevel = this.calDiskLevel[position].current;
         // 获取上一位的厨师
         let lastChef = this.getLastChef(position);
         if (!eqp) eqp = this.calEquip[position].row[0];
         if (!condi) condi = this.calCondiment[position].row[0];
-        function judgeEff(eff) {
-          return (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type.slice(-5) == 'Price');
-        }
+        if (!ambers) ambers = this.calAmber[position];
         if (eqp && !rule.DisableEquipSkillEffect) { // 厨具
           equip_effect = eqp.effect.filter(eff => { // 对售价/时间有影响的技能效果
             if (eff.type == 'OpenTime') {
@@ -3063,7 +3155,27 @@ $(function() {
         if (condi) { // 调料
           condiment_effect = condi.effect.slice();
         }
-        let effect_condition = [];
+        let ambersEffect = [];
+        if (ambers.length > 0) {
+          for (let a of ambers) {
+            let amber = a ? a.row[0] : null;
+            if (!amber) {
+              continue;
+            }
+            for (let skill of amber.skill_list) {
+              for (let eff of skill.effect) {
+                let effect = deepCopy(eff);
+                // 心法盘等级加成
+                effect.value += (diskLevel - 1) * amber.amplification;
+                ambersEffect.push(effect);
+                if (judgeEff(effect)) { // 对售价有影响的技能效果
+                  amber_effect.push(effect);
+                  effect_condition.push(effect.conditionType || -1);
+                }
+              }
+            }
+          }
+        }
         let partial_flag = false;
         chef.skill_effect.forEach(eff => { // 厨师技能
           if (eff.type == 'OpenTime') {
@@ -3106,6 +3218,7 @@ $(function() {
         chef.equip_effect = equip_effect;
         chef.condiment_effect = condiment_effect;
         chef.sum_skill_effect = sum_skill_effect;
+        chef.amber_effect = amber_effect;
         skill_type.forEach(key => {
           const lowKey = key.toLowerCase();
           let value = this.ulti.All; // 全体全技法
@@ -3195,6 +3308,16 @@ $(function() {
               }
             });
           }
+          // 装备遗玉
+          ambersEffect.forEach(eff => {
+            if (eff.type == key) {
+              if (eff.cal == 'Abs') {
+                value += eff.value;
+              } else if (eff.cal == 'Percent') {
+                percentValue += eff.value;
+              }
+            }
+          })
           value += Math.ceil(((chef.skills[lowKey] || 0) + value) * percentValue / 100) // 百分比加成单独加
           if (this.customRule && this.customRule.skill && this.customRule.skill.Skill) { // 额外规则加成在百分比加成后
             value += Number(this.customRule.skill.Skill[lowKey]) || 0;
@@ -5582,7 +5705,7 @@ $(function() {
           const cnt = this.calRepCnt[key];
           const limit_arr = [0, 40, 30, 25, 20, 15];
           if (rep) { // 有菜谱
-            let limit = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
+            let limit = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity] + (rep[`chef_${key.slice(0,1)}`].limitBuff || 0);
             if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
               limit += Number(this.customRule.skill.MaxLimit[rep.rarity]) || 0;
             }
@@ -5591,7 +5714,79 @@ $(function() {
             }
           }
         }
-      }
+      },
+      setDiskList(key) {
+        const chef = this.calChef[key].row[0];
+        const chefId = chef ? chef.id : 0;
+        // 厨师没发生变化
+        if (this.lastCalChef[key] == chefId) {
+          return;
+        }
+        this.lastCalChef[key] = chefId;
+        // 遗玉列表清空，已选遗玉清空，心法盘等级重置为1
+        let len = this.calAmberList[key].length;
+        this.calAmberList[key] = [];
+        this.calAmber[key] = [];
+        this.calDiskLevel[key] = { max: 1, current: 1, last: 1 };
+        this.lastCalAmber[key] = [];
+        setTimeout(() => this.getCalRepLimit(), 100)
+        if (chef) {
+          for (let idx = 0; idx < len; idx++) {
+            this.$refs[`calAmber_${key}_${idx}`][0].clear();
+          }
+          // 设置心法盘等级上限
+          this.calDiskLevel[key].max = chef.disk.maxLevel;
+          // 设置列表
+          for (let type of chef.disk.info) {
+            this.calAmberList[key].push(deepCopy(this[`calAmberOrigin${type}`]));
+          }
+        } else {
+          //
+        }
+      },
+      handleDiskLevelChange(key) {
+        let max = this.calDiskLevel[key].max;
+        let val = this.calDiskLevel[key].current;
+        let last = this.calDiskLevel[key].last;
+        val = val.replace(/\./g, '');
+        val = val.replace(/\-/g, '');
+        val = Number(val);
+        val = val > max ? max : (val < 1 ? 1 : val);
+        this.calDiskLevel[key].current = val;
+        if (val != last) {
+          // 心法盘等级变化，重设下拉框的subName
+          let calAmberList = deepCopy(this.calAmberList[key]);
+          calAmberList.forEach(list => {
+            list.forEach(a => {
+              a.subName = a.skill_detail_list[val - 1];
+            })
+          });
+          this.calAmberList[key] = calAmberList;
+          this.calDiskLevel[key].last = val;
+          // 判断当前是否有装备遗玉
+          let ambers = [];
+          this.calAmber[key].forEach(a => {
+            if (a && a.id[0]) {
+              ambers.push(a.id[0]);
+            }
+          });
+          // 如果有装备遗玉，重算分数
+          if (ambers.length > 0) {
+            this.getCalChefShow(key);
+            setTimeout(() => this.handlerChef(key), 100)
+          }
+        }
+      },
+      handleCalAmberChange(key, idx) {
+        let amber = this.calAmber[key][idx] ? this.calAmber[key][idx].row[0] : null;
+        const amberId = amber ? amber.id : 0;
+        // 遗玉发生变化，调用厨师处理
+        if (amberId != this.lastCalAmber[key][idx]) {
+          this.getCalChefShow(key);
+          setTimeout(() => this.handlerChef(key), 100)
+          this.lastCalAmber[key][idx] = amberId;
+        }
+      },
     },
     watch: {
       screenHeight(val) {
@@ -5920,8 +6115,12 @@ $(function() {
                 if (val[key].id) {
                   this.handlerChef(key);
                 } else {
-                  this.calReps_origin[key] = JSON.parse(JSON.stringify(this.calRepDefaultSort));
+                  this.calReps_origin[key] = deepCopy(this.calRepDefaultSort).map(r => {
+                    delete r[`chef_${key}`]
+                    return r;
+                  })
                   this.initCalRepList(key);
+                  setTimeout(() => this.getCalRepLimit(), 100)
                 }
               }
             }
@@ -6047,6 +6246,7 @@ $(function() {
                 r.price_total = min * r.price_buff;
                 for (let i = 1; i < 4; i++) {
                   if (this.calChef[i].id[0]) {
+                    min += r[`chef_${i}`].limitBuff;
                     r[`chef_${i}`].price_total = r[`chef_${i}`].price_buff * min;
                     r[`price_chef_${i}`] = r[`chef_${i}`].price_buff * min;
                   }
