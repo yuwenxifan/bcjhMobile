@@ -2021,7 +2021,7 @@ span.code {
   left: 0;
   z-index: 999;
   transform: scale(0.7) translateX(-19%);
-  text-wrap: nowrap;
+  white-space: nowrap;
 }
 .show-disk .disk-level {
   display: block;
