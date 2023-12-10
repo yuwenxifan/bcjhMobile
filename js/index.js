@@ -2835,11 +2835,15 @@ $(function() {
           }
         });
         chef.limitBuff = limitBuff;
-        if (!rule.DisableMultiCookbook) {
-          rep.limit = Math.min(rep.limit_origin, rep.limit_mater);
-        }
+        // 规则限制
+        let limitRule = rule.DisableMultiCookbook ? 1 : 500;
+        // 除加成外的份数
+        rep.limit = Math.min(rep.limit_origin, rep.limit_mater, limitRule);
 
-        let repCnt = Math.min(rep.limit_origin + limitBuff, rep.limit_mater);
+        // 厨子加成后的份数
+        let limitChef = Math.min(rep.limit_origin + limitBuff, rep.limit_mater, limitRule);
+        chef.limit = limitChef;
+        let repCnt = limitChef;
         if (['1', '2', '3'].indexOf(pos) > -1 && this.repCntMap[rep.id]) { // 如果不是计算预计值，且在场，使用场上份数
           repCnt = this.calRepCnt[this.repCntMap[rep.id]];
         }
@@ -2900,7 +2904,7 @@ $(function() {
         let basicBuff = rep.basicPrice + chef.basicPrice; // 基础加成
         let price = Math.floor((rep.price + ex) * (100 + basicBuff) / 100);
         chef.price_buff = Math.ceil(price * chef.buff * rep.buff_muti / 10000);
-        chef.price_total = chef.price_buff * (rep.limit + chef.limitBuff);
+        chef.price_total = chef.price_buff * limitChef;
 
         chef.subName = '';
         chef.inf = {};
@@ -3136,7 +3140,10 @@ $(function() {
           } else {
             let rep = calRep[key].row[0];
             let chefKey = `chef_${key.slice(0, 1)}`;
+            // 食材限制
             let limit_mater = 500;
+            // 规则限制
+            let limitRule = rule.DisableMultiCookbook ? 1 : 500;
             if (rule.MaterialsLimit) {
               let remain = JSON.parse(JSON.stringify(this.materialsAll));
               for (let k in calRep) {
@@ -3152,15 +3159,13 @@ $(function() {
               }
             }
             const limit_arr = [0, 40, 30, 25, 20, 15];
-            let min = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
+            let limit_origin = this.ulti[`MaxLimit_${rep.rarity}`] + limit_arr[rep.rarity];
             if (this.customRule && this.customRule.skill && this.customRule.skill.MaxLimit) {
-              min += Number(this.customRule.skill.MaxLimit[rep.rarity]) || 0;
+              limit_origin += Number(this.customRule.skill.MaxLimit[rep.rarity]) || 0;
             }
-            if (this.calType.row[0].DisableMultiCookbook) { // 如果限制一份
-              min = 1;
-            }
+            // 厨师的加成
             let limitBuff = rep[chefKey] ? rep[chefKey].limitBuff : 0;
-            lim[key] = Math.min(min + (limitBuff || 0), limit_mater);
+            lim[key] = Math.min(limit_origin + (limitBuff || 0), limit_mater, limitRule);
           }
           if (this.calRepCnt[key] > lim[key]) {
             this.calRepCnt[key] = lim[key];
@@ -5830,6 +5835,12 @@ $(function() {
             })
           });
           this.calAmberList[key] = calAmberList;
+          // 强刷组件
+          for (let idx in this.calAmberList[key]) {
+            this.$nextTick(()=>{
+              this.$refs[`calAmber_${key}_${idx}`][0].initOption();
+            })
+          }
           this.calDiskLevel[key].last = val;
           // 判断当前是否有装备遗玉
           let ambers = [];
@@ -6305,18 +6316,27 @@ $(function() {
             this.materialsRemain = remain;
             setTimeout(() => {
               let calRepsAll = this.calRepsAll.map(r => {
+                // 上限的限制
                 let min = r.limit_origin;
+                // 食材&规则的限制
+                let limit_mater = rule.DisableMultiCookbook ? 1 : 500;
                 for (let m of r.materials) {
                   let lim = Math.floor(remain[m.material] / m.quantity);
-                  min = (min < lim ? min : lim);
+                  limit_mater = (limit_mater < lim ? limit_mater : lim);
                 }
-                r.limit = min;
-                r.price_total = min * r.price_buff;
+                // 最终无加成情况的份数
+                let limit = Math.min(limit_mater, min);
+                r.limit = limit;
+                r.limit_mater = limit_mater;
+                r.price_total = r.limit * r.price_buff;
+
                 for (let i = 1; i < 4; i++) {
                   if (this.calChef[i].id[0]) {
-                    min += r[`chef_${i}`].limitBuff;
-                    r[`chef_${i}`].price_total = r[`chef_${i}`].price_buff * min;
-                    r[`price_chef_${i}`] = r[`chef_${i}`].price_buff * min;
+                    // 带上上限加成后的份数
+                    limit = Math.min(limit_mater, min + r[`chef_${i}`].limitBuff);
+                    r[`chef_${i}`].limit = limit;
+                    r[`chef_${i}`].price_total = r[`chef_${i}`].price_buff * limit;
+                    r[`price_chef_${i}`] = r[`chef_${i}`].price_buff * limit;
                   }
                 }
                 return r;
