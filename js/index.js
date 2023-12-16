@@ -293,6 +293,7 @@ $(function() {
       userNav: 0,
       calCode: 'cal',
       defaultEx: false,
+      defaultDiskMax: false,
       calShowGot: false,
       tableHeight: window.innerHeight - 122,
       tableShow: false,
@@ -1404,6 +1405,18 @@ $(function() {
         repExName.forEach(i => {
           saveRepEx(i, plan_data.Rep);
         });
+        plan_data.Amber = {};
+        plan_data.DiskLevel = {};
+        // 有厨子的才保存遗玉相关
+        for (let key in plan_data.Chef) {
+          plan_data.Amber[key] = [];
+          for (let amber of that.calAmber[key]) {
+            if (amber && amber.id[0]) {
+              plan_data.Amber[key].push(amber.id[0]);
+            }
+          }
+          plan_data.DiskLevel[key] = that.calDiskLevel[key].current;
+        }
         if (!has_chef && !has_rep) {
           this.$message({
             message: '至少选一个厨子或者菜谱再保存方案啊',
@@ -1417,8 +1430,13 @@ $(function() {
       setPlan(data) {
         const that = this;
         that.calLoading = true;
-        setTimeout(() => {
-          this.calClear();
+        let amberMap = {};
+        for (let amber of that.data.ambers) {
+          amberMap[amber.id] = amber;
+        }
+        this.calClearSelect();
+        this.calClear();
+        this.$nextTick(()=>{
           const choseName = ['Chef', 'Equip', 'Condiment'];
           const repExName = ['Cnt', 'Ex', 'Condi'];
           const temp = {};
@@ -1434,6 +1452,41 @@ $(function() {
             }
             that[`cal${i}`] = temp[i];
           });
+          // 重设心法盘
+          for (let i = 1; i <= 3; i++) {
+            that.setDiskList(i);
+          }
+          if (data.DiskLevel) {
+            // 设置心法盘等级
+            for (let key in data.DiskLevel) {
+              that.calDiskLevel[key].current = data.DiskLevel[key];
+              that.handleDiskLevelChange(key);
+            }
+          }
+          if (data.Amber) {
+            // 安装遗玉（为防止错误，有厨子才安）
+            for (let key in data.Chef) {
+              let amberIds = deepCopy(data.Amber[key]);
+              let ambers = [];
+              // 厨子的心法盘类型
+              let diskInfo = that.calChef[key].row[0].disk.info;
+              diskInfo.forEach((type, idx) => {
+                for (let i = 0; i < amberIds.length; i++) {
+                  let id = amberIds[i];
+                  // 找到颜色对应的插入并从待选列表中删除
+                  if (amberMap[id].type == type) {
+                    ambers[idx] = {
+                      id: [id],
+                      row: amberMap[id]
+                    }
+                    amberIds.splice(i, i+1);
+                    continue;
+                  }
+                }
+              });
+              that.calAmber[key] = ambers;
+            }
+          }
           for (let key in data.Rep) {
             that.calRep[key] = {
               id: [data.Rep[key]],
@@ -1449,11 +1502,27 @@ $(function() {
             }
             that[`calRep${i}`] = temp[i];
           });
-          setTimeout(() => {
-            that.calLoading = false;
-            that.planListShow = false;
-          }, 1000);
-        }, 50);
+          this.$nextTick(()=>{
+            // 强刷组件
+            for (let key = 1; key <= 3; key++) {
+              this.$refs[`calChef_${key}`][0].initOption();
+              this.$refs[`calEquip_${key}`][0].initOption();
+              this.$refs[`calCondiment_${key}`][0].initOption();
+              for (let idx in this.calAmberList[key]) {
+                this.$nextTick(()=>{
+                  this.$refs[`calAmber_${key}_${idx}`][0].initOption();
+                })
+              }
+            }
+            for (let key in that.calRep) {
+              this.$refs[`calRep_${key}`][0].initOption();
+            }
+          });
+        });
+        setTimeout(() => {
+          that.calLoading = false;
+          that.planListShow = false;
+        }, 1000);
       },
       editPlanName(idx) {
         this.$prompt('在下面填上方案名~', '(￣▽￣)"', {
@@ -2161,6 +2230,11 @@ $(function() {
           2: { id: [], row: [] },
           3: { id: [], row: [] }
         };
+        this.calAmber = {
+          1: [],
+          2: [],
+          3: []
+        };
         this.calCondiment = {
           1: { id: [], row: [] },
           2: { id: [], row: [] },
@@ -2189,6 +2263,32 @@ $(function() {
           '3-3': { id: [], row: [] },
         };
       },
+      calClearSelect() {
+        for (let key in this.calChef) {
+          this.clearSelect(`calChef_${key}`);
+        }
+        for (let key in this.calEquip) {
+          this.clearSelect(`calEquip_${key}`);
+        }
+        for (let key in this.calRep) {
+          this.clearSelect(`calRep_${key}`);
+        }
+        for (let key in this.calCondiment) {
+          this.clearSelect(`calCondiment_${key}`);
+        }
+        for (let key in this.calChef) {
+          for (let idx in this.calAmberList[key]) {
+            this.$nextTick(()=>{
+              this.clearSelect(`calAmber_${key}_${idx}`);
+            })
+          }
+        }
+      },
+      clearSelect(key) {
+        if (this.$refs[key] && this.$refs[key][0]) {
+          this.$refs[key][0].clear();
+        }
+      },
       initCal() {
         this.calLoading = true;
         setTimeout(() => {
@@ -2203,15 +2303,7 @@ $(function() {
           }
           this.ChefNumLimit = rule.ChefNumLimit || 3;
           if (!this.calHidden) {
-            for (let key in this.calChef) {
-              this.$refs[`calChef_${key}`][0].clear();
-            }
-            for (let key in this.calEquip) {
-              this.$refs[`calEquip_${key}`][0].clear();
-            }
-            for (let key in this.calRep) {
-              this.$refs[`calRep_${key}`][0].clear();
-            }
+            this.calClearSelect();
           }
           this.custom_rule_id = rule.custom_rule_id;
           const customRule = (this.customRules[rule.custom_rule_id]) || rule.CustomRule || null;
@@ -5207,6 +5299,7 @@ $(function() {
           userNav: this.userNav,
           showDetail: this.showDetail,
           defaultEx: this.defaultEx,
+          defaultDiskMax: this.defaultDiskMax,
           calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
           hiddenMessage: this.hiddenMessage,
@@ -5221,7 +5314,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'amberCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
+        const propName = ['defaultEx', 'defaultDiskMax', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -5812,17 +5905,22 @@ $(function() {
           for (let type of chef.disk.info) {
             this.calAmberList[key].push(deepCopy(this[`calAmberOrigin${type}`]));
           }
-        } else {
-          //
+          // 如果设置了心法盘默认满级
+          if (this.defaultDiskMax) {
+            this.calDiskLevel[key].current = chef.disk.maxLevel;
+            this.handleDiskLevelChange(key);
+          }
         }
       },
       handleDiskLevelChange(key) {
         let max = this.calDiskLevel[key].max;
         let val = this.calDiskLevel[key].current;
         let last = this.calDiskLevel[key].last;
-        val = val.replace(/\./g, '');
-        val = val.replace(/\-/g, '');
-        val = Number(val);
+        if (typeof val == 'string') {
+          val = val.replace(/\./g, '');
+          val = val.replace(/\-/g, '');
+          val = Number(val);
+        }
         val = val > max ? max : (val < 1 ? 1 : val);
         this.calDiskLevel[key].current = val;
         if (val != last) {
@@ -6391,6 +6489,9 @@ $(function() {
           }
         }
         this.calRepEx = rst;
+      },
+      defaultDiskMax(val) {
+        this.saveUserData();
       },
       calKeyword() {
         this.initCalRepSearch();

@@ -804,6 +804,15 @@
           <span>
             <el-switch
               style="display: block"
+              v-model="defaultDiskMax"
+              active-color="#82a1b0"
+              active-text="计算器心法盘默认满级"
+              inactive-color="#ddd">
+            </el-switch>
+          </span>
+          <span>
+            <el-switch
+              style="display: block"
               v-model="calShowGot"
               active-color="#82a1b0"
               active-text="计算器只展示已有厨师菜谱"
@@ -856,9 +865,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2023-12-16 22:40 计算器开业方案支持保存心法盘遗玉，新增设置支持默认满级心法盘。</div>
             <div class="p">2023-12-10 23:56 修复计算器中菜谱份数错乱的问题。</div>
             <div class="p">2023-12-10 02:30 更新遗玉系统相关内容。</div>
-            <div class="p">2023-11-30 22:30 更新六周年奖池相关内容。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -2157,6 +2166,6 @@
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
   <script src="./js/common.js?v=1"></script>
-  <script src="./js/index.js?v=225"></script>
+  <script src="./js/index.js?v=226"></script>
 </body>
 </html>
