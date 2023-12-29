@@ -3215,8 +3215,8 @@ $(function() {
         }
         if (this.calRepCnt[key] == null || !row[0]) {
           if (row[0]) {
-            let limitBuff = row[0][`chef_${key.slice(0, 1)}`] ? row[0][`chef_${key.slice(0, 1)}`].limitBuff : 0;
-            this.calRepCnt[key] = row[0].limit + (limitBuff || 0);
+            let limit = row[0][`chef_${key.slice(0, 1)}`] ? row[0][`chef_${key.slice(0, 1)}`].limit : row[0].limit;
+            this.calRepCnt[key] = limit;
             this.calRepLimit[key] = this.calRepCnt[key];
           } else {
             this.calRepCnt[key] = null;
