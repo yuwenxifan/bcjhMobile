@@ -195,7 +195,7 @@ section.header .right {
   margin: 0;
   flex-direction: column;
   justify-content: space-between;
-  height: 150px;
+  height: 210px;
   align-content: flex-start;
 }
 .aside .el-switch__label {

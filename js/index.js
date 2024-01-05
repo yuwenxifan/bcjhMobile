@@ -294,6 +294,7 @@ $(function() {
       calCode: 'cal',
       defaultEx: false,
       defaultDiskMax: false,
+      hiddenDisk: false,
       calShowGot: false,
       tableHeight: window.innerHeight - 122,
       tableShow: false,
@@ -1583,7 +1584,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=75'
+          url: './data/data.min.json?v=76'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -5301,6 +5302,7 @@ $(function() {
           showDetail: this.showDetail,
           defaultEx: this.defaultEx,
           defaultDiskMax: this.defaultDiskMax,
+          hiddenDisk: this.hiddenDisk,
           calShowGot: this.calShowGot,
           hideSuspend: this.hideSuspend,
           hiddenMessage: this.hiddenMessage,
@@ -5315,7 +5317,7 @@ $(function() {
       getUserData() {
         let userData = localStorage.getItem('data');
         const colName = ['repCol', 'calRepCol', 'chefCol', 'equipCol', 'amberCol', 'condimentCol', 'decorationCol', 'mapCol', 'userUltimate'];
-        const propName = ['defaultEx', 'defaultDiskMax', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
+        const propName = ['defaultEx', 'defaultDiskMax', 'hiddenDisk', 'calShowGot', 'hideSuspend', 'hiddenMessage', 'repGot', 'chefGot', 'userNav', 'showDetail', 'planList', 'allEx'];
         if (userData) {
           try {
             this.userData = JSON.parse(userData);
@@ -6492,6 +6494,9 @@ $(function() {
         this.calRepEx = rst;
       },
       defaultDiskMax(val) {
+        this.saveUserData();
+      },
+      hiddenDisk(val) {
         this.saveUserData();
       },
       calKeyword() {
