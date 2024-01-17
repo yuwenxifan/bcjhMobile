@@ -315,6 +315,7 @@ $(function() {
       reps_list: [],
       userDataText: '',
       LDataText: '',
+      userDataCode: '',
       userUltimateChange: false,
       userUltimate: {
         decoBuff: '',
@@ -5482,32 +5483,54 @@ $(function() {
         });
         return Object.assign({}, allUltimate, skill_obj, global_obj, price_obj, limit_obj);
       },
+      syncUserData() {
+        let that = this;
+        if (!this.userDataCode) {
+          return;
+        }
+        $.ajax({
+          url: `https://yx518.com/api/archive.do?token=${this.userDataCode}`,
+          type: 'GET'
+        }).then(rst => {
+          rst = JSON.parse(rst);
+          if (rst.ret != 'S') {
+            that.$message({
+              type: 'error',
+              message: `导入失败：${rst.msg}`,
+              showClose: true,
+            });
+          } else {
+            try {
+              this.importData(rst.msg);
+              this.$message({
+                showClose: true,
+                message: '导入成功',
+                type: 'success'
+              });
+              this.userDataCode = '';
+            } catch(e) {
+              console.log(e);
+              this.$message({
+                showClose: true,
+                message: '导入失败：数据解析失败',
+                type: 'error'
+              });
+            }
+          }
+        }).fail(err => {
+          that.$message({
+            type: 'error',
+            message: '导入失败：服务端错误',
+            showClose: true,
+          });
+          console.log(err);
+        });
+      },
       importLDataText() {
         let data;
         try {
           data = JSON.parse(this.LDataText);
-          let userData = localStorage.getItem('data');
-          userData = userData ? JSON.parse(userData) : {};
-          userData.repGot = this.trans(data.recipes, 'got');
-          userData.chefGot = this.trans(data.chefs, 'got');
-          userData.chefUlt = this.trans(data.chefs, 'ult');
-          const decoBuff = data.decorationEffect;
-          userData.userUltimate = Object.assign({ decoBuff }, this.setUlti(userData.chefUlt));
-
-          localStorage.setItem('data', JSON.stringify(userData));
-          this.getUserData();
-          setTimeout(() => {
-            if (userData.userUltimate.Partial.id.length > 0) {
-              this.$refs.userPartial.initOption();
-            } else {
-              this.$refs.userPartial.clear();
-            }
-            if (userData.userUltimate.Self.id.length > 0) {
-              this.$refs.userSelf.initOption();
-            } else {
-              this.$refs.userSelf.clear();
-            }
-          }, 50);
+          this.importData(data);
           this.LDataText = '';
           this.$message({
             showClose: true,
@@ -5518,10 +5541,34 @@ $(function() {
           console.log(e);
           this.$message({
             showClose: true,
-            message: '导入失败',
+            message: '导入失败：数据解析失败',
             type: 'error'
           });
         }
+      },
+      importData(data) {
+        let userData = localStorage.getItem('data');
+        userData = userData ? JSON.parse(userData) : {};
+        userData.repGot = this.trans(data.recipes, 'got');
+        userData.chefGot = this.trans(data.chefs, 'got');
+        userData.chefUlt = this.trans(data.chefs, 'ult');
+        const decoBuff = data.decorationEffect;
+        userData.userUltimate = Object.assign({ decoBuff }, this.setUlti(userData.chefUlt));
+
+        localStorage.setItem('data', JSON.stringify(userData));
+        this.getUserData();
+        setTimeout(() => {
+          if (userData.userUltimate.Partial.id.length > 0) {
+            this.$refs.userPartial.initOption();
+          } else {
+            this.$refs.userPartial.clear();
+          }
+          if (userData.userUltimate.Self.id.length > 0) {
+            this.$refs.userSelf.initOption();
+          } else {
+            this.$refs.userSelf.clear();
+          }
+        }, 50);
       },
       exportUserData() {
         this.saveUserData();

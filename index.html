@@ -874,9 +874,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2024-01-17 16:20 新增同步游戏数据的功能（待官方上线中）。</div>
             <div class="p">2024-01-05 19:45 新增礼包厨师静静谛听，支持隐藏心法盘。</div>
             <div class="p">2023-12-29 15:50 修复使用份数加成遗玉后，后置位的菜谱上菜时会消耗前置位菜谱食材的bug。</div>
-            <div class="p">2023-12-22 23:10 修复计算器正常营业选菜后份数上限是0，重选厨子才刷新的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1915,6 +1915,14 @@
       </div>
       <div v-if="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
+          <div class="title">官方数据导入（待官方上线）</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="btn-box" style="margin-top: 10px;">
+              <el-input placeholder="在游戏设置页面获取校验码" v-model="userDataCode" size="mini" style="width: 180px;"></el-input>
+              <span class="btn" @click="syncUserData">导入数据</span>
+            </div>
+          </div>
           <div class="title">个人装饰/修炼数据配置</div>
           <div class="hr"></div>
           <div class="box-body">
@@ -2175,6 +2183,6 @@
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
   <script src="./js/common.js?v=1"></script>
-  <script src="./js/index.js?v=229"></script>
+  <script src="./js/index.js?v=230"></script>
 </body>
 </html>
