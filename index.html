@@ -6,7 +6,7 @@
   <title>个人爱好[白菜菊花]</title>
   <link rel="icon" href="./favicon.png?v=1">
   <link rel="stylesheet" href="./css/index.css?v=44">
-  <link rel="stylesheet" href="./css/image.css?v=57">
+  <link rel="stylesheet" href="./css/image.css?v=58">
   <link rel="stylesheet" href="./ele/index.css">
 </head>
 <body>
@@ -874,9 +874,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2024-02-02 01:35 新增瑞龙庆春池相关厨师菜谱数据；修复计算器中，特定操作后上菜谱，默认份数不对的bug。</div>
             <div class="p">2024-01-17 16:20 新增同步游戏数据的功能（待官方上线中）。</div>
             <div class="p">2024-01-05 19:45 新增礼包厨师静静谛听，支持隐藏心法盘。</div>
-            <div class="p">2023-12-29 15:50 修复使用份数加成遗玉后，后置位的菜谱上菜时会消耗前置位菜谱食材的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -897,11 +897,7 @@
             </div>
             <div class="p">
               <p>Q: 我要怎么把我有的菜谱、厨师导入到图鉴里呢？<br/></p>
-              <p>A: 如果之前有维护过L图鉴的数据，可以直接使用【个人】页的<span class="code">L版图鉴数据转移</span>功能，否则需要录入。
-                <div style="padding-left: 20px;">
-                  <p>自动生成：安卓用户可以下载个人数据生成器：<a href="https://wws.lanzouy.com/b01jjc70j">点击下载，密码：bcjh</a>，选用最新版本下载使用，下载链接里有使用说明记得看。</p>
-                  <p>手动录入：【菜谱】【厨师】页里，点右下角的 <i class="el-icon-search"></i>，将<span class="code">展示列</span>里的<span class="code">已有</span>点亮，然后就可以在表格里勾选你有的厨师菜谱，还可以根据来源搜索后点击<span class="code">全选</span>。</p>
-                </div>
+              <p>A: 游戏内点击左上角昵称，然后点击<span class="code">设置</span>-<span class="code">白菜菊花</span>获取校验码，然后将校验码填入本图鉴的【个人】页，使用<span class="code">官方数据导入</span>功能导入即可
             </div>
             <div class="p">
               <p>Q: 为什么我计算器算出来的分数和游戏里不一样？<br/></p>
@@ -1915,7 +1911,7 @@
       </div>
       <div v-if="navId === 8">
         <div class="ultimate-box" :style="'height: '+ boxHeight + 'px;'">
-          <div class="title">官方数据导入（待官方上线）</div>
+          <div class="title">官方数据导入</div>
           <div class="hr"></div>
           <div class="box-body">
             <div class="btn-box" style="margin-top: 10px;">
@@ -2183,6 +2179,6 @@
   <script src="./js/jquery-2.1.4.min.js"></script>
   <script src="./js/echarts.min.js"></script>
   <script src="./js/common.js?v=1"></script>
-  <script src="./js/index.js?v=230"></script>
+  <script src="./js/index.js?v=231"></script>
 </body>
 </html>

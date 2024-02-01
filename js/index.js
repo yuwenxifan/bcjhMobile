@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=76'
+          url: './data/data.min.json?v=77'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3217,7 +3217,8 @@ $(function() {
         }
         if (this.calRepCnt[key] == null || !row[0]) {
           if (row[0]) {
-            let limit = row[0][`chef_${key.slice(0, 1)}`] ? row[0][`chef_${key.slice(0, 1)}`].limit : row[0].limit;
+            // 当前有厨师，使用厨师加成后的份数，无厨师使用初始份数
+            let limit = this.calChef[key.slice(0, 1)].id[0] ? row[0][`chef_${key.slice(0, 1)}`].limit : row[0].limit;
             this.calRepCnt[key] = limit;
             this.calRepLimit[key] = this.calRepCnt[key];
           } else {
