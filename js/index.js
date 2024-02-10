@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=78'
+          url: './data/data.min.json?v=79'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2982,6 +2982,10 @@ $(function() {
         onSiteEffect.forEach(eff => { // 在场技能
           if (eff.type == 'BasicPrice') {
             chef.basicPrice += eff.value;
+          } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+            let effNew = deepCopy(eff);
+            effNew.type = eff.type.slice(10);
+            chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position);
           } else {
             buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
           }
