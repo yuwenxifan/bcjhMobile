@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=79'
+          url: './data/data.min.json?v=80'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3976,7 +3976,7 @@ $(function() {
           let f_skills = true;
           for (key in this.chefFilter.skills) {
             const lastKey = key.slice(0, 1).toUpperCase() + key.slice(1) + '_last';
-            f_skills = f_skills && (ultimate[lastKey] >= this.chefFilter.skills[key].val);
+            f_skills = f_skills && (this.chefFilter.skills[key].val == '' || (ultimate[lastKey] >= this.chefFilter.skills[key].val));
           }
 
           const condiment_arr = [];
