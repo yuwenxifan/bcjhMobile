@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=80'
+          url: './data/data.min.json?v=81'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -1807,7 +1807,7 @@ $(function() {
           });
           item.skill = skill.desc;
           item.skill_obj = skill;
-          item.sex = item.tags ? (item.tags.map(t => t == 1 ? '男' : '女').join('、')) : '';
+          item.sex = item.tags ? (item.tags.filter(t => new Set([1, 2]).has(t)).map(t => t == 1 ? '男' : '女').join('、')) : '';
           item.origin = item.origin.replace(this.reg, '\n');
           const ultimateGoalDetail = [];
           item.ultimateGoal = item.ultimateGoal.map(qId => {
@@ -2960,6 +2960,10 @@ $(function() {
             if (eff.type == 'BasicPrice') {
               if (eff.conditionType == null) {
                 chef.basicPrice += eff.value;
+              } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+                let effNew = deepCopy(eff);
+                effNew.type = eff.type.slice(10);
+                chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position);
               } else if (eff.conditionType == 'PerRank') {
                 chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
               }
@@ -3079,7 +3083,21 @@ $(function() {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
           }
         }
+        else if (eff.conditionType == 'ChefTag') { // 厨师tag
+          if (eff.condition == 'Partial') {
+            let effect = deepCopy(eff);
+            delete effect.condition;
+            this.onSiteEffect[position].push(effect);
+          } else if (this.checkChefTag(eff.conditionValueList, chf.tags)) {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          }
+        }
         return buff;
+      },
+      checkChefTag(condion, tags) {
+        const chefTags = new Set(tags);
+        const intersection = condion.filter(x => chefTags.has(x));
+        return intersection.length > 0;
       },
       getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag = 0) { // 前置条件通过的情况，计算buff数值
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
@@ -3370,6 +3388,7 @@ $(function() {
             }
           });
         }
+        let chef_flag = this.getChefOnsite(chef.id);
         if (chef.ultimate_effect) {
           chef.ultimate_effect.forEach(eff => {
             if (eff.condition == 'Next') return; // 类型=下位的，加到下位身上，不给自己加
@@ -3427,7 +3446,6 @@ $(function() {
               }
             });
           }
-          let chef_flag = 0; // 判断当前厨子是否在场
           for (let i = 1; i < 4; i++) {
             if (this.calChef[i].row[0] &&
               (this.ulti.Partial.id.indexOf(this.calChef[i].row[0].uid) > -1 || this.ulti.Self.id.indexOf(this.calChef[i].row[0].uid) > -1)
@@ -3441,9 +3459,6 @@ $(function() {
                   }
                 }
               });
-            }
-            if (this.calChef[i].row[0] && this.calChef[i].row[0].id == chef.id) { // 当前厨子在场上
-              chef_flag = 1
             }
           }
           // 有上一位厨师，且已修炼，加成到本厨师上
@@ -3510,6 +3525,15 @@ $(function() {
         chef.ultimate = ultimate;
         chef.time_buff = time_buff;
         return chef;
+      },
+      getChefOnsite(chefId) {
+        let chef_flag = 0; // 判断当前厨子是否在场
+        for (let i = 1; i < 4; i++) {
+          if (this.calChef[i].row[0] && this.calChef[i].row[0].id == chefId) { // 当前厨子在场上
+            chef_flag = 1
+          }
+        }
+        return chef_flag;
       },
       getLastChef(position) { // 获取上一位的厨师
         if (position == 1) {
@@ -6347,6 +6371,8 @@ $(function() {
                 if (val[key].id) {
                   this.handlerChef(key);
                 } else {
+                  // 如果厨子卸下来了，清除在场技能
+                  this.onSiteEffect[key] = [];
                   this.calReps_origin[key] = deepCopy(this.calRepDefaultSort).map(r => {
                     delete r[`chef_${key}`]
                     return r;
