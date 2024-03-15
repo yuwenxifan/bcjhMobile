@@ -2960,10 +2960,6 @@ $(function() {
             if (eff.type == 'BasicPrice') {
               if (eff.conditionType == null) {
                 chef.basicPrice += eff.value;
-              } else if (eff.type.slice(0, 10) == 'BasicPrice') {
-                let effNew = deepCopy(eff);
-                effNew.type = eff.type.slice(10);
-                chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position);
               } else if (eff.conditionType == 'PerRank') {
                 chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
               }
