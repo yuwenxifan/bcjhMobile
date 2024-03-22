@@ -2370,7 +2370,7 @@ $(function() {
               subName += (tag == 1 ? '男' : (tag == 2 ? '女' : ''));
             }
             subName += (' ' + (chef_buff || ''))
-            subName_origin = chef_buff ? `$}倍` : '';
+            subName_origin = chef_buff ? `${chef_buff}倍` : '';
           }
           let EnableChefTag = false;
           for (let tag of tags) {
