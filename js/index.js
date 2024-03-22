@@ -2359,7 +2359,8 @@ $(function() {
         }
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
-          const tags = item.tags ? item.tags : [];
+          let tags = item.tags ? item.tags : [];
+          tags = tags.filter(t => [1, 2].indexOf(t) > -1);
           let subName = '';
           let subName_origin = null;
           let chef_buff = 0;
@@ -2369,7 +2370,7 @@ $(function() {
               subName += (tag == 1 ? '男' : (tag == 2 ? '女' : ''));
             }
             subName += (' ' + (chef_buff || ''))
-            subName_origin = chef_buff ? `${chef_buff}倍` : '';
+            subName_origin = chef_buff ? `$}倍` : '';
           }
           let EnableChefTag = false;
           for (let tag of tags) {
