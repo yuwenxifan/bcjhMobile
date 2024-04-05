@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=82'
+          url: './data/data.min.json?v=83'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2963,6 +2963,8 @@ $(function() {
                 chef.basicPrice += eff.value;
               } else if (eff.conditionType == 'PerRank') {
                 chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+              } else {
+                chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
               }
             }
           });
@@ -3037,17 +3039,17 @@ $(function() {
         }
         return result;
       },
-      getEffectBuff(eff, rep, chf, repCnt, grade, position, eqpFlag = 0) { // 根据effect和rep，获取buff数值
+      getEffectBuff(eff, rep, chf, repCnt, grade, position, eqpFlag = 0, basicFlag = 0) { // 根据effect和rep，获取buff数值
         let buff = 0;
         if (!eff.conditionType) { // 无前置条件
-          buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+          buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
         } else if (eff.conditionType == 'ExcessCookbookNum') { // 菜谱份数大于
           if (repCnt >= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         } else if (eff.conditionType == 'FewerCookbookNum') { // 菜谱份数不超过
           if (repCnt <= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         } else if (eff.conditionType == 'PerRank') { // 每制作一种菜谱品阶
           if (eff.condition == 'Partial') {
@@ -3057,11 +3059,11 @@ $(function() {
             effect.value = eff.value * this.getPerRankCnt(eff, chf, position);
             this.onSiteEffect[position].push(effect);
           } else {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag) * this.getPerRankCnt(eff, chf, position);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag) * this.getPerRankCnt(eff, chf, position);
           }
         } else if (eff.conditionType == 'Rank') { // 菜谱品阶
           if (grade >= eff.conditionValue) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         } else if (eff.conditionType == 'SameSkill') { // 同技法
           if (this.getSameSkillFlag(position) > 0) { // 如果同技法判定通过
@@ -3077,7 +3079,7 @@ $(function() {
           }
         } else if (eff.conditionType == 'CookbookRarity') { // 菜谱星级
           if (eff.conditionValueList.indexOf(rep.rarity) > -1) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         }
         else if (eff.conditionType == 'ChefTag') { // 厨师tag
@@ -3086,7 +3088,7 @@ $(function() {
             delete effect.condition;
             this.onSiteEffect[position].push(effect);
           } else if (this.checkChefTag(eff.conditionValueList, chf.tags)) {
-            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag);
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         }
         return buff;
@@ -3096,7 +3098,7 @@ $(function() {
         const intersection = condion.filter(x => chefTags.has(x));
         return intersection.length > 0;
       },
-      getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag = 0) { // 前置条件通过的情况，计算buff数值
+      getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag = 0, basicFlag = 0) { // 前置条件通过的情况，计算buff数值
         const skill_type = ['Stirfry', 'Boil', 'Knife', 'Fry', 'Bake', 'Steam'];
         const condiment_type = ['Sweet', 'Sour', 'Spicy', 'Salty', 'Bitter', 'Tasty'];
         const material_type = ['Meat', 'Vegetable', 'Creation', 'Fish'];
@@ -3127,6 +3129,8 @@ $(function() {
           if (!this.repCntMap[rep.id]) { // 如果不在场，加在自己上，在场的另外加
             rep.basicPrice += this.getSelfPartialBuff(eff, chf, eqpFlag);
           }
+        } else if (eff.type == 'BasicPrice' && basicFlag == 1) {
+          buff += this.getSelfPartialBuff(eff, chf, eqpFlag);
         }
 
         return buff;
