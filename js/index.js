@@ -2957,7 +2957,6 @@ $(function() {
 
         if (!rule.DisableChefSkillEffect) {
           chf.sum_skill_effect.forEach(eff => { // 技能
-            buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
             if (eff.type == 'BasicPrice') {
               if (eff.conditionType == null) {
                 chef.basicPrice += eff.value;
@@ -2966,6 +2965,8 @@ $(function() {
               } else {
                 chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
               }
+            } else {
+              buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
             }
           });
         }
