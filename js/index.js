@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=83'
+          url: './data/data.min.json?v=84'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2591,6 +2591,7 @@ $(function() {
             materials_search: item.materials_search,
             condiment: item.condiment,
             condiment_show: item.condiment_show,
+            tags: item.tags,
             isCombo: Boolean(this.combo_map.combo[item.recipeId])
           };
           Object.assign(ext, r);
@@ -3088,13 +3089,21 @@ $(function() {
             let effect = deepCopy(eff);
             delete effect.condition;
             this.onSiteEffect[position].push(effect);
-          } else if (this.checkChefTag(eff.conditionValueList, chf.tags)) {
+          } else if (this.checkTag(eff.conditionValueList, chf.tags)) {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
+          }
+        } else if (eff.conditionType == 'CookbookTag') { // 菜谱tag
+          if (eff.condition == 'Partial') {
+            let effect = deepCopy(eff);
+            delete effect.condition;
+            this.onSiteEffect[position].push(effect);
+          } else if (this.checkTag(eff.conditionValueList, rep.tags)) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         }
         return buff;
       },
-      checkChefTag(condion, tags) {
+      checkTag(condion, tags) {
         const chefTags = new Set(tags);
         const intersection = condion.filter(x => chefTags.has(x));
         return intersection.length > 0;
