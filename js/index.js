@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=87'
+          url: './data/data.min.json?v=88'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -3044,7 +3044,13 @@ $(function() {
       getEffectBuff(eff, rep, chf, repCnt, grade, position, eqpFlag = 0, basicFlag = 0) { // 根据effect和rep，获取buff数值
         let buff = 0;
         if (!eff.conditionType) { // 无前置条件
-          buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
+          if (eff.condition == 'Partial') {
+            let effect = deepCopy(eff);
+            delete effect.condition;
+            this.onSiteEffect[position].push(effect);
+          } else {
+            buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
+          }
         } else if (eff.conditionType == 'ExcessCookbookNum') { // 菜谱份数大于
           if (repCnt >= eff.conditionValue) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
@@ -3080,7 +3086,11 @@ $(function() {
             }
           }
         } else if (eff.conditionType == 'CookbookRarity') { // 菜谱星级
-          if (eff.conditionValueList.indexOf(rep.rarity) > -1) {
+          if (eff.condition == 'Partial') {
+            let effect = deepCopy(eff);
+            delete effect.condition;
+            this.onSiteEffect[position].push(effect);
+          } else if (eff.conditionValueList.indexOf(rep.rarity) > -1) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         }
