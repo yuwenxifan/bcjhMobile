@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=92'
+          url: './data/data.min.json?v=93'
         }).then(rst => {
           this.data = rst;
           this.initData();
