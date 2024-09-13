@@ -2360,12 +2360,12 @@ $(function() {
         for (const item of this.data.chefs) {
           const ultimateSkill = item.ultimateSkill || {};
           let tags = item.tags ? item.tags : [];
-          tags = tags.filter(t => [1, 2].indexOf(t) > -1);
+          let showTags = tags.filter(t => [1, 2].indexOf(t) > -1);
           let subName = '';
           let subName_origin = null;
           let chef_buff = 0;
           if (rule.ChefTagEffect) {
-            for (let tag of tags) {
+            for (let tag of showTags) {
               chef_buff += rule.ChefTagEffect[tag];
               subName += (tag == 1 ? '男' : (tag == 2 ? '女' : ''));
             }
@@ -2911,7 +2911,7 @@ $(function() {
         if (rule.ChefTagEffect) { // 男厨/女厨倍数
           let tag_buff = 0;
           for (let tag of chf.tags) {
-            tag_buff += rule.ChefTagEffect[tag] * 100;
+            tag_buff += (rule.ChefTagEffect[tag] || 0) * 100;
           }
           chef.buff_rule += tag_buff;
           chef.buff += tag_buff;
@@ -2986,7 +2986,7 @@ $(function() {
         let onSiteEffect = this.onSiteEffect[1].concat(this.onSiteEffect[2]).concat(this.onSiteEffect[3]);
         onSiteEffect.forEach(eff => { // 在场技能
           if (eff.type == 'BasicPrice') {
-            chef.basicPrice += eff.value;
+            chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
           } else if (eff.type.slice(0, 10) == 'BasicPrice') {
             let effNew = deepCopy(eff);
             effNew.type = eff.type.slice(10);
