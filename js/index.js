@@ -2974,7 +2974,21 @@ $(function() {
 
         if (!rule.DisableEquipSkillEffect) {
           chf.equip_effect.forEach(eff => { // 厨具技能
-            buff_equip += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1);
+            if (eff.type == 'BasicPrice') {
+              if (eff.conditionType == null) {
+                chef.basicPrice += eff.value;
+              } else if (eff.conditionType == 'PerRank') {
+                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+              } else {
+                chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1, 1);
+              }
+            } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+              let effNew = deepCopy(eff);
+              effNew.type = eff.type.slice(10);
+              chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 1);
+            } else {
+              buff_equip += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1);
+            }
           });
         }
 
