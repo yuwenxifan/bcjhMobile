@@ -3281,11 +3281,6 @@ $(function() {
               setTimeout(() => this.handlerChef(key.slice(0, 1)), 50); // 重新计算加成
             }
           }
-          if (!row[0] || this.oldCalRep[key] != row[0].id || !this.oldCalRep[key]) { // 取下菜谱或更换菜谱
-            if (chef && chef[0] && chef[0].effect_condition.indexOf('MaterialReduce') > -1) {
-              setTimeout(() => this.handlerChef(key.slice(0, 1)), 100);
-            }
-          }
         }
         if (!row[0]) {
           this.oldCalRep[key] = 0;
