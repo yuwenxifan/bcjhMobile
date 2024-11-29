@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=96'
+          url: './data/data.min.json?v=97'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2966,6 +2966,10 @@ $(function() {
               } else {
                 chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
               }
+            } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+              let effNew = deepCopy(eff);
+              effNew.type = eff.type.slice(10);
+              chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 0);
             } else {
               buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
             }
