@@ -23,5 +23,5 @@ const deepCopy = (val) => {
 };
 
 function judgeEff(eff) {
-  return (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type.slice(-5) == 'Price' || eff.type.slice(-5) == 'Limit' || eff.type.slice(0, 10) == 'BasicPrice');
+  return (eff.type.slice(0, 3) == 'Use' || eff.type == 'Gold_Gain' || eff.type.slice(-5) == 'Price' || eff.type.slice(-5) == 'Limit' || eff.type.slice(0, 10) == 'BasicPrice' || eff.type == 'MaterialReduce');
 }

@@ -874,9 +874,9 @@
           <div class="title">最近更新</div>
           <div class="hr"></div>
           <div class="box-body">
+            <div class="p">2024-11-30 01:40 更新雷恩、解鲁的修炼技能。</div>
             <div class="p">2024-11-29 11:00 更新尚添风云池相关内容，雷恩、解鲁的修炼技能尚未支持。</div>
             <div class="p">2024-11-10 23:30 更新礼包厨师薇来蒂。</div>
-            <div class="p">2024-10-18 21:10 修复音律食光池厨具不生效的bug。</div>
           </div>
           <div class="title">常见问题</div>
           <div class="hr"></div>
@@ -1566,8 +1566,8 @@
                     <div v-if="calRep[key].row[0]" class="material-box">
                       <span v-for="item in calRep[key].row[0].materials" class="material">
                         <span class="label">{{item.name}}</span>
-                        <span class="quantity" v-show="calType.row[0].MaterialsLimit">{{materialsRemain[item.material] + '/' + item.quantity}}</span>
-                        <span class="quantity" v-show="!calType.row[0].MaterialsLimit">{{item.quantity * calRepCnt[key]}}</span>
+                        <span class="quantity" v-show="calType.row[0].MaterialsLimit">{{materialsRemain[item.material] + '/' + (item.quantity_chef || item.quantity)}}</span>
+                        <span class="quantity" v-show="!calType.row[0].MaterialsLimit">{{(item.quantity_chef || item.quantity) * calRepCnt[key]}}</span>
                       </span>
                     </div>
                     <div v-if="calRep[key].row[0]" class="control">
