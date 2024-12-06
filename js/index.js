@@ -2975,7 +2975,8 @@ $(function() {
               } else {
                 chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
               }
-            } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+            } else if (eff.type.slice(0, 10) == 'BasicPrice' && eff.condition == 'Self') {
+              // 如果是场上技能，在后面加的时候才拆分，所以这里不处理
               let effNew = deepCopy(eff);
               effNew.type = eff.type.slice(10);
               chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 0);
