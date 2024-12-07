@@ -3544,9 +3544,9 @@ $(function() {
               this.calChef[i].row[0].ultimate_effect.forEach(eff => {
                 if (eff.type == key && eff.condition == 'Partial') {
                   if (eff.cal == 'Abs') {
-                    value += eff.value;
+                    value += this.getEffectValueByConditionType(chef, eff);
                   } else if (eff.cal == 'Percent') {
-                    percentValue += eff.value;
+                    percentValue += this.getEffectValueByConditionType(chef, eff);;
                   }
                 }
               });
@@ -3616,6 +3616,13 @@ $(function() {
         chef.ultimate = ultimate;
         chef.time_buff = time_buff;
         return chef;
+      },
+      getEffectValueByConditionType(chef, eff) {
+        if (eff.conditionType == 'ChefTag') {
+          return this.checkTag(eff.conditionValueList, chef.tags) ? eff.value : 0;
+        } else {
+          return eff.value;
+        }
       },
       getChefOnsite(chefId) {
         let chef_flag = 0; // 判断当前厨子是否在场
@@ -4022,7 +4029,7 @@ $(function() {
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id) {
                     s.effect.forEach(e => {
-                      if (e.type == key) value += e.value;
+                      if (e.type == key) value += this.getEffectValueByConditionType(item, e);
                     });
                   }
                 });
@@ -4033,7 +4040,7 @@ $(function() {
                 partial_skill.forEach(s => { // 上场类技能-给别人加
                   if (s.id != partial_id || userUltimate.Partial.id.indexOf(s.id) < 0) {
                     s.effect.forEach(e => {
-                      if (e.type == key) value += e.value;
+                      if (e.type == key) value += this.getEffectValueByConditionType(item, e);
                     });
                   }
                 });
