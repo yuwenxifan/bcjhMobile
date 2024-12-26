@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=97'
+          url: './data/data.min.json?v=98'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2052,7 +2052,7 @@ $(function() {
                 if (effect.type == 'UseAll' && effect.rarity == i) {
                   price_obj[`PriceBuff_${i}`] += effect.value;
                 }
-                if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                if (effect.type == 'MaxEquipLimit' && effect.rarity == i && effect.condition == 'Global') {
                   limit_obj[`MaxLimit_${i}`] += effect.value;
                 }
               }
@@ -2927,7 +2927,6 @@ $(function() {
             limitBuff += eff.value;
           }
         });
-        chef.limitBuff = limitBuff;
         // 食材消耗类技能
         chef.materialReduce = [];
         chf.sum_skill_effect.forEach(eff => { // 技能
@@ -2937,7 +2936,11 @@ $(function() {
               value: eff.value
             });
           }
+          if (eff.type == 'MaxEquipLimit' && eff.rarity == rep.rarity && eff.condition == 'Self') {
+            limitBuff += eff.value;
+          }
         });
+        chef.limitBuff = limitBuff;
         // 规则限制
         let limitRule = rule.DisableMultiCookbook ? 1 : 500;
         // 除加成外的份数
@@ -5590,7 +5593,7 @@ $(function() {
                   if (effect.type == 'UseAll' && effect.rarity == i) {
                     price_obj[`PriceBuff_${i}`] += effect.value;
                   }
-                  if (effect.type == 'MaxEquipLimit' && effect.rarity == i) {
+                  if (effect.type == 'MaxEquipLimit' && effect.rarity == i && effect.condition == 'Global') {
                     limit_obj[`MaxLimit_${i}`] += effect.value;
                   }
                 }
