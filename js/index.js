@@ -1585,7 +1585,7 @@ $(function() {
       },
       loadData() {
         $.ajax({
-          url: './data/data.min.json?v=98'
+          url: './data/data.min.json?v=99'
         }).then(rst => {
           this.data = rst;
           this.initData();
@@ -2904,6 +2904,7 @@ $(function() {
         chef.buff = rep.buff;
         rep.basicPrice = 0;
         chef.basicPrice = 0; // 当前场上的基础售价加成
+        chef.basicPriceAbs = 0; // 当前场上的基础售价数值加成
 
         if (rule.ChefTagEffect) { // 男厨/女厨倍数
           let tag_buff = 0;
@@ -2958,12 +2959,18 @@ $(function() {
         }
         chf.amber_effect.forEach(eff => { // 心法技能
           buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
+            let value = 0;
             if (eff.type == 'BasicPrice') {
               if (eff.conditionType == null) {
-                chef.basicPrice += eff.value;
+                value = eff.value;
               } else if (eff.conditionType == 'PerRank') {
-                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+                value = this.getChefBasicBuffByRank(eff, chf, position);
               }
+            }
+            if (eff.cal == 'Percent') {
+              chef.basicPrice += value;
+            } else {
+              chef.basicPriceAbs += value;
             }
         });
 
@@ -2971,18 +2978,30 @@ $(function() {
         if (!rule.DisableChefSkillEffect) {
           chf.sum_skill_effect.forEach(eff => { // 技能
             if (eff.type == 'BasicPrice') {
+              let value = 0;
               if (eff.conditionType == null) {
-                chef.basicPrice += eff.value;
+                value = eff.value;
               } else if (eff.conditionType == 'PerRank') {
-                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+                value = this.getChefBasicBuffByRank(eff, chf, position);
               } else {
-                chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
+                value = this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
+              }
+              if (eff.cal == 'Percent') {
+                chef.basicPrice += value;
+              } else {
+                chef.basicPriceAbs += value;
               }
             } else if (eff.type.slice(0, 10) == 'BasicPrice' && eff.condition == 'Self') {
+              let value = 0;
               // 如果是场上技能，在后面加的时候才拆分，所以这里不处理
               let effNew = deepCopy(eff);
               effNew.type = eff.type.slice(10);
-              chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 0);
+              value = this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 0);
+              if (eff.cal == 'Percent') {
+                chef.basicPrice += value;
+              } else {
+                chef.basicPriceAbs += value;
+              }
             } else {
               buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
             }
@@ -2992,17 +3011,29 @@ $(function() {
         if (!rule.DisableEquipSkillEffect) {
           chf.equip_effect.forEach(eff => { // 厨具技能
             if (eff.type == 'BasicPrice') {
+              let value = 0;
               if (eff.conditionType == null) {
-                chef.basicPrice += eff.value;
+                value = eff.value;
               } else if (eff.conditionType == 'PerRank') {
-                chef.basicPrice += this.getChefBasicBuffByRank(eff, chf, position);
+                value = this.getChefBasicBuffByRank(eff, chf, position);
               } else {
-                chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1, 1);
+                value = this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1, 1);
+              }
+              if (eff.cal == 'Percent') {
+                chef.basicPrice += value;
+              } else {
+                chef.basicPriceAbs += value;
               }
             } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+              let value = 0;
               let effNew = deepCopy(eff);
               effNew.type = eff.type.slice(10);
-              chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 1);
+              value = this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position, 1);
+              if (eff.cal == 'Percent') {
+                chef.basicPrice += value;
+              } else {
+                chef.basicPriceAbs += value;
+              }
             } else {
               buff_equip += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 1);
             }
@@ -3017,11 +3048,23 @@ $(function() {
         let onSiteEffect = this.onSiteEffect[1].concat(this.onSiteEffect[2]).concat(this.onSiteEffect[3]);
         onSiteEffect.forEach(eff => { // 在场技能
           if (eff.type == 'BasicPrice') {
-            chef.basicPrice += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
+            let value = 0;
+            value = this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position, 0, 1);
+            if (eff.cal == 'Percent') {
+              chef.basicPrice += value;
+            } else {
+              chef.basicPriceAbs += value;
+            }
           } else if (eff.type.slice(0, 10) == 'BasicPrice') {
+            let value = 0;
             let effNew = deepCopy(eff);
             effNew.type = eff.type.slice(10);
-            chef.basicPrice += this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position);
+            value = this.getEffectBuff(effNew, rep, chf, repCnt, chef.grade, position);
+            if (eff.cal == 'Percent') {
+              chef.basicPrice += value;
+            } else {
+              chef.basicPriceAbs += value;
+            }
           } else {
             buff_skill += this.getEffectBuff(eff, rep, chf, repCnt, chef.grade, position);
           }
@@ -3036,7 +3079,7 @@ $(function() {
 
         let ex = this.defaultEx ? rep.exPrice : 0;
         let basicBuff = rep.basicPrice + chef.basicPrice; // 基础加成
-        let price = Math.floor((rep.price + ex) * (100 + basicBuff) / 100);
+        let price = Math.floor((rep.price + ex + chef.basicPriceAbs) * (100 + basicBuff) / 100);
         chef.price_buff = Math.ceil(price * chef.buff * rep.buff_muti / 10000);
         chef.price_total = chef.price_buff * limitChef;
 
@@ -3102,7 +3145,11 @@ $(function() {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag) * this.getPerRankCnt(eff, chf, position);
           }
         } else if (eff.conditionType == 'Rank') { // 菜谱品阶
-          if (grade >= eff.conditionValue) {
+          if (eff.condition == 'Partial') {
+            let effect = Object.assign({}, eff);
+            delete effect.condition;
+            this.onSiteEffect[position].push(effect);
+          } else if (grade >= eff.conditionValue) {
             buff += this.getEffectBuffWithOutCondition(eff, rep, chf, eqpFlag, basicFlag);
           }
         } else if (eff.conditionType == 'SameSkill') { // 同技法
@@ -3653,7 +3700,7 @@ $(function() {
         this.calRepShow = rst;
       },
       showRep(rep, position) {
-        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule', 'buff_condiment', 'basicPrice'];
+        const prop_arr = ['buff', 'buff_grade', 'buff_skill', 'buff_equip', 'buff_rule', 'buff_condiment', 'basicPrice', 'basicPriceAbs'];
         let rst = {
           id: rep.id,
           name: rep.name_show,
@@ -3705,7 +3752,7 @@ $(function() {
         rst.buff_condiment_sub = !this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.buff_condiment = this.calRepCondi[position] ? rst.buff_condiment : 0; // 是否加料
         rst.showBuff = rst.buff_grade || rst.buff_skill || rst.buff_equip || rst.buff_rule || rst.buff_condiment;
-        let price = Math.floor(rst.price * (100 + rst.basicPrice) / 100);
+        let price = Math.floor((rst.price + rst.basicPriceAbs) * (100 + rst.basicPrice) / 100);
         rst.price_buff = Math.ceil(price *(rst.buff - (rst.buff_condiment_sub || 0)) * rst.buff_muti / 10000);
         rst.price_wipe_rule = Math.ceil(price * (rst.buff - rst.buff_rule) / 100); // 除去规则的售价
         rst.price_wipe_rule_total = rst.price_wipe_rule * rst.cnt;
