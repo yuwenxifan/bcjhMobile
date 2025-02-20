@@ -1919,6 +1919,15 @@
               <span class="btn" style="line-height: 25px;" @click="syncUserData">导入数据</span>
             </div>
           </div>
+          <div class="title">图鉴网数据加载（厨子满级满阶才会导入）</div>
+          <div class="hr"></div>
+          <div class="box-body">
+            <div class="btn-box" style="margin-top: 10px;">
+              <div class="p">是否使用本地缓存:{{useDataCache===true?'是':'否'}}</div>
+              <span class="btn" style="line-height: 25px;" @click="reloadGameDataFromNet">加载数据</span>
+              <span class="btn" style="line-height: 25px;" @click="clearGameData">清除数据</span>
+            </div>
+          </div>
           <div class="title">个人装饰/修炼数据配置</div>
           <div class="hr"></div>
           <div class="box-body">

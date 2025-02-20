@@ -303,6 +303,7 @@ $(function() {
       chartWidth: window.innerWidth,
       extraHeight: 0,
       data: [],
+      useDataCache:false,
       materials_list: [],
       combos_list: [],
       combo_map: { combo: {}, split: {} },
@@ -1584,12 +1585,20 @@ $(function() {
         return decodeURIComponent((new RegExp('[?|&]' + name + '=' + '([^&;]+?)(&|#|;|$)').exec(location.href) || [, ''])[1].replace(/\+/g, '%20')) || null
       },
       loadData() {
-        $.ajax({
-          url: './data/data.min.json?v=100'
-        }).then(rst => {
-          this.data = rst;
+        //如果本次存在使用本地数据，如果本地不存在，使用服务器数据
+        let cacheData =  this.loadGameDataFromCache()
+        if (cacheData==null){
+          $.ajax({
+            url: './data/data.min.json?v=100'
+          }).then(rst => {
+            this.data = rst;
+            this.initData();
+          });
+        }else {
+          this.data = cacheData;
+          this.useDataCache = true;
           this.initData();
-        });
+        }
       },
       async loadFoodGodRule() {
         let time = this.getUrlKey('time') ? new Date(this.getUrlKey('time')) : null;
@@ -5701,6 +5710,44 @@ $(function() {
             showClose: true,
           });
           console.log(err);
+        });
+      },
+      loadGameDataFromCache(){
+        let gameData = localStorage.getItem('gameData')
+        if (gameData == null) {
+          return null;
+        }
+        gameData = JSON.parse(gameData);
+        return gameData;
+      },
+      async reloadGameDataFromNet() {
+        try {
+          let dataTime = new Date().getTime();
+          let data = await (await fetch(`https://foodgame.github.io/data/data.min.json?v=${dataTime}`)).json();
+          let dateStr = JSON.stringify(data);
+          localStorage.setItem('gameData', dateStr)
+          localStorage.setItem('gameDataTime', dataTime)
+          //记录一下缓存时间点
+          this.$message({
+            showClose: true,
+            message: '导入成功,刷新生效',
+            type: 'success'
+          });
+        }catch (e) {
+          that.$message({
+            type: 'error',
+            message: `导入失败`,
+            showClose: true,
+          });
+        }
+      },
+      clearGameData() {
+        //加载图鉴网数据
+        localStorage.removeItem('gameData')
+        this.$message({
+          showClose: true,
+          message: '清除成功,刷新生效',
+          type: 'success'
         });
       },
       importLDataText() {
