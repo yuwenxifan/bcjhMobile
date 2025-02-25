@@ -1317,6 +1317,17 @@ $(function() {
       this.loadFoodGodRule();
       this.getVersion();
       this.getUserData();
+      this.$notify({
+        title: '停更声明',
+        message: `小鱼撂挑子啦，本网页即日起<strong>不再更新</strong>。<br/>
+        白菜菊花交给官方维护，新地址：<br/><a href="https://h5.baochaojianghu.com/">https://h5.baochaojianghu.com/</a><br/><br/>
+        <strong>特别注意：</strong><br/>
+        1. 旧的APP将无法使用（新网页的下载链接我看了一下也是旧APP）<br>
+        2. 本网页将在3月31日彻底关停，如果有需要转移的个人数据请及时转移！（可以直接从游戏里导数据了应该只有方案数据需要转？注意新旧网页的<strong>个人数据云端暂存功能是不互通的</strong>！）
+        `,
+        dangerouslyUseHTMLString: true,
+        duration: 0
+      });
       const arr = ['Rep', 'Chef', 'Equip', 'Amber', 'Decoration'];
       for (const key of arr) {
         this[`origin${key}Filter`] = JSON.parse(JSON.stringify(this[`${key.toLowerCase()}Filter`]));
